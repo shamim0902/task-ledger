@@ -8,4 +8,11 @@ $baseDir = dirname($vendorDir);
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'TaskLedger\\Database\\DBMigrator' => $baseDir . '/database/DBMigrator.php',
+    'TaskLedger\\Database\\Migrations\\LogItemsMigrator' => $baseDir . '/database/Migrations/LogItemsMigrator.php',
+    'TaskLedger\\Database\\Migrations\\LogsMigrator' => $baseDir . '/database/Migrations/LogsMigrator.php',
+    'TaskLedger\\Database\\Migrations\\Migrator' => $baseDir . '/database/Migrations/Migrator.php',
+    'TaskLedger\\Database\\Migrations\\SettingsMigrator' => $baseDir . '/database/Migrations/SettingsMigrator.php',
+    'TaskLedger\\Database\\Migrations\\TaskActivityMigrator' => $baseDir . '/database/Migrations/TaskActivityMigrator.php',
+    'TaskLedger\\Database\\Migrations\\TaskMetaMigrator' => $baseDir . '/database/Migrations/TaskMetaMigrator.php',
+    'TaskLedger\\Database\\Migrations\\TasksMigrator' => $baseDir . '/database/Migrations/TasksMigrator.php',
 );

@@ -19,6 +19,10 @@ $app->addAction('admin_menu', 'AdminMenuHandler');
 
 $app->addCustomAction('exception', 'ExceptionHandler');
 
+if (defined('WP_CLI') && WP_CLI) {
+    \WP_CLI::add_command('taskledger', '\TaskLedger\App\Hooks\CLI\Commands');
+}
+
 /**
  * Enable this line if you want to use custom post types
  */

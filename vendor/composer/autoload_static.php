@@ -7,7 +7,7 @@ namespace Composer\Autoload;
 class ComposerStaticInit70b841140d300d7320400dfecf48a267
 {
     public static $prefixLengthsPsr4 = array (
-        'T' => 
+        'T' =>
         array (
             'TaskLedger\\Framework\\' => 21,
             'TaskLedger\\Dev\\' => 15,
@@ -16,15 +16,15 @@ class ComposerStaticInit70b841140d300d7320400dfecf48a267
     );
 
     public static $prefixDirsPsr4 = array (
-        'TaskLedger\\Framework\\' => 
+        'TaskLedger\\Framework\\' =>
         array (
             0 => __DIR__ . '/..' . '/wpfluent/framework/src/WPFluent',
         ),
-        'TaskLedger\\Dev\\' => 
+        'TaskLedger\\Dev\\' =>
         array (
             0 => __DIR__ . '/../..' . '/dev',
         ),
-        'TaskLedger\\App\\' => 
+        'TaskLedger\\App\\' =>
         array (
             0 => __DIR__ . '/../..' . '/app',
         ),
@@ -33,6 +33,13 @@ class ComposerStaticInit70b841140d300d7320400dfecf48a267
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'TaskLedger\\Database\\DBMigrator' => __DIR__ . '/../..' . '/database/DBMigrator.php',
+        'TaskLedger\\Database\\Migrations\\LogItemsMigrator' => __DIR__ . '/../..' . '/database/Migrations/LogItemsMigrator.php',
+        'TaskLedger\\Database\\Migrations\\LogsMigrator' => __DIR__ . '/../..' . '/database/Migrations/LogsMigrator.php',
+        'TaskLedger\\Database\\Migrations\\Migrator' => __DIR__ . '/../..' . '/database/Migrations/Migrator.php',
+        'TaskLedger\\Database\\Migrations\\SettingsMigrator' => __DIR__ . '/../..' . '/database/Migrations/SettingsMigrator.php',
+        'TaskLedger\\Database\\Migrations\\TaskActivityMigrator' => __DIR__ . '/../..' . '/database/Migrations/TaskActivityMigrator.php',
+        'TaskLedger\\Database\\Migrations\\TaskMetaMigrator' => __DIR__ . '/../..' . '/database/Migrations/TaskMetaMigrator.php',
+        'TaskLedger\\Database\\Migrations\\TasksMigrator' => __DIR__ . '/../..' . '/database/Migrations/TasksMigrator.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
