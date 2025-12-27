@@ -10,6 +10,7 @@ return array(
     'TaskLedger\\Database\\DBMigrator' => $baseDir . '/database/DBMigrator.php',
     'TaskLedger\\Database\\Migrations\\LogItemsMigrator' => $baseDir . '/database/Migrations/LogItemsMigrator.php',
     'TaskLedger\\Database\\Migrations\\LogsMigrator' => $baseDir . '/database/Migrations/LogsMigrator.php',
+    'TaskLedger\\Database\\Migrations\\MetaMigrator' => $baseDir . '/database/Migrations/Meta.php',
     'TaskLedger\\Database\\Migrations\\Migrator' => $baseDir . '/database/Migrations/Migrator.php',
     'TaskLedger\\Database\\Migrations\\SettingsMigrator' => $baseDir . '/database/Migrations/SettingsMigrator.php',
     'TaskLedger\\Database\\Migrations\\TaskActivityMigrator' => $baseDir . '/database/Migrations/TaskActivityMigrator.php',

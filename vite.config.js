@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
         base: `/wp-content/plugins/${pluginFolder}/assets/`,
         plugins: [
             vue(),
-            liveReload([`${__dirname}/**/*.php`]),
+            // liveReload([`${__dirname}/**/*.php`]),
             viteStaticCopy({
                 targets: [
                     { src: 'resources/images/*', dest: 'images' },

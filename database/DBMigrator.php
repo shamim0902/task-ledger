@@ -10,6 +10,7 @@ use TaskLedger\Database\Migrations\LogItemsMigrator;
 use TaskLedger\Database\Migrations\TasksMigrator;
 use TaskLedger\Database\Migrations\TaskActivityMigrator;
 use TaskLedger\Database\Migrations\TaskMetaMigrator;
+use TaskLedger\Database\Migrations\MetaMigrator;
 
 class DBMigrator
 {
@@ -20,6 +21,7 @@ class DBMigrator
         TasksMigrator::class,
         TaskActivityMigrator::class,
         TaskMetaMigrator::class,
+        MetaMigrator::class,
     ];
 
     public static function migrateUp($network_wide = false)

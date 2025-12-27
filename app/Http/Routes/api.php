@@ -16,3 +16,7 @@ $router->delete('/users/{id}', 'UserController@delete');
 $router->get('/posts', 'PostController@get');
 $router->get('/posts/{id}', 'PostController@find');
 $router->post('/upload', 'PostController@upload');
+
+// my routes
+$router->get('/tasks', 'TaskController@get');
+$router->post('/subtasks', 'TaskController@createSubtask');

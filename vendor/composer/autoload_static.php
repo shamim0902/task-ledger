@@ -35,6 +35,7 @@ class ComposerStaticInit70b841140d300d7320400dfecf48a267
         'TaskLedger\\Database\\DBMigrator' => __DIR__ . '/../..' . '/database/DBMigrator.php',
         'TaskLedger\\Database\\Migrations\\LogItemsMigrator' => __DIR__ . '/../..' . '/database/Migrations/LogItemsMigrator.php',
         'TaskLedger\\Database\\Migrations\\LogsMigrator' => __DIR__ . '/../..' . '/database/Migrations/LogsMigrator.php',
+        'TaskLedger\\Database\\Migrations\\MetaMigrator' => __DIR__ . '/../..' . '/database/Migrations/Meta.php',
         'TaskLedger\\Database\\Migrations\\Migrator' => __DIR__ . '/../..' . '/database/Migrations/Migrator.php',
         'TaskLedger\\Database\\Migrations\\SettingsMigrator' => __DIR__ . '/../..' . '/database/Migrations/SettingsMigrator.php',
         'TaskLedger\\Database\\Migrations\\TaskActivityMigrator' => __DIR__ . '/../..' . '/database/Migrations/TaskActivityMigrator.php',
