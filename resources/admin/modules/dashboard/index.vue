@@ -518,8 +518,7 @@ export default {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.container {
-    max-width: 1200px;
+.container {   
     margin: 0 auto;
 }
 
