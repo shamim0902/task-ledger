@@ -423,14 +423,27 @@ export default {
             this.showAddSubtaskInput = false;
         },
 
+        getTodayLogs() {
+            this.$get('today-logs').then(res => {
+                console.log(res?.all());
+                const data = res.all();
+                this.todayLog = {
+                    notes: data?.additional_notes || '',
+                    tasks: data?.log_items || [],
+                };
+            })
+        },
+
         addSubtaskToTodayLog(subtask) {
             this.todayLog.tasks.push({
                 id: subtask.id,
                 title: subtask.title,
                 weight: subtask.weight,
                 hours: 0,
-                status: 'pending'
+                status: 'in_progress',
             });
+
+            this.handleCreateLog();
         },
         updateSubtaskStatus(subtask) {
             // this.$patch('subtasks', subtask).then(res => {
@@ -457,23 +470,13 @@ export default {
             alert('Task added successfully!');
         },
         handleCreateLog() {
-            if (!this.selectedTask || !this.logText.trim() || !this.hoursSpent) {
-                alert('Please select a task, write a log, and enter hours spent');
-                return;
-            }
-
-            const newLog = {
-                id: this.logs.length + 1,
-                taskId: this.selectedTask.id,
-                date: this.getTodayDateString,
-                log: this.logText,
-                hours: parseFloat(this.hoursSpent)
-            };
-
-            this.logs.push(newLog);
-            this.logText = '';
-            this.hoursSpent = '';
-            alert('Daily log created successfully!');
+            this.$post('logs', this.todayLog).then(res => {
+                this.logs = res.all();
+                this.$notify({
+                    type: 'success',
+                    text: 'Log created successfully'
+                })
+            });
         },
         getTaskById(taskId) {
             return this.tasks.find(t => t.id === taskId);
@@ -490,6 +493,10 @@ export default {
             }
         });
         this.getTasks();
+        this.getTodayLogs();
+        if(!window.taskLedgerAdmin.hasLogForToday) {
+            this.handleCreateLog();
+        }
     }
 };
 </script>

@@ -17,7 +17,6 @@ class LogsMigrator extends Migrator
             `status` ENUM('submitted','draft') DEFAULT 'submitted',
             `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
             `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY `user_log_date_unique` (`user_id`, `log_date`),
             KEY `log_date_index` (`log_date`)
         SQL;
     }

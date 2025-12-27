@@ -25,6 +25,12 @@
                 <input placeholder="Set Weight That You Completed" v-if="task.status !== 'completed'" type="number" min="0" :max="task.weight"
                     v-model.number="task.complete_weight" class="weight-input" />
 
+                <input placeholder="Hours" type="number" min="0" v-model.number="task.hours" class="weight-input" />
+
+                <span v-if="task.status === 'in-progress'" class="status-pill in-progress">
+                    In Progress
+                </span>
+
                 <span v-else class="status-pill success">
                     Completed
                 </span>
@@ -133,7 +139,7 @@ export default {
 }
 
 .weight-input {
-    width: 240px;
+    width: 80px;
     padding: 4px 6px;
     font-size: 13px;
     border-radius: 6px;

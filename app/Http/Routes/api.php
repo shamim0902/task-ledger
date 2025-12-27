@@ -20,3 +20,9 @@ $router->post('/upload', 'PostController@upload');
 // my routes
 $router->get('/tasks', 'TaskController@get');
 $router->post('/subtasks', 'TaskController@createSubtask');
+
+$router->post('/logs', 'LogController@create');
+
+$router->get('/logs', 'LogController@get');
+
+$router->get('/today-logs', 'LogController@getTodayLogs');

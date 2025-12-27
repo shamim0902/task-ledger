@@ -4,6 +4,7 @@ namespace TaskLedger\App\Hooks\Handlers;
 
 use TaskLedger\App\App;
 use TaskLedger\App\Utils\Enqueuer\Enqueue;
+use TaskLedger\App\Models\Log;
 
 class AdminMenuHandler
 {
@@ -154,6 +155,12 @@ class AdminMenuHandler
             '1.0',
             true
         );
+
+        wp_localize_script( $handle, 'taskLedgerAdmin', [
+            'baseUrl' => $this->baseUrl,
+            'slug' => $this->slug,
+            'hasLogForToday' => Log::hasLogForToday(get_current_user_id())
+        ] );
     }
 
     /**
