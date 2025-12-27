@@ -57,7 +57,7 @@ class LogController extends Controller
                     'task_type'=> 'board',
                 ],
                 [
-                    'activity_type'   => $task['status'],
+                    'activity_type'   => $task['status'] ?? 'in-progress',
                     'complete_weight' => $task['complete_weight'],
                     'note'            => $task['note'],
                     'time_spent'      => $task['hours'],

@@ -117,13 +117,13 @@
                                 </div>
                             </div>
                             <!-- add today log button -->
-                            <el-button @click="addTaskToTodayLog" class="add-today-log-button">
+                            <!-- <el-button @click="addTaskToTodayLog" class="add-today-log-button">
                                 <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
                                 </svg>
                                 Add to Today's Log
-                            </el-button>
+                            </el-button> -->
                             <button @click="clearSelectedTask" class="clear-button">
                                 <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -171,7 +171,10 @@
                                     <span class="subtask-text">{{ subtask.title }}</span>
                                     <span class="weight-badge-small">{{ subtask.weight }} pts</span>
                                     <span v-if="subtask.status === 'closed'" class="completed-badge">✓ Completed</span>
-                                    <el-button v-else @click="addSubtaskToTodayLog(subtask)" class="btn-delete">Add Today Log</el-button>
+                                    <div v-else>
+                                        <el-button v-if="subtask?.weight <= 0" @click="markSubtaskCompleted(subtask)" class="btn-delete">Mark Completed</el-button>
+                                        <el-button v-else @click="addSubtaskToTodayLog(subtask)" class="btn-delete">Add Today Log</el-button>
+                                    </div>
                                 </div>
                             </div>
                             <div v-else class="no-subtasks">
@@ -379,6 +382,12 @@ export default {
         }
     },
     methods: {
+
+        markSubtaskCompleted(subtask) {
+            this.$patch(`subtasks/completed/${subtask.id}`).then(res => {
+                subtask.status = 'closed';
+            });
+        },
         getTasks() {
             this.$get('tasks').then(res => {
                 this.tasks = res.all();
@@ -440,7 +449,7 @@ export default {
                 title: subtask.title,
                 weight: subtask.weight,
                 hours: 0,
-                status: 'in_progress',
+                status: 'in-progress',
             });
 
             this.handleCreateLog();

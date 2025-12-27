@@ -20,6 +20,7 @@ $router->post('/upload', 'PostController@upload');
 // my routes
 $router->get('/tasks', 'TaskController@get');
 $router->post('/subtasks', 'TaskController@createSubtask');
+$router->patch('/subtasks/completed/{id}', 'TaskController@markSubtaskCompleted');
 
 $router->post('/logs', 'LogController@create');
 

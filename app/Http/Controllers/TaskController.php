@@ -5,6 +5,7 @@ namespace TaskLedger\App\Http\Controllers;
 use FluentBoards\App\Models\Task;
 use TaskLedger\Framework\Http\Request\Request;
 use TaskLedger\App\Models\Meta;
+use TaskLedger\App\Models\LogItem;
 
 class TaskController extends Controller
 {
@@ -27,10 +28,12 @@ class TaskController extends Controller
                 $task->weight = 8;
             }
             foreach($task->subtasks as $subtask) {
-                if(Meta::getMetaForTask($subtask->id, 'weight')) {
-                    $subtask->weight = Meta::getMetaForTask($subtask->id, 'weight')->meta_value;
+                $totalCompleteWeight = LogItem::where('task_id', $subtask->id)->where('activity_type', 'completed')->sum('complete_weight');
+                if (Meta::getMetaForTask($subtask->id, 'weight')) {
+                    $calculatedWeight = Meta::getMetaForTask($subtask->id, 'weight')->meta_value - $totalCompleteWeight;
+                    $subtask->weight = max(0, $calculatedWeight);
                 } else {
-                    $subtask->weight = 1;
+                    $subtask->weight = max(0, 1 - $totalCompleteWeight);
                 }
             }
             return $task->assignees->contains('ID', $currentUser);
@@ -75,5 +78,12 @@ class TaskController extends Controller
         $subtask->weight = $weight;
         return $subtask;
 
+    }
+
+    public function markSubtaskCompleted(Request $request, $id) {
+        $subtask = Task::find($id);
+        $subtask->status = 'closed';
+        $subtask->save();
+        return $subtask;
     }
 }
