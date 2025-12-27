@@ -34,11 +34,11 @@
                     </div>
                     <div class="stat-card stat-green">
                         <div class="stat-label">Hours Today</div>
-                        <div class="stat-value">{{ totalHoursToday }}h</div>
+                        <div class="stat-value">10h</div>
                     </div>
                     <div class="stat-card stat-purple">
                         <div class="stat-label">Story Points</div>
-                        <div class="stat-value">{{ totalWeightCompleted }}</div>
+                        <div class="stat-value">16</div>
                     </div>
                 </div>
             </div>
@@ -211,53 +211,7 @@
 
             <!-- History View -->
             <div v-if="currentView === 'history'" class="content-card">
-                <div class="history-header">
-                    <h2 class="section-title">Log History</h2>
-                    <div class="filter-controls">
-                        <label class="filter-label">Filter by Date:</label>
-                        <input type="date" v-model="filterDate" class="filter-input" />
-                        <button v-if="filterDate" @click="filterDate = ''" class="clear-filter-button">
-                            Clear
-                        </button>
-                    </div>
-                </div>
-
-                <div class="history-list">
-                    <div v-if="filteredLogs.length === 0" class="empty-state">
-                        <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <p>No logs found for the selected criteria</p>
-                    </div>
-
-                    <div v-for="log in filteredLogs" :key="log.id" class="log-card">
-                        <div class="log-header">
-                            <div class="log-main-info">
-                                <h3 class="log-task-title">{{ getTaskById(log.taskId).title }}</h3>
-                                <div class="log-meta">
-                                    <span class="meta-item">
-                                        <svg class="icon-tiny" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        {{ formatDate(log.date) }}
-                                    </span>
-                                    <span class="meta-item">
-                                        <svg class="icon-tiny" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        {{ log.hours }}h
-                                    </span>
-                                    <span class="board-badge">{{ getTaskById(log.taskId).board }}</span>
-                                </div>
-                            </div>
-                            <span class="weight-badge">{{ getTaskById(log.taskId).weight }} pts</span>
-                        </div>
-                        <div class="log-content">{{ log.log }}</div>
-                    </div>
-                </div>
+          
             </div>
         </div>
 
@@ -265,7 +219,7 @@
         <div v-if="showAddTaskModal" class="modal-overlay" @click.self="showAddTaskModal = false">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 class="modal-title">Add New Task</h3>
+                    <h3 class="modal-title">Add New Task (TODO)</h3>
                     <button @click="showAddTaskModal = false" class="modal-close">
                         <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -308,7 +262,6 @@
 </template>
 
 <script>
-import { add } from 'lodash';
 import TaskList from './TaskList.vue';
 export default {
     name: 'DailyReportApp',
@@ -318,11 +271,6 @@ export default {
     data() {
         return {
             tasks: [],
-            logs: [
-                { id: 1, taskId: 1, date: '2024-12-24', log: 'Completed JWT implementation and started working on refresh token logic', hours: 4 },
-                { id: 2, taskId: 3, date: '2024-12-24', log: 'Identified the issue with webhook callbacks, working on fix', hours: 3 },
-                { id: 3, taskId: 1, date: '2024-12-25', log: 'Finished refresh token implementation and added password reset functionality', hours: 5 },
-            ],
             todayLog: {
                 tasks: [
                 ],
@@ -351,18 +299,6 @@ export default {
         },
         getTodayDateString() {
             return new Date().toISOString().split('T')[0];
-        },
-        totalHoursToday() {
-            const today = this.getTodayDateString;
-            return this.logs
-                .filter(log => log.date === today)
-                .reduce((sum, log) => sum + log.hours, 0);
-        },
-        totalWeightCompleted() {
-            const loggedTaskIds = new Set(this.logs.map(log => log.taskId));
-            return this.tasks
-                .filter(task => loggedTaskIds.has(task.id))
-                .reduce((sum, task) => sum + task.weight, 0);
         },
         filteredLogs() {
             if (!this.filterDate) return this.logs;
