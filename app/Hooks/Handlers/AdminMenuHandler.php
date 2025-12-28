@@ -77,7 +77,7 @@ class AdminMenuHandler
      */
     public function render()
     {  
-        if(defined('FLUENT_BOARDS_PRO_VERSION')) {
+        if(!defined('FLUENT_BOARDS_PRO_VERSION')) {
             echo '
             <div style="padding: 16px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; margin: 20px 0;">
             <strong style="color: #856404;">Notice:</strong>
