@@ -76,7 +76,16 @@ class AdminMenuHandler
      * @return null
      */
     public function render()
-    {   
+    {  
+        if(defined('FLUENT_BOARDS_PRO_VERSION')) {
+            echo '
+            <div style="padding: 16px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; margin: 20px 0;">
+            <strong style="color: #856404;">Notice:</strong>
+            <span style="color: #856404;">Please install <strong>Fluent Board Pro</strong> to use Task Ledger.</span>
+            </div>
+            ';
+            die();
+        }
         $this->enqueueAssets($this->slug);
 
         // @phpstan-ignore-next-line
