@@ -1,119 +1,92 @@
 <template>
-    <el-container class="layout">
-        <!-- Top Navigation -->
-        <el-header class="navbar">
-            <!-- Left Section (logo + menu) -->
-            <div class="navbar-left">
-                <!-- Brand Logo -->
-                <div class="brand-logo">
-                    <a href="/">
-                        <img :src="logoUrl" alt="Brand" class="brand-logo" />
-                        <span>beta</span>
-                    </a>
-                </div>
-
-                <!-- Left Menu -->
-                <Nav
-                    class="menu"
-                    v-if="primaryMenu.length"
-                    :routes="primaryMenu"
-                />
-            </div>
-
-            <!-- Right Menu -->
-            <div class="navbar-right">
-                <ThemeSwitcher />
-                <Nav
-                    v-if="secondaryMenu.length"
-                    :routes="secondaryMenu"
-                    :key="secondaryMenu[0]?.meta?.label"
-                    class="menu"
-                />
-            </div>
-        </el-header>
-
-        <!-- Page Content -->
-        <el-main class="main">
-            <router-view v-slot="{ Component, route }">
-                <!-- Dynamically render the routed component -->
-                <component
-                    :is="Component"
-                    :key="route.fullPath"
-                    v-on="{ 'update:application': updateApplication }"
-                />
-            </router-view>
-
-            <!--- Render Footer Menu -->
-            <div class="footer-menu">
-                <Nav
-                    v-if="footerMenu.length"
-                    :routes="footerMenu"
-                />
-            </div>
-        </el-main>
-    </el-container>
-</template>
-
-<script>
-import Rest from '@/utils/http/Rest';
-import Nav from '@/components/Menu/Menu';
-import menu from '@/components/Menu/menu';
-import ThemeSwitcher from '@/components/ThemeSwitcher';
-
-export default {
-    name: "Application",
-    components: {
-        Nav,
-        ThemeSwitcher,
+    <div class="top-menu">
+        <nav class="top-menu">
+      <ul>
+        <li
+          v-for="item in menuItems"
+          :key="item.name"
+          :class="{ active: isActive(item.path) }"
+        >
+          <router-link :to="item.path" class="menu-link">
+            <i :class="item.icon"></i>
+            <span>{{ item.meta.label }}</span>
+          </router-link>
+        </li>
+      </ul>
+    </nav>
+    <router-view />
+    </div>
+  </template>
+  
+  <script setup>
+  import { ref } from 'vue';
+  import { useRoute } from 'vue-router';
+  
+  // Define your menu items
+  const menuItems = ref([
+    {
+      name: 'Developers',
+      path: '/',
+      icon: 'el-icon-s-home',
+      meta: { label: 'Developers' }
     },
-    props: {
-        logoUrl: {
-            type: String,
-            required: true
-        },
-        baseUrl: {
-            type: String,
-            required: true
-        }
-    },
-    data() {
-        return {
-            primaryMenu: menu.get('primary') || [],
-            secondaryMenu: menu.get('secondary') || [],
-            footerMenu: menu.get('footer') || [],
-        };
-    },
-    provide() {
-        return {
-            // ...
-        };
-    },
-    computed: {
-        // ...
-    },
-    methods: {
-        registerRestRequestInterceptor() {
-            Rest.use((options, next) => {
-                options.headers = {
-                    ...options.headers,
-                    'X-Fluent': 'Fluent-Custom-Header',
-                };
-                
-                return next(options);
-            });
-        },
-        updateApplication(data = null) {
-            // ...
-        },
-    },
-    mounted() {
-        this.registerRestRequestInterceptor();
+    {
+      name: 'Projects Manager',
+      path: '/pm',
+      icon: 'el-icon-user',
+      meta: { label: 'Projects Manager' }
     }
-};
-</script>
-
-<style>
-ul.el-pager {
-    margin-top: 6px !important;
-}
-</style>
+  ]);
+  
+  const route = useRoute();
+  
+  // Highlight the active route
+  const isActive = (path) => {
+    return route.path === path;
+  };
+  </script>
+  
+  <style lang="scss" scoped>
+  .top-menu {
+    background-color: #fff;
+    padding: 0 20px;
+    border-bottom: 1px solid #e6e6e6;
+  
+    ul {
+      display: flex;
+      align-items: center;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+  
+      li {
+        margin-right: 30px;
+  
+        &.active {
+          .menu-link {
+            color: #409EFF;
+            font-weight: bold;
+          }
+        }
+  
+        .menu-link {
+          display: flex;
+          align-items: center;
+          text-decoration: none;
+          color: #333;
+          font-size: 14px;
+          padding: 15px 0;
+  
+          i {
+            margin-right: 8px;
+            font-size: 18px;
+          }
+  
+          &:hover {
+            color: #409EFF;
+          }
+        }
+      }
+    }
+  }
+  </style>

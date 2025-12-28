@@ -5,6 +5,15 @@ const routes = [
         component: () => import('@/components/Unauthorized')
     },
     {
+        path: '/pm',
+        name: 'pm',
+        component: () => import('@/modules/pm/PMDashboard.vue'),
+        meta: {
+            activeMenu: 'projects',
+            icon: 'SetUp',
+        },
+    },
+    {
         path: '/:pathMatch(.*)*',
         name: 'notfound',
         component: () => import('@/components/NotFound'),

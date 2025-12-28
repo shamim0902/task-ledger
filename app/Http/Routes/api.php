@@ -27,3 +27,12 @@ $router->post('/logs', 'LogController@create');
 $router->get('/logs', 'LogController@get');
 
 $router->get('/today-logs', 'LogController@getTodayLogs');
+
+// PM Dashboard routes
+$router->get('/pm/team-activity', 'PMDashboardController@getTeamActivity');
+$router->get('/pm/summary-stats', 'PMDashboardController@getSummaryStats');
+$router->get('/pm/task-analytics', 'PMDashboardController@getTaskAnalytics');
+$router->get('/pm/task-overview', 'PMDashboardController@getTaskOverview');
+$router->get('/pm/blocked-tasks', 'PMDashboardController@getBlockedTasks');
+$router->get('/pm/team-members', 'PMDashboardController@getTeamMembers');
+$router->get('/pm/boards', 'PMDashboardController@getBoards');

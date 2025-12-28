@@ -1,5 +1,8 @@
 <template>
     <div class="daily-report-app">
+        <div class="top-app-menu">
+            
+        </div>
         <div class="container">
             <!-- Header -->
             <HeaderCard

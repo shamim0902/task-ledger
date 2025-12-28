@@ -80,20 +80,37 @@ class LogController extends Controller
 
     public function getTodayLogs()
     {
-        $log = Log::where('log_date', date('Y-m-d'))
-        ->with('logItems')
-        ->first();
+        $current_user = wp_get_current_user();
+        $user_id = $current_user->ID;
+        
+        $log = Log::where('user_id', $user_id)
+            ->where('log_date', date('Y-m-d'))
+            ->with('logItems')
+            ->first();
 
-        $log->logItems->each(function ($item) use ($tasks, $log) {
+        if (!$log) {
+            return [
+                'additional_notes' => '',
+                'log_items' => []
+            ];
+        }
+
+        $log->logItems->each(function ($item) use ($log) {
             $task = Task::find($item->task_id);
-            $item->log_id = $log->id;
-            $item->status = $item->activity_type;
-            $item->title = $task->title;
-            $item->hours = $item->time_spent;
-            $item->note = $item->note;
-            $item->weight = Meta::getMetaForTask($task->id, 'weight')->meta_value ?? 1;
+            if ($task) {
+                $item->log_id = $log->id;
+                $item->status = $item->activity_type;
+                $item->title = $task->title;
+                $item->hours = $item->time_spent;
+                $item->note = $item->note;
+                $item->weight = Meta::getMetaForTask($task->id, 'weight')->meta_value ?? 1;
+                $item->complete_weight = $item->complete_weight ?? 0;
+            }
         });
 
-        return $log;
+        return [
+            'additional_notes' => $log->additional_notes ?? '',
+            'log_items' => $log->logItems->toArray()
+        ];
     }
 }
