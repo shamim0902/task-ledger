@@ -19,25 +19,38 @@ class TaskController extends Controller
         ->with('subtasks')
         ->get();
 
-        $currentUser = $request->user()->ID;
+        $currentUser = (int) wp_get_current_user()->ID; // ensure int
 
         $tasks = $tasks->filter(function ($task) use ($currentUser) {
-            if(Meta::getMetaForTask($task->id, 'weight')) {
-                $task->weight = Meta::getMetaForTask($task->id, 'weight')->meta_value;
-            } else {
-                $task->weight = 8;
-            }
-            foreach($task->subtasks as $subtask) {
-                $totalCompleteWeight = LogItem::where('task_id', $subtask->id)->where('activity_type', 'completed')->sum('complete_weight');
-                if (Meta::getMetaForTask($subtask->id, 'weight')) {
-                    $calculatedWeight = Meta::getMetaForTask($subtask->id, 'weight')->meta_value - $totalCompleteWeight;
+            // Task weight (cache the meta call)
+            $taskWeightMeta = Meta::getMetaForTask($task->id, 'weight');
+            $task->weight = $taskWeightMeta ? (int)$taskWeightMeta->meta_value : 8;
+
+            // Subtasks: calculate weight for each
+            foreach ($task->subtasks as $subtask) {
+                $totalCompleteWeight = LogItem::where('task_id', $subtask->id)
+                    ->where('activity_type', 'completed')
+                    ->sum('complete_weight');
+
+                $subMeta = Meta::getMetaForTask($subtask->id, 'weight');
+                if ($subMeta) {
+                    $calculatedWeight = (int)$subMeta->meta_value - (int)$totalCompleteWeight;
                     $subtask->weight = max(0, $calculatedWeight);
                 } else {
-                    $subtask->weight = max(0, 1 - $totalCompleteWeight);
+                    $subtask->weight = max(0, 1 - (int)$totalCompleteWeight);
                 }
             }
-            return $task->assignees->contains('ID', $currentUser);
-        });
+
+            // Robust check for assignee presence (handles ->ID or ->id)
+            return $task->assignees->contains(function ($assignee) use ($currentUser) {
+                // handle WP user objects (ID) or Eloquent users (id)
+                if (isset($assignee->ID) && (int)$assignee->ID === $currentUser) return true;
+                if (isset($assignee->id) && (int)$assignee->id === $currentUser) return true;
+                // sometimes pivot foreign_id may be present
+                if (isset($assignee->pivot) && isset($assignee->pivot->foreign_id) && (int)$assignee->pivot->foreign_id === $currentUser) return true;
+                return false;
+            });
+        })->values(); // reindex numeric keys so JSON becomes [0=>...,1=>...]
 
         return $tasks;
     }

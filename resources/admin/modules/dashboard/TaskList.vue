@@ -214,6 +214,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.points {
+    font-size: 12px;
+    color: #4a505b;
+    font-weight: 600;
+}
 .task-panel {
     background: #ffffff;
     border-radius: 12px;
@@ -221,9 +227,9 @@ export default {
 }
 
 .task-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    // display: flex;
+    // justify-content: space-between;
+    // align-items: flex-start;
     padding: 14px;
     border-radius: 10px;
     border: 2px solid #eef2f7;
@@ -266,6 +272,7 @@ export default {
     gap: 12px;
     flex: 1;
     min-width: 0;
+    margin-bottom: 8px;
 }
 
 .task-checkbox-wrapper {
@@ -284,6 +291,9 @@ export default {
 .task-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
 }
 
 .task-title {
@@ -301,7 +311,7 @@ export default {
 
 .task-right {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 8px;
     flex-wrap: wrap;
     flex-shrink: 0;
@@ -323,6 +333,7 @@ export default {
 
 .weight-input {
     width: 70px;
+    height: 20px;
     padding: 6px 8px;
     font-size: 13px;
     border-radius: 6px;

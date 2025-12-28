@@ -22,7 +22,6 @@
                 <!-- Create Log View -->
                 <div class="content-card">
                     <h2 class="section-title">Select Your Daily Tasks</h2>
-
                     <!-- Task Search and Add -->
                     <TaskSearchSection
                         v-model="taskSearchQuery"
@@ -110,7 +109,7 @@ export default {
         filteredTasks() {
             if (!this.taskSearchQuery.trim()) return this.tasks;
             const query = this.taskSearchQuery.toLowerCase();
-            return this.tasks.filter(task =>
+            return this.tasks?.filter(task =>
                 task?.title?.toLowerCase()?.includes(query) ||
                 task?.board?.title?.toLowerCase()?.includes(query)
             );
@@ -240,10 +239,10 @@ export default {
                     tasks: tasks,
                 };
             }).catch(err => {
-                this.$notify({
-                    type: 'error',
-                    text: 'Failed to load today\'s log'
-                });
+                // this.$notify({
+                //     type: 'error',
+                //     text: 'Failed to load today\'s log'
+                // });
             });
         },
         addNewTask(taskData) {
@@ -278,17 +277,11 @@ export default {
             }
 
             this.$post('logs', this.todayLog).then(res => {
-                this.$notify({
-                    type: 'success',
-                    text: 'Log saved successfully'
-                });
+                this.$notify('Log saved successfully');
                 // Refresh today's log to get updated data
                 this.getTodayLogs();
             }).catch(err => {
-                this.$notify({
-                    type: 'error',
-                    text: 'Failed to save log'
-                });
+                this.$notify('Log save failed');
             });
         },
         deleteTaskFromLog(task) {

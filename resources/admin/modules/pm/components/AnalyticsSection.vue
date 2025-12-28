@@ -293,6 +293,7 @@ export default {
 .bars-wrapper {
     display: flex;
     gap: 0.25rem;
+    justify-content: space-around;
     align-items: flex-end;
     height: calc(100% - 2rem);
     width: 100%;
@@ -308,6 +309,7 @@ export default {
     padding: 0.25rem;
     position: relative;
     transition: all 0.2s;
+    max-width: 30px;
 
     &:hover {
         opacity: 0.8;
