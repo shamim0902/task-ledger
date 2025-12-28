@@ -50,16 +50,15 @@
                     :notes="todayLog.notes"
                     @update:notes="todayLog.notes = $event"
                     @toggle-task="toggleTask"
+                    @delete-task="deleteTaskFromLog"
+                    @task-update="handleTaskUpdate"
                     @submit="handleCreateLog"
                 />
             </div>
 
             <!-- History View -->
             <div v-if="currentView === 'history'" class="content-card history-view">
-                <h2 class="section-title">Log History</h2>
-                <div class="empty-state">
-                    <p>History view coming soon...</p>
-                </div>
+                <LogHistory />
             </div>
         </div>
 
@@ -79,6 +78,7 @@ import TaskSearchSection from './components/TaskSearchSection.vue';
 import SelectedTaskSection from './components/SelectedTaskSection.vue';
 import DailyLogForm from './components/DailyLogForm.vue';
 import AddTaskModal from './components/AddTaskModal.vue';
+import LogHistory from './components/LogHistory.vue';
 
 export default {
     name: 'DailyReportApp',
@@ -88,7 +88,8 @@ export default {
         TaskSearchSection,
         SelectedTaskSection,
         DailyLogForm,
-        AddTaskModal
+        AddTaskModal,
+        LogHistory
     },
     data() {
         return {
@@ -192,9 +193,21 @@ export default {
             this.handleCreateLog();
         },
         toggleTask(task) {
-            task.status = task.status === 'completed' ? 'in-progress' : 'completed';
-            if (task.status === 'completed') {
-                task.complete_weight = task.weight;
+            // Status change is handled in TaskList component
+            // This method is kept for backward compatibility
+            if (!task.status) {
+                task.status = 'in-progress';
+            }
+        },
+        handleTaskUpdate(task) {
+            // Auto-save task updates (optional - can be debounced)
+            // For now, just ensure data is in sync
+            if (task.status === 'blocked' && !task.blocker_reason) {
+                // Warn user if blocker reason is missing
+                this.$notify({
+                    type: 'warning',
+                    text: 'Please provide a reason why this task is blocked'
+                });
             }
         },
         getTasks() {
@@ -210,9 +223,21 @@ export default {
         getTodayLogs() {
             this.$get('today-logs').then(res => {
                 const data = res.all();
+                const tasks = (data?.log_items || []).map(task => {
+                    // Ensure status defaults to in-progress
+                    if (!task.status) {
+                        task.status = 'in-progress';
+                    }
+                    // Initialize blocker_reason if status is blocked
+                    if (task.status === 'blocked' && !task.blocker_reason) {
+                        task.blocker_reason = task.note || '';
+                    }
+                    return task;
+                });
+                
                 this.todayLog = {
                     notes: data?.additional_notes || '',
-                    tasks: data?.log_items || [],
+                    tasks: tasks,
                 };
             }).catch(err => {
                 this.$notify({
@@ -239,6 +264,19 @@ export default {
             });
         },
         handleCreateLog() {
+            // Validate blocked tasks have blocker reasons
+            const blockedTasksWithoutReason = this.todayLog.tasks.filter(
+                task => task.status === 'blocked' && (!task.blocker_reason || task.blocker_reason.trim() === '')
+            );
+
+            if (blockedTasksWithoutReason.length > 0) {
+                this.$notify({
+                    type: 'warning',
+                    text: `Please provide a reason for ${blockedTasksWithoutReason.length} blocked task(s) before submitting`
+                });
+                return;
+            }
+
             this.$post('logs', this.todayLog).then(res => {
                 this.$notify({
                     type: 'success',
@@ -250,6 +288,36 @@ export default {
                 this.$notify({
                     type: 'error',
                     text: 'Failed to save log'
+                });
+            });
+        },
+        deleteTaskFromLog(task) {
+            if (!task.id) {
+                // If task doesn't have a log item ID, just remove from local array
+                const index = this.todayLog.tasks.findIndex(t => t.task_id === task.task_id || t.id === task.id);
+                if (index > -1) {
+                    this.todayLog.tasks.splice(index, 1);
+                    this.handleCreateLog();
+                }
+                return;
+            }
+
+            this.$delete(`logs/items/${task.id}`).then(res => {
+                this.$notify({
+                    type: 'success',
+                    text: 'Task removed from log'
+                });
+                // Remove from local array
+                const index = this.todayLog.tasks.findIndex(t => t.id === task.id);
+                if (index > -1) {
+                    this.todayLog.tasks.splice(index, 1);
+                }
+                // Refresh to get updated data
+                this.getTodayLogs();
+            }).catch(err => {
+                this.$notify({
+                    type: 'error',
+                    text: 'Failed to remove task from log'
                 });
             });
         }

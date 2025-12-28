@@ -12,6 +12,16 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
+    $router->add('/pm-dashboard', 'modules/pm/PMDashboard')
+        ->name('pm.dashboard')
+        ->icon('DataAnalysis')
+        ->title(__('PM Dashboard', 'taskledger'))
+        ->props([
+            'user'     => wp_get_current_user(),
+            'isAdmin'  => current_user_can('manage_options'),
+        ])
+        ->middleware('auth');
+
     $router->add('posts-all', 'modules/posts')
         ->name('posts.all')
         ->icon('Memo')

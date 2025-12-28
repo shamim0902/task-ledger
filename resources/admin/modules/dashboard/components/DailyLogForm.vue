@@ -8,7 +8,9 @@
         <TaskList 
             v-if="tasks.length" 
             :tasks="tasks" 
-            @toggle-task="$emit('toggle-task', $event)" 
+            @toggle-task="$emit('toggle-task', $event)"
+            @delete-task="$emit('delete-task', $event)"
+            @task-update="$emit('task-update', $event)"
         />
 
         <div v-else class="empty-tasks">

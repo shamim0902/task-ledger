@@ -25,7 +25,8 @@ $router->patch('/subtasks/completed/{id}', 'TaskController@markSubtaskCompleted'
 $router->post('/logs', 'LogController@create');
 
 $router->get('/logs', 'LogController@get');
-
+$router->get('/logs/history', 'LogController@getHistory');
+$router->delete('/logs/items/{id}', 'LogController@deleteLogItem');
 $router->get('/today-logs', 'LogController@getTodayLogs');
 
 // PM Dashboard routes
