@@ -1,7 +1,7 @@
 <?php
 
 include_once __DIR__ . '/logoicon.php';
-
+use TaskLedger\App\Hooks\Handlers\ShortcodeHandler;
 /**
  * All registered action's handlers should be in app\Hooks\Handlers,
  * addAction is similar to add_action and addCustomAction is just a
@@ -22,6 +22,11 @@ $app->addCustomAction('exception', 'ExceptionHandler');
 if (defined('WP_CLI') && WP_CLI) {
     \WP_CLI::add_command('taskledger', '\TaskLedger\App\Hooks\CLI\Commands');
 }
+
+//register shortcodes
+$app->addAction('init', function() use ($app) {
+    new ShortcodeHandler($app);
+});
 
 /**
  * Enable this line if you want to use custom post types
