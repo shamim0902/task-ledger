@@ -342,114 +342,120 @@ export default {
 .history-filters {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    padding: 1.5rem;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.875rem;
     background: #f9fafb;
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
 }
 
 .date-range-picker {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
 
     .filter-label {
         font-weight: 600;
         color: #374151;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
+        white-space: nowrap;
     }
 
     .date-inputs {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .date-input {
-        padding: 0.625rem 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        font-size: 0.8125rem;
         transition: all 0.2s;
+        background: white;
 
         &:focus {
             outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
         }
     }
 
     .date-separator {
         color: #6b7280;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
     }
 
     .reset-btn {
-        padding: 0.625rem 1.25rem;
+        padding: 0.5rem 0.875rem;
         background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
         font-weight: 500;
+        font-size: 0.8125rem;
         color: #374151;
         cursor: pointer;
         transition: all 0.2s;
 
         &:hover {
-            border-color: #4f46e5;
-            color: #4f46e5;
+            border-color: #6366f1;
+            color: #6366f1;
+            background: #f9fafb;
         }
     }
 }
 
 .quick-filters {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.375rem;
     flex-wrap: wrap;
 }
 
 .quick-filter-btn {
-    padding: 0.5rem 1rem;
+    padding: 0.375rem 0.75rem;
     background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
     font-weight: 500;
     color: #374151;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
 
     &:hover {
-        border-color: #4f46e5;
-        color: #4f46e5;
+        border-color: #6366f1;
+        color: #6366f1;
+        background: #f9fafb;
     }
 
     &.active {
-        background: #4f46e5;
+        background: #6366f1;
         color: white;
-        border-color: #4f46e5;
+        border-color: #6366f1;
     }
 }
 
 .loading-state {
     text-align: center;
-    padding: 4rem 2rem;
+    padding: 2rem 1rem;
 
     .spinner {
-        width: 3rem;
-        height: 3rem;
-        border: 4px solid #e5e7eb;
-        border-top-color: #4f46e5;
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #e5e7eb;
+        border-top-color: #6366f1;
         border-radius: 50%;
         animation: spin 1s linear infinite;
-        margin: 0 auto 1rem;
+        margin: 0 auto 0.75rem;
     }
 
     p {
         color: #6b7280;
         margin: 0;
+        font-size: 0.875rem;
     }
 }
 
@@ -459,46 +465,46 @@ export default {
 
 .empty-state {
     text-align: center;
-    padding: 4rem 2rem;
+    padding: 2rem 1rem;
     color: #6b7280;
 
     .empty-icon {
-        width: 4rem;
-        height: 4rem;
-        margin: 0 auto 1rem;
+        width: 3rem;
+        height: 3rem;
+        margin: 0 auto 0.75rem;
         opacity: 0.4;
         color: #9ca3af;
     }
 
     h3 {
-        font-size: 1.25rem;
+        font-size: 1rem;
         font-weight: 600;
-        color: #1f2937;
-        margin: 0 0 0.5rem 0;
+        color: #111827;
+        margin: 0 0 0.375rem 0;
     }
 
     p {
         margin: 0;
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
     }
 }
 
 .logs-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .log-card {
     background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.75rem;
-    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.875rem;
     transition: all 0.2s;
 
     &:hover {
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border-color: #cbd5e1;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border-color: #d1d5db;
     }
 }
 
@@ -506,80 +512,87 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .log-date-section {
     flex: 1;
+    min-width: 0;
 }
 
 .log-date {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.125rem;
+    gap: 0.375rem;
+    font-size: 0.9375rem;
     font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 0.75rem;
+    color: #111827;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
 
     .date-icon {
-        width: 1.25rem;
-        height: 1.25rem;
-        color: #4f46e5;
+        width: 1rem;
+        height: 1rem;
+        color: #6366f1;
+        flex-shrink: 0;
     }
 }
 
 .log-stats {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
 .stat-badge {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
     background: #f3f4f6;
-    border-radius: 9999px;
-    font-size: 0.875rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
     font-weight: 500;
     color: #6b7280;
+    line-height: 1.3;
 
     .stat-icon {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
+        flex-shrink: 0;
     }
 }
 
 .log-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.375rem;
+    flex-shrink: 0;
 }
 
 .expand-btn,
 .export-btn {
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 2px solid #e5e7eb;
+    width: 1.875rem;
+    height: 1.875rem;
+    border: 1px solid #d1d5db;
     background: white;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
     color: #6b7280;
+    padding: 0;
 
     svg {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
     }
 
     &:hover {
-        border-color: #4f46e5;
-        color: #4f46e5;
-        background: #eef2ff;
+        border-color: #6366f1;
+        color: #6366f1;
+        background: #f9fafb;
     }
 }
 
@@ -592,47 +605,48 @@ export default {
 }
 
 .log-details {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 2px solid #e5e7eb;
+    margin-top: 0.875rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid #e5e7eb;
 }
 
 .log-notes {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.875rem;
 }
 
 .notes-title,
 .tasks-title {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 600;
-    color: #1f2937;
-    margin: 0 0 0.75rem 0;
+    color: #111827;
+    margin: 0 0 0.5rem 0;
 }
 
 .notes-content {
-    padding: 1rem;
+    padding: 0.625rem 0.75rem;
     background: #f9fafb;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     color: #374151;
-    line-height: 1.6;
+    line-height: 1.5;
     margin: 0;
+    font-size: 0.8125rem;
 }
 
 .log-tasks {
-    margin-top: 1.5rem;
+    margin-top: 0.875rem;
 }
 
 .tasks-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .task-item {
-    padding: 1rem;
+    padding: 0.625rem 0.75rem;
     background: #f9fafb;
-    border-radius: 0.5rem;
-    border-left: 4px solid #e5e7eb;
+    border-radius: 0.375rem;
+    border-left: 3px solid #e5e7eb;
 
     &.task-completed {
         border-left-color: #10b981;
@@ -654,22 +668,27 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
-    gap: 1rem;
+    margin-bottom: 0.375rem;
+    gap: 0.5rem;
 }
 
 .task-title {
     font-weight: 600;
-    color: #1f2937;
+    color: #111827;
     flex: 1;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    min-width: 0;
 }
 
 .task-status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
 
     &.badge-completed {
         background: #d1fae5;
@@ -689,9 +708,9 @@ export default {
 
 .task-meta {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #6b7280;
 }
 
@@ -699,10 +718,12 @@ export default {
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    line-height: 1.3;
 
     .meta-icon {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
+        flex-shrink: 0;
     }
 
     &.note {
@@ -714,26 +735,28 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding: 1.5rem;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding: 0.75rem;
     background: #f9fafb;
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
 }
 
 .page-btn {
-    padding: 0.625rem 1.25rem;
+    padding: 0.5rem 0.875rem;
     background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
     font-weight: 500;
+    font-size: 0.8125rem;
     color: #374151;
     cursor: pointer;
     transition: all 0.2s;
 
     &:hover:not(:disabled) {
-        border-color: #4f46e5;
-        color: #4f46e5;
+        border-color: #6366f1;
+        color: #6366f1;
+        background: #f9fafb;
     }
 
     &:disabled {
@@ -744,21 +767,28 @@ export default {
 
 .page-info {
     font-weight: 500;
+    font-size: 0.8125rem;
     color: #6b7280;
 }
 
 @media (max-width: 768px) {
     .history-filters {
-        padding: 1rem;
+        padding: 0.75rem;
     }
 
     .date-range-picker {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.5rem;
     }
 
     .log-header {
         flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .log-actions {
+        align-self: flex-end;
     }
 }
 </style>

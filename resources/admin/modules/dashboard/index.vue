@@ -49,7 +49,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                    </div>
+        </div>
                     <div class="stat-content">
                         <div class="stat-value">{{ todayLog.tasks.length }}</div>
                         <div class="stat-label">Tasks Today</div>
@@ -220,10 +220,6 @@
 
             <!-- History View -->
             <div v-if="currentView === 'history'" class="history-view">
-                <div class="view-header">
-                    <h2 class="view-title">Log History</h2>
-                    <p class="view-subtitle">View and analyze your past daily logs</p>
-                </div>
                 <LogHistory />
             </div>
         </div>
@@ -632,7 +628,7 @@ export default {
     }
 
     &.active {
-        background: white;
+    background: white;
         color: #6366f1;
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         font-weight: 600;
@@ -690,8 +686,8 @@ export default {
         min-width: 0;
 
         .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 700;
             line-height: 1.2;
             margin-bottom: 0.25rem;
         }
@@ -1216,10 +1212,10 @@ export default {
 }
 
 // Empty State
-.empty-state {
-    text-align: center;
+    .empty-state {
+        text-align: center;
     padding: 3rem 1.5rem;
-    color: #6b7280;
+        color: #6b7280;
 
     .empty-icon {
         width: 3rem;
@@ -1230,7 +1226,7 @@ export default {
     }
 
     .empty-text {
-        margin: 0;
+            margin: 0;
         font-size: 0.875rem;
     }
 }
@@ -1238,29 +1234,10 @@ export default {
 // History View
 .history-view {
     background: white;
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-}
-
-.view-header {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-
-    .view-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #111827;
-        margin: 0 0 0.25rem 0;
-    }
-
-    .view-subtitle {
-        font-size: 0.875rem;
-        color: #6b7280;
-            margin: 0;
-    }
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 0.875rem;
 }
 
 // Responsive Design
