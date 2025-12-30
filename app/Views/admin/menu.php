@@ -102,11 +102,11 @@
             const linkText = link.textContent.trim().toLowerCase();
             let route = '/';
             
-            if (linkText.includes('project manager') || linkText.includes('pm')) {
+            if (linkText.includes('admin report') || linkText.includes('pm')) {
                 route = '/pm';
             } else if (linkText.includes('roles') || linkText.includes('role')) {
                 route = '/roles';
-            } else if (linkText.includes('review tasks') || linkText.includes('review')) {
+            } else if (linkText.includes('submissions') || linkText.includes('submissions')) {
                 route = '/review';
             } else if (linkText.includes('developers') || linkText.includes('dashboard')) {
                 route = '/';
@@ -142,7 +142,7 @@
                 // Fallback: determine route from link text if no hash
                 if (route === '/' && !hashMatch) {
                     const linkText = this.textContent.trim().toLowerCase();
-                    if (linkText.includes('project manager') || linkText.includes('pm')) {
+                    if (linkText.includes('admin report') || linkText.includes('pm')) {
                         route = '/pm';
                     } else if (linkText.includes('roles') || linkText.includes('role')) {
                         route = '/roles';

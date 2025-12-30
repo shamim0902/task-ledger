@@ -72,7 +72,9 @@ export default {
                     this.$get('user-roles/all'),
                 ]);
 
-                this.roles = rolesData.all ? rolesData.all() : rolesData;
+                const allRoles = rolesData.all ? rolesData.all() : rolesData;
+                // Filter out Member role from the list
+                this.roles = allRoles.filter(role => role.slug !== 'member');
                 this.users = usersData.all ? usersData.all() : usersData;
             } catch (error) {
                 console.error('Error loading data:', error);

@@ -21,21 +21,48 @@ class ReviewController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Manager only
-        if (!PermissionService::isManager($userId)) {
+        // Admin and Manager only
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $this->sendError('You do not have permission to review tasks', 403);
         }
 
-        // Manager can only review assigned members
-        // Get member IDs directly from ManagerMember table, then fetch users
-        $memberIds = ManagerMember::where('manager_id', $userId)
-            ->pluck('member_id')
-            ->toArray();
+        $isAdmin = PermissionService::isAdmin($userId);
+        $isManager = PermissionService::isManager($userId);
         
-        if (empty($memberIds)) {
-            $members = collect();
+        if ($isAdmin) {
+            // Admin can review all members
+            $memberRole = Role::where('slug', 'member')->first();
+            if ($memberRole) {
+                $userIds = UserRoleProject::where('role_id', $memberRole->id)
+                    ->pluck('user_id')
+                    ->toArray();
+                $members = User::whereIn('ID', $userIds)->get();
+            } else {
+                $members = collect();
+            }
+            
+            // If admin has no members from role, but is also a manager, fall back to assigned members
+            if ($members->isEmpty() && $isManager) {
+                $memberIds = ManagerMember::where('manager_id', $userId)
+                    ->pluck('member_id')
+                    ->toArray();
+                
+                if (!empty($memberIds)) {
+                    $members = User::whereIn('ID', $memberIds)->get();
+                }
+            }
         } else {
-            $members = User::whereIn('ID', $memberIds)->get();
+            // Manager can only review assigned members
+            // Get member IDs directly from ManagerMember table, then fetch users
+            $memberIds = ManagerMember::where('manager_id', $userId)
+                ->pluck('member_id')
+                ->toArray();
+            
+            if (empty($memberIds)) {
+                $members = collect();
+            } else {
+                $members = User::whereIn('ID', $memberIds)->get();
+            }
         }
 
         // Get unread submission counts for each member
@@ -66,8 +93,8 @@ class ReviewController extends Controller
     public function getSubmissions(Request $request)
     {
         $userId = get_current_user_id();
-        // Manager only
-        if (!PermissionService::isManager($userId)) {
+        // Admin and Manager only
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $this->sendError('You do not have permission to review tasks', 403);
         }
 
@@ -78,11 +105,35 @@ class ReviewController extends Controller
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 20);
 
-        // Manager can only review assigned members
-        // Get member IDs directly from ManagerMember table
-        $reviewableMemberIds = ManagerMember::where('manager_id', $userId)
-            ->pluck('member_id')
-            ->toArray();
+        // Get reviewable member IDs
+        $isAdmin = PermissionService::isAdmin($userId);
+        $isManager = PermissionService::isManager($userId);
+        
+        if ($isAdmin) {
+            // Admin can review all members
+            $memberRole = Role::where('slug', 'member')->first();
+            if ($memberRole) {
+                $reviewableMemberIds = UserRoleProject::where('role_id', $memberRole->id)
+                    ->pluck('user_id')
+                    ->toArray();
+            } else {
+                $reviewableMemberIds = [];
+            }
+            
+            // If admin has no members from role, but is also a manager, fall back to assigned members
+            if (empty($reviewableMemberIds) && $isManager) {
+                $reviewableMemberIds = ManagerMember::where('manager_id', $userId)
+                    ->pluck('member_id')
+                    ->toArray();
+            }
+        } else {
+            // Manager can only review assigned members
+            // Get member IDs directly from ManagerMember table
+            $reviewableMemberIds = ManagerMember::where('manager_id', $userId)
+                ->pluck('member_id')
+                ->toArray();
+            
+        }
 
         // If no reviewable members, return empty result
         if (empty($reviewableMemberIds)) {
@@ -100,6 +151,7 @@ class ReviewController extends Controller
             ->whereIn('user_id', $reviewableMemberIds)
             ->orderBy('log_date', 'desc')
             ->orderBy('created_at', 'desc');
+        
 
         // Filter by member (verify member is in reviewable list)
         if ($memberId) {
@@ -135,6 +187,7 @@ class ReviewController extends Controller
         $logs = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
+        
 
         // Format response
         $submissions = $logs->map(function($log) {
@@ -174,17 +227,22 @@ class ReviewController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Manager only
-        if (!PermissionService::isManager($userId)) {
+        // Admin and Manager only
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $this->sendError('You do not have permission to review tasks', 403);
         }
 
         $log = Log::with(['user', 'logItems'])->findOrFail($logId);
 
-        // Manager can only review assigned members
-        $canReview = PermissionService::canManageUser($userId, $log->user_id);
-        if (!$canReview) {
-            return $this->sendError('You do not have permission to review this submission', 403);
+        // Check if user can review this member
+        if (PermissionService::isAdmin($userId)) {
+            // Admin can review all
+        } else {
+            // Manager can only review assigned members
+            $canReview = PermissionService::canManageUser($userId, $log->user_id);
+            if (!$canReview) {
+                return $this->sendError('You do not have permission to review this submission', 403);
+            }
         }
 
         // Get task details for each log item
@@ -230,22 +288,27 @@ class ReviewController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Manager only
-        if (!PermissionService::isManager($userId)) {
+        // Admin and Manager only
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $this->sendError('You do not have permission to review tasks', 403);
         }
 
         $log = Log::findOrFail($logId);
 
-        // Manager can only review assigned members
-        $canReview = PermissionService::canManageUser($userId, $log->user_id);
-        if (!$canReview) {
-            return $this->sendError('You do not have permission to review this submission', 403);
+        // Check if user can review this member
+        if (PermissionService::isAdmin($userId)) {
+            // Admin can review all
+        } else {
+            // Manager can only review assigned members
+            $canReview = PermissionService::canManageUser($userId, $log->user_id);
+            if (!$canReview) {
+                return $this->sendError('You do not have permission to review this submission', 403);
+            }
         }
 
         $log->update([
             'reviewed' => true,
-            'reviewed_at' => now(),
+            'reviewed_at' => current_time('mysql'),
             'reviewed_by' => $userId,
         ]);
 
@@ -262,23 +325,28 @@ class ReviewController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Manager only
-        if (!PermissionService::isManager($userId)) {
+        // Admin and Manager only
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $this->sendError('You do not have permission to review tasks', 403);
         }
 
         $logItem = LogItem::with('log')->findOrFail($logItemId);
         $log = $logItem->log;
 
-        // Manager can only review assigned members
-        $canReview = PermissionService::canManageUser($userId, $log->user_id);
-        if (!$canReview) {
-            return $this->sendError('You do not have permission to review this task', 403);
+        // Check if user can review this member
+        if (PermissionService::isAdmin($userId)) {
+            // Admin can review all
+        } else {
+            // Manager can only review assigned members
+            $canReview = PermissionService::canManageUser($userId, $log->user_id);
+            if (!$canReview) {
+                return $this->sendError('You do not have permission to review this task', 403);
+            }
         }
 
         $logItem->update([
             'reviewed' => true,
-            'reviewed_at' => now(),
+            'reviewed_at' => current_time('mysql'),
             'reviewed_by' => $userId,
         ]);
 
@@ -290,7 +358,7 @@ class ReviewController extends Controller
         if ($allReviewed) {
             $log->update([
                 'reviewed' => true,
-                'reviewed_at' => now(),
+                'reviewed_at' => current_time('mysql'),
                 'reviewed_by' => $userId,
             ]);
         }
@@ -309,8 +377,8 @@ class ReviewController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Manager only
-        if (!PermissionService::isManager($userId)) {
+        // Admin and Manager only
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $this->sendError('You do not have permission to review tasks', 403);
         }
 
@@ -330,15 +398,20 @@ class ReviewController extends Controller
             $logs = Log::whereIn('id', $logIds)->get();
             
             foreach ($logs as $log) {
-                // Manager can only review assigned members
-                $canReview = PermissionService::canManageUser($userId, $log->user_id);
-                if (!$canReview) {
-                    continue;
+                // Check if user can review this member
+                if (PermissionService::isAdmin($userId)) {
+                    // Admin can review all
+                } else {
+                    // Manager can only review assigned members
+                    $canReview = PermissionService::canManageUser($userId, $log->user_id);
+                    if (!$canReview) {
+                        continue;
+                    }
                 }
 
                 $log->update([
                     'reviewed' => true,
-                    'reviewed_at' => now(),
+                    'reviewed_at' => current_time('mysql'),
                     'reviewed_by' => $userId,
                 ]);
                 $reviewedLogs++;
@@ -352,15 +425,20 @@ class ReviewController extends Controller
             foreach ($logItems as $logItem) {
                 $log = $logItem->log;
                 
-                // Manager can only review assigned members
-                $canReview = PermissionService::canManageUser($userId, $log->user_id);
-                if (!$canReview) {
-                    continue;
+                // Check if user can review this member
+                if (PermissionService::isAdmin($userId)) {
+                    // Admin can review all
+                } else {
+                    // Manager can only review assigned members
+                    $canReview = PermissionService::canManageUser($userId, $log->user_id);
+                    if (!$canReview) {
+                        continue;
+                    }
                 }
 
                 $logItem->update([
                     'reviewed' => true,
-                    'reviewed_at' => now(),
+                    'reviewed_at' => current_time('mysql'),
                     'reviewed_by' => $userId,
                 ]);
                 $reviewedItems++;
@@ -373,7 +451,7 @@ class ReviewController extends Controller
                 if ($allReviewed) {
                     $log->update([
                         'reviewed' => true,
-                        'reviewed_at' => now(),
+                        'reviewed_at' => current_time('mysql'),
                         'reviewed_by' => $userId,
                     ]);
                 }

@@ -243,5 +243,33 @@ class UserRoleController extends Controller
 
         return $result;
     }
+
+    /**
+     * Get all manager-member assignments (for hierarchy display)
+     */
+    public function getAllAssignments()
+    {
+        $assignments = ManagerMember::with(['manager', 'member'])->get();
+        
+        return $assignments->map(function($assignment) {
+            return [
+                'id' => $assignment->id,
+                'manager_id' => $assignment->manager_id,
+                'member_id' => $assignment->member_id,
+                'manager' => [
+                    'ID' => $assignment->manager->ID,
+                    'display_name' => $assignment->manager->display_name,
+                    'user_nicename' => $assignment->manager->user_nicename,
+                    'user_email' => $assignment->manager->user_email,
+                ],
+                'member' => [
+                    'ID' => $assignment->member->ID,
+                    'display_name' => $assignment->member->display_name,
+                    'user_nicename' => $assignment->member->user_nicename,
+                    'user_email' => $assignment->member->user_email,
+                ],
+            ];
+        });
+    }
 }
 

@@ -11,7 +11,7 @@
                         </svg>
                     </div>
                     <div class="brand-text">
-                        <h1 class="brand-title">Project Manager</h1>
+                        <h1 class="brand-title">Admin report</h1>
                         <p class="brand-subtitle">Team Dashboard</p>
                     </div>
                 </div>

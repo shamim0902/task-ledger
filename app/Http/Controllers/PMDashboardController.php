@@ -20,8 +20,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Admin and Manager can view PM dashboard
-        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
+        // Admin only can view PM dashboard
+        if (!PermissionService::isAdmin($userId)) {
             return $request->abort(403, 'You do not have permission to view the PM Dashboard');
         }
 
@@ -196,8 +196,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Admin and Manager can view PM dashboard
-        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
+        // Admin only can view PM dashboard
+        if (!PermissionService::isAdmin($userId)) {
             return $request->abort(403, 'You do not have permission to view the PM Dashboard');
         }
 
@@ -270,8 +270,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Admin and Manager can view PM dashboard
-        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
+        // Admin only can view PM dashboard
+        if (!PermissionService::isAdmin($userId)) {
             return $request->abort(403, 'You do not have permission to view the PM Dashboard');
         }
 
@@ -545,8 +545,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Admin and Manager can view PM dashboard
-        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
+        // Admin only can view PM dashboard
+        if (!PermissionService::isAdmin($userId)) {
             return $request->abort(403, 'You do not have permission to view the PM Dashboard');
         }
 

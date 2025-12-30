@@ -55,6 +55,7 @@ $router->post('/user-roles/assign-member', 'UserRoleController@assignMember');
 $router->post('/user-roles/remove-member', 'UserRoleController@removeMember');
 $router->get('/user-roles/manager/{managerId}/members', 'UserRoleController@getManagedMembers');
 $router->get('/user-roles/member/{memberId}/manager', 'UserRoleController@getManager');
+$router->get('/user-roles/all-assignments', 'UserRoleController@getAllAssignments');
 
 // Projects routes (keep basic project listing, remove role management)
 $router->get('/projects', 'ProjectsController@index');

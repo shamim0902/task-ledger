@@ -5,6 +5,7 @@ namespace TaskLedger\App\Hooks\Handlers;
 use TaskLedger\App\App;
 use TaskLedger\App\Utils\Enqueuer\Enqueue;
 use TaskLedger\App\Models\Log;
+use TaskLedger\App\Services\PermissionService;
 
 class AdminMenuHandler
 {
@@ -80,15 +81,17 @@ class AdminMenuHandler
             [$this, 'render']
         );
 
-        // Project Manager submenu - use same slug but with hash routing
-        add_submenu_page(
-            $this->slug,
-            __('Project Manager', 'taskledger'),
-            __('Project Manager', 'taskledger'),
-            'manage_options',
-            $this->slug, // Use same slug to prevent page reload
-            [$this, 'render'] // Use same render method
-        );
+        // Admin report submenu - use same slug but with hash routing (Admin only)
+        if (PermissionService::isAdmin(get_current_user_id())) {
+            add_submenu_page(
+                $this->slug,
+                __('Admin report', 'taskledger'),
+                __('Admin report', 'taskledger'),
+                'manage_options',
+                $this->slug, // Use same slug to prevent page reload
+                [$this, 'render'] // Use same render method
+            );
+        }
 
         // Roles submenu
         add_submenu_page(
@@ -100,15 +103,17 @@ class AdminMenuHandler
             [$this, 'render'] // Use same render method
         );
 
-        // Review Tasks submenu
-        add_submenu_page(
-            $this->slug,
-            __('Review Tasks', 'taskledger'),
-            __('Review Tasks', 'taskledger'),
-            'manage_options',
-            $this->slug, // Use same slug to prevent page reload
-            [$this, 'render'] // Use same render method
-        );
+        // Submissions submenu (Admin and Manager only)
+        if (PermissionService::isAdmin(get_current_user_id()) || PermissionService::isManager(get_current_user_id())) {
+            add_submenu_page(
+                $this->slug,
+                __('Submissions', 'taskledger'),
+                __('Submissions', 'taskledger'),
+                'manage_options',
+                $this->slug, // Use same slug to prevent page reload
+                [$this, 'render'] // Use same render method
+            );
+        }
         
         // Filter submenu URLs to add hash fragments
         add_filter('submenu_file', [$this, 'filterSubmenuUrls'], 10, 2);

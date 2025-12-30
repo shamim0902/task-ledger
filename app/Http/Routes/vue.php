@@ -1,5 +1,7 @@
 <?php
 
+use TaskLedger\App\Services\PermissionService;
+
 // Define the main/primary menu bar
 $router->menu('primary', function($router) {
     $router->add('/', 'modules/dashboard')
@@ -12,7 +14,10 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
-    $router->add('/pm', 'modules/pm/PMDashboard')
+    // PM Dashboard - Admin only
+    $router->addIf('/pm', 'modules/pm/PMDashboard', function() {
+        return PermissionService::isAdmin(get_current_user_id());
+    })
         ->name('pm.dashboard')
         ->icon('DataAnalysis')
         ->title(__('PM Dashboard', 'taskledger'))
@@ -32,10 +37,13 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
-    $router->add('/review', 'modules/review/ReviewDashboard')
+    // Submissions - Admin and Manager only
+    $router->addIf('/review', 'modules/review/ReviewDashboard', function() {
+        return PermissionService::isAdmin(get_current_user_id()) || PermissionService::isManager(get_current_user_id());
+    })
         ->name('review')
         ->icon('DocumentChecked')
-        ->title(__('Review Tasks', 'taskledger'))
+        ->title(__('Submissions', 'taskledger'))
         ->props([
             'user'     => wp_get_current_user(),
             'isAdmin'  => current_user_can('manage_options'),

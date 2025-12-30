@@ -11,7 +11,7 @@
                         </svg>
                     </div>
                     <div class="brand-text">
-                        <h1 class="brand-title">Review Tasks</h1>
+                        <h1 class="brand-title">Submissions</h1>
                         <p class="brand-subtitle">Review submitted daily logs</p>
                     </div>
                 </div>
