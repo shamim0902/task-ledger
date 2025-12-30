@@ -4,72 +4,59 @@ namespace TaskLedger\App\Services;
 
 use TaskLedger\App\Models\Role;
 use TaskLedger\App\Models\UserRoleProject;
-use TaskLedger\App\Models\Permission;
+use TaskLedger\App\Models\ManagerMember;
 
 class PermissionService
 {
     /**
-     * Check if user has a specific permission
+     * Check if a manager can manage a target user
+     * Hierarchy: Admin can manage everyone, Manager can only manage assigned members, Member can't manage anyone
      *
-     * @param int $userId WordPress user ID
-     * @param string $permissionSlug Permission slug to check
-     * @param int|null $boardId Board ID for project-specific check (null for global)
+     * @param int $managerId WordPress user ID of the manager
+     * @param int $targetUserId WordPress user ID of the target user
      * @return bool
      */
-    public static function hasPermission($userId, $permissionSlug, $boardId = null)
+    public static function canManageUser($managerId, $targetUserId)
     {
-        // Admin always has all permissions
-        if (self::isAdmin($userId)) {
+        // Admin can manage everyone
+        if (self::isAdmin($managerId)) {
             return true;
         }
 
-        // Get user roles (global and board-specific)
-        $userRoles = self::getUserRoles($userId, $boardId);
-
-        if (empty($userRoles)) {
-            return false;
+        // Manager can only manage assigned members
+        if (self::isManager($managerId)) {
+            return self::hasAssignedMember($managerId, $targetUserId);
         }
 
-        // Get permission
-        $permission = Permission::where('slug', $permissionSlug)->first();
-        if (!$permission) {
-            return false;
-        }
-
-        // Check if any of the user's roles have this permission
-        foreach ($userRoles as $role) {
-            if ($role->permissions()->where('permission_id', $permission->id)->exists()) {
-                return true;
-            }
-        }
-
+        // Member can't manage anyone
         return false;
     }
 
     /**
-     * Get all roles for a user (global and board-specific)
+     * Check if a manager has a specific member assigned
+     *
+     * @param int $managerId WordPress user ID of the manager
+     * @param int $memberId WordPress user ID of the member
+     * @return bool
+     */
+    public static function hasAssignedMember($managerId, $memberId)
+    {
+        return ManagerMember::where('manager_id', $managerId)
+            ->where('member_id', $memberId)
+            ->exists();
+    }
+
+    /**
+     * Get all roles for a user
      *
      * @param int $userId WordPress user ID
-     * @param int|null $boardId Board ID (null for global roles only)
      * @return \Illuminate\Support\Collection
      */
-    public static function getUserRoles($userId, $boardId = null)
+    public static function getUserRoles($userId)
     {
-        $query = UserRoleProject::where('user_id', $userId)
-            ->with('role.permissions');
-
-        if ($boardId === null) {
-            // Get only global roles
-            $query->whereNull('board_id');
-        } else {
-            // Get both global and board-specific roles
-            $query->where(function($q) use ($boardId) {
-                $q->whereNull('board_id')
-                  ->orWhere('board_id', $boardId);
-            });
-        }
-
-        $userRoleProjects = $query->get();
+        $userRoleProjects = UserRoleProject::where('user_id', $userId)
+            ->with('role')
+            ->get();
         
         return $userRoleProjects->map(function($urp) {
             return $urp->role;
@@ -78,6 +65,7 @@ class PermissionService
 
     /**
      * Check if user can access a specific board
+     * For now, all users with roles can access all boards
      *
      * @param int $userId WordPress user ID
      * @param int $boardId Board ID
@@ -90,15 +78,8 @@ class PermissionService
             return true;
         }
 
-        // Check if user has any role for this board (global or board-specific)
-        $hasRole = UserRoleProject::where('user_id', $userId)
-            ->where(function($query) use ($boardId) {
-                $query->whereNull('board_id')
-                      ->orWhere('board_id', $boardId);
-            })
-            ->exists();
-
-        return $hasRole;
+        // If user has any role, they can access boards
+        return UserRoleProject::where('user_id', $userId)->exists();
     }
 
     /**
@@ -111,33 +92,20 @@ class PermissionService
     {
         // Admin has access to all boards
         if (self::isAdmin($userId)) {
-            // Return all board IDs from Fluent Boards
             if (class_exists('\FluentBoards\App\Models\Board')) {
                 return \FluentBoards\App\Models\Board::pluck('id')->toArray();
             }
             return [];
         }
 
-        // Get boards from user role assignments
-        $boardIds = UserRoleProject::where('user_id', $userId)
-            ->whereNotNull('board_id')
-            ->distinct()
-            ->pluck('board_id')
-            ->toArray();
-
-        // If user has global roles, they have access to all boards
-        $hasGlobalRole = UserRoleProject::where('user_id', $userId)
-            ->whereNull('board_id')
-            ->exists();
-
-        if ($hasGlobalRole) {
-            // Return all board IDs
+        // All users with roles have access to all boards
+        if (UserRoleProject::where('user_id', $userId)->exists()) {
             if (class_exists('\FluentBoards\App\Models\Board')) {
                 return \FluentBoards\App\Models\Board::pluck('id')->toArray();
             }
         }
 
-        return $boardIds;
+        return [];
     }
 
     /**
@@ -162,118 +130,125 @@ class PermissionService
      * Check if user is Manager
      *
      * @param int $userId WordPress user ID
-     * @param int|null $boardId Board ID (null for global check)
      * @return bool
      */
-    public static function isManager($userId, $boardId = null)
+    public static function isManager($userId)
     {
         $managerRole = Role::where('slug', 'manager')->first();
         if (!$managerRole) {
             return false;
         }
 
-        $query = UserRoleProject::where('user_id', $userId)
-            ->where('role_id', $managerRole->id);
-
-        if ($boardId !== null) {
-            $query->where(function($q) use ($boardId) {
-                $q->whereNull('board_id')
-                  ->orWhere('board_id', $boardId);
-            });
-        }
-
-        return $query->exists();
+        return UserRoleProject::where('user_id', $userId)
+            ->where('role_id', $managerRole->id)
+            ->exists();
     }
 
     /**
      * Check if user is Member
      *
      * @param int $userId WordPress user ID
-     * @param int|null $boardId Board ID (null for global check)
      * @return bool
      */
-    public static function isMember($userId, $boardId = null)
+    public static function isMember($userId)
     {
         $memberRole = Role::where('slug', 'member')->first();
         if (!$memberRole) {
             return false;
         }
 
-        $query = UserRoleProject::where('user_id', $userId)
-            ->where('role_id', $memberRole->id);
-
-        if ($boardId !== null) {
-            $query->where(function($q) use ($boardId) {
-                $q->whereNull('board_id')
-                  ->orWhere('board_id', $boardId);
-            });
-        }
-
-        return $query->exists();
+        return UserRoleProject::where('user_id', $userId)
+            ->where('role_id', $memberRole->id)
+            ->exists();
     }
 
     /**
-     * Assign role to user for a board
+     * Get all members assigned to a manager
+     *
+     * @param int $managerId WordPress user ID of the manager
+     * @return \Illuminate\Support\Collection
+     */
+    public static function getManagedMembers($managerId)
+    {
+        return ManagerMember::where('manager_id', $managerId)
+            ->with('member')
+            ->get()
+            ->map(function($mm) {
+                return $mm->member;
+            });
+    }
+
+    /**
+     * Get the manager for a member
+     *
+     * @param int $memberId WordPress user ID of the member
+     * @return \TaskLedger\App\Models\User|null
+     */
+    public static function getManager($memberId)
+    {
+        $managerMember = ManagerMember::where('member_id', $memberId)
+            ->with('manager')
+            ->first();
+
+        return $managerMember ? $managerMember->manager : null;
+    }
+
+    /**
+     * Assign role to user (global only, no board)
      *
      * @param int $userId WordPress user ID
      * @param int $roleId Role ID
-     * @param int|null $boardId Board ID (null for global role)
      * @return UserRoleProject
      */
-    public static function assignRole($userId, $roleId, $boardId = null)
+    public static function assignRole($userId, $roleId)
     {
         return UserRoleProject::firstOrCreate([
             'user_id' => $userId,
             'role_id' => $roleId,
-            'board_id' => $boardId,
         ]);
     }
 
     /**
-     * Remove role from user for a board
+     * Remove role from user
      *
      * @param int $userId WordPress user ID
      * @param int $roleId Role ID
-     * @param int|null $boardId Board ID (null for global role)
      * @return bool
      */
-    public static function removeRole($userId, $roleId, $boardId = null)
+    public static function removeRole($userId, $roleId)
     {
-        $query = UserRoleProject::where('user_id', $userId)
-            ->where('role_id', $roleId);
-
-        if ($boardId === null) {
-            $query->whereNull('board_id');
-        } else {
-            $query->where('board_id', $boardId);
-        }
-
-        return $query->delete();
+        return UserRoleProject::where('user_id', $userId)
+            ->where('role_id', $roleId)
+            ->delete();
     }
 
     /**
-     * Get all permissions for a user (across all their roles)
+     * Assign a member to a manager
      *
-     * @param int $userId WordPress user ID
-     * @param int|null $boardId Board ID (null for global)
-     * @return \Illuminate\Support\Collection
+     * @param int $managerId WordPress user ID of the manager
+     * @param int $memberId WordPress user ID of the member
+     * @return ManagerMember
      */
-    public static function getUserPermissions($userId, $boardId = null)
+    public static function assignMember($managerId, $memberId)
     {
-        // Admin has all permissions
-        if (self::isAdmin($userId)) {
-            return Permission::all();
-        }
+        return ManagerMember::firstOrCreate([
+            'manager_id' => $managerId,
+            'member_id' => $memberId,
+        ]);
+    }
 
-        $roles = self::getUserRoles($userId, $boardId);
-        $permissionIds = [];
-
-        foreach ($roles as $role) {
-            $rolePermissions = $role->permissions()->pluck('permission_id')->toArray();
-            $permissionIds = array_merge($permissionIds, $rolePermissions);
-        }
-
-        return Permission::whereIn('id', array_unique($permissionIds))->get();
+    /**
+     * Remove a member from a manager
+     *
+     * @param int $managerId WordPress user ID of the manager
+     * @param int $memberId WordPress user ID of the member
+     * @return bool
+     */
+    public static function removeMember($managerId, $memberId)
+    {
+        return ManagerMember::where('manager_id', $managerId)
+            ->where('member_id', $memberId)
+            ->delete();
     }
 }
 

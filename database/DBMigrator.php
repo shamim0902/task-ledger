@@ -15,6 +15,7 @@ use TaskLedger\Database\Migrations\RolesMigrator;
 use TaskLedger\Database\Migrations\PermissionsMigrator;
 use TaskLedger\Database\Migrations\RolePermissionsMigrator;
 use TaskLedger\Database\Migrations\UserRoleProjectsMigrator;
+use TaskLedger\Database\Migrations\ManagerMembersMigrator;
 
 class DBMigrator
 {
@@ -26,10 +27,11 @@ class DBMigrator
         'TaskLedger\\Database\\Migrations\\TaskActivityMigrator',
         'TaskLedger\\Database\\Migrations\\TaskMetaMigrator',
         'TaskLedger\\Database\\Migrations\\MetaMigrator',
-        'TaskLedger\\Database\\Migrations\\RolesMigrator',
-        'TaskLedger\\Database\\Migrations\\PermissionsMigrator',
-        'TaskLedger\\Database\\Migrations\\RolePermissionsMigrator',
-        'TaskLedger\\Database\\Migrations\\UserRoleProjectsMigrator',
+                'TaskLedger\\Database\\Migrations\\RolesMigrator',
+                'TaskLedger\\Database\\Migrations\\PermissionsMigrator',
+                'TaskLedger\\Database\\Migrations\\RolePermissionsMigrator',
+                'TaskLedger\\Database\\Migrations\\UserRoleProjectsMigrator',
+                'TaskLedger\\Database\\Migrations\\ManagerMembersMigrator',
     ];
 
     public static function migrateUp($network_wide = false)

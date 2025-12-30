@@ -13,7 +13,6 @@ class UserRoleProject extends Model
     protected $fillable = [
         'user_id',
         'role_id',
-        'board_id',
     ];
 
     /**
@@ -33,35 +32,11 @@ class UserRoleProject extends Model
     }
 
     /**
-     * Check if this is a global role (not board-specific)
-     */
-    public function isGlobal()
-    {
-        return $this->board_id === null;
-    }
-
-    /**
      * Scope to filter by user
      */
     public function scopeForUser($query, $userId)
     {
         return $query->where('user_id', $userId);
-    }
-
-    /**
-     * Scope to filter by board
-     */
-    public function scopeForBoard($query, $boardId)
-    {
-        return $query->where('board_id', $boardId);
-    }
-
-    /**
-     * Scope to filter global roles
-     */
-    public function scopeGlobal($query)
-    {
-        return $query->whereNull('board_id');
     }
 }
 

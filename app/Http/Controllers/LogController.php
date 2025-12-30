@@ -19,12 +19,7 @@ class LogController extends Controller
         $current_user = wp_get_current_user();
         $user_id = $current_user->ID;
         
-        // Check permission to create daily log
-        if (!PermissionService::hasPermission($user_id, 'create_daily_log')) {
-            return Response::json([
-                'message' => 'You do not have permission to create daily logs',
-            ], 403);
-        }
+        // All users can create daily logs - no permission check needed
 
         $data = $request->all();
         $today = date('Y-m-d');
@@ -97,16 +92,13 @@ class LogController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Check permission to view logs
-        if (PermissionService::hasPermission($userId, 'view_all_logs')) {
-            // User can view all logs
+        // Admin can view all logs, others can only view their own
+        if (PermissionService::isAdmin($userId)) {
             return Log::all();
-        } else if (PermissionService::hasPermission($userId, 'view_own_logs')) {
-            // User can only view own logs
-            return Log::where('user_id', $userId)->get();
         }
         
-        return $request->abort(403, 'You do not have permission to view logs');
+        // All other users can view their own logs
+        return Log::where('user_id', $userId)->get();
     }
 
     public function getTodayLogs()

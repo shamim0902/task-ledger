@@ -20,8 +20,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Check permission to view PM dashboard
-        if (!PermissionService::hasPermission($userId, 'view_pm_dashboard')) {
+        // Admin and Manager can view PM dashboard
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $request->abort(403, 'You do not have permission to view the PM Dashboard');
         }
 
@@ -196,8 +196,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Check permission to view PM dashboard
-        if (!PermissionService::hasPermission($userId, 'view_pm_dashboard')) {
+        // Admin and Manager can view PM dashboard
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $request->abort(403, 'You do not have permission to view the PM Dashboard');
         }
 
@@ -270,8 +270,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Check permission to view PM dashboard
-        if (!PermissionService::hasPermission($userId, 'view_pm_dashboard')) {
+        // Admin and Manager can view PM dashboard
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $request->abort(403, 'You do not have permission to view the PM Dashboard');
         }
 
@@ -473,8 +473,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Check permission to view tasks
-        if (!PermissionService::hasPermission($userId, 'view_all_tasks')) {
+        // Admin and Manager can view tasks
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $request->abort(403, 'You do not have permission to view tasks');
         }
 
@@ -545,8 +545,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Check permission to view PM dashboard
-        if (!PermissionService::hasPermission($userId, 'view_pm_dashboard')) {
+        // Admin and Manager can view PM dashboard
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $request->abort(403, 'You do not have permission to view the PM Dashboard');
         }
 
@@ -607,8 +607,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Check permission to view members
-        if (!PermissionService::hasPermission($userId, 'view_members')) {
+        // Admin and Manager can view members
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             if ($request) {
                 return $request->abort(403, 'You do not have permission to view team members');
             }
@@ -635,14 +635,13 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Check permission to view boards
-        if (!PermissionService::hasPermission($userId, 'view_assigned_boards') && 
-            !PermissionService::hasPermission($userId, 'view_all_boards')) {
+        // Admin and Manager can view boards
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return [];
         }
 
         // Get boards accessible to the current user
-        if (PermissionService::isAdmin($userId) || PermissionService::hasPermission($userId, 'view_all_boards')) {
+        if (PermissionService::isAdmin($userId)) {
             // Admin or user with view_all_boards permission can see all boards
             $boards = Board::whereNull('archived_at')
                 ->orderBy('title', 'asc')
@@ -672,8 +671,8 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
-        // Check permission to manage members
-        if (!PermissionService::hasPermission($userId, 'manage_members')) {
+        // Admin and Manager can manage members
+        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
             return $request->abort(403, 'You do not have permission to send reminders');
         }
 

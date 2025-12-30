@@ -106,8 +106,6 @@
                 route = '/pm';
             } else if (linkText.includes('roles') || linkText.includes('role')) {
                 route = '/roles';
-            } else if (linkText.includes('projects') || linkText.includes('project')) {
-                route = '/projects';
             } else if (linkText.includes('developers') || linkText.includes('dashboard')) {
                 route = '/';
             }
@@ -146,8 +144,6 @@
                         route = '/pm';
                     } else if (linkText.includes('roles') || linkText.includes('role')) {
                         route = '/roles';
-                    } else if (linkText.includes('projects') || linkText.includes('project')) {
-                        route = '/projects';
                     }
                 }
                 

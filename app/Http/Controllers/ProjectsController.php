@@ -166,20 +166,9 @@ class ProjectsController extends Controller
             return $this->sendError('Board not found', 404);
         }
 
-        // Get all role assignments for this board
-        $assignments = \TaskLedger\App\Models\UserRoleProject::where('board_id', $id)
-            ->with(['role', 'user'])
-            ->get()
-            ->map(function($assignment) {
-                return [
-                    'id' => $assignment->id,
-                    'user_id' => $assignment->user_id,
-                    'role_id' => $assignment->role_id,
-                    'board_id' => $assignment->board_id,
-                    'role' => $assignment->role,
-                    'user' => $assignment->user,
-                ];
-            });
+        // Roles are now global, not board-specific
+        // Return empty assignments since roles are no longer tied to boards
+        $assignments = [];
 
         // Get all available roles
         $roles = \TaskLedger\App\Models\Role::all();

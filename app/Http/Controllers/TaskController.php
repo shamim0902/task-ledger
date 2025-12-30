@@ -63,11 +63,7 @@ class TaskController extends Controller
     {
         $currentUser = (int) wp_get_current_user()->ID;
         
-        // Check permission to create tasks
-        if (!PermissionService::hasPermission($currentUser, 'create_task') && 
-            !PermissionService::hasPermission($currentUser, 'manage_tasks')) {
-            return $request->abort(403, 'You do not have permission to create tasks');
-        }
+        // All users can create subtasks - no permission check needed
 
         $data = $request->all();
         $taskId = $data['task_id'];

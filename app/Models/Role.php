@@ -22,19 +22,6 @@ class Role extends Model
     ];
 
     /**
-     * Get permissions for this role
-     */
-    public function permissions()
-    {
-        return $this->belongsToMany(
-            Permission::class,
-            'task_ledger_role_permissions',
-            'role_id',
-            'permission_id'
-        );
-    }
-
-    /**
      * Get users with this role
      */
     public function users()
@@ -44,7 +31,7 @@ class Role extends Model
             'task_ledger_user_role_projects',
             'role_id',
             'user_id'
-        )->withPivot('board_id');
+        );
     }
 
     /**

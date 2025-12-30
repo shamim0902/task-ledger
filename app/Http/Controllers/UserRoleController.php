@@ -7,11 +7,12 @@ use TaskLedger\App\Models\Role;
 use TaskLedger\App\Models\UserRoleProject;
 use TaskLedger\App\Services\PermissionService;
 use TaskLedger\Framework\Http\Request\Request;
+use TaskLedger\App\Models\ManagerMember;
 
 class UserRoleController extends Controller
 {
     /**
-     * Get roles for a user (with board assignments)
+     * Get roles for a user
      */
     public function getUserRoles($userId)
     {
@@ -26,8 +27,6 @@ class UserRoleController extends Controller
             $roles[] = [
                 'id' => $urp->id,
                 'role' => $urp->role,
-                'board_id' => $urp->board_id,
-                'is_global' => $urp->isGlobal(),
             ];
         }
 
@@ -38,30 +37,21 @@ class UserRoleController extends Controller
     }
 
     /**
-     * Assign role to user for a board
+     * Assign role to user (global only)
      */
     public function assignRole(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,ID',
             'role_id' => 'required|exists:task_ledger_roles,id',
-            'board_id' => 'nullable|integer',
         ]);
 
         $userId = $request->get('user_id');
         $roleId = $request->get('role_id');
-        $boardId = $request->get('board_id');
 
         // Check if assignment already exists
         $existing = UserRoleProject::where('user_id', $userId)
             ->where('role_id', $roleId)
-            ->where(function($query) use ($boardId) {
-                if ($boardId === null) {
-                    $query->whereNull('board_id');
-                } else {
-                    $query->where('board_id', $boardId);
-                }
-            })
             ->first();
 
         if ($existing) {
@@ -71,7 +61,7 @@ class UserRoleController extends Controller
             ];
         }
 
-        $assignment = PermissionService::assignRole($userId, $roleId, $boardId);
+        $assignment = PermissionService::assignRole($userId, $roleId);
 
         return [
             'assignment' => $assignment->load(['role', 'user']),
@@ -80,19 +70,17 @@ class UserRoleController extends Controller
     }
 
     /**
-     * Remove role from user for a board
+     * Remove role from user
      */
     public function removeRole(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,ID',
             'role_id' => 'required|exists:task_ledger_roles,id',
-            'board_id' => 'nullable|integer',
         ]);
 
         $userId = $request->get('user_id');
         $roleId = $request->get('role_id');
-        $boardId = $request->get('board_id');
 
         // Check if user is trying to remove their own admin role (prevent)
         $role = Role::find($roleId);
@@ -102,7 +90,7 @@ class UserRoleController extends Controller
             ];
         }
 
-        $deleted = PermissionService::removeRole($userId, $roleId, $boardId);
+        $deleted = PermissionService::removeRole($userId, $roleId);
 
         if ($deleted) {
             return [
@@ -118,33 +106,115 @@ class UserRoleController extends Controller
     /**
      * Get all users with a specific role
      */
-    public function getUsersByRole($roleId, Request $request)
+    public function getUsersByRole($roleId)
     {
-        $boardId = $request->get('board_id');
-
-        $query = UserRoleProject::where('role_id', $roleId)
-            ->with(['user', 'role']);
-
-        if ($boardId !== null) {
-            $query->where(function($q) use ($boardId) {
-                $q->whereNull('board_id')
-                  ->orWhere('board_id', $boardId);
-            });
-        }
-
-        $assignments = $query->get();
+        $assignments = UserRoleProject::where('role_id', $roleId)
+            ->with(['user', 'role'])
+            ->get();
 
         $users = $assignments->map(function($assignment) {
             return [
                 'user' => $assignment->user,
-                'board_id' => $assignment->board_id,
-                'is_global' => $assignment->isGlobal(),
             ];
         });
 
         return [
             'users' => $users,
             'role' => Role::find($roleId),
+        ];
+    }
+
+    /**
+     * Assign a member to a manager
+     */
+    public function assignMember(Request $request)
+    {
+        $request->validate([
+            'manager_id' => 'required|exists:users,ID',
+            'member_id' => 'required|exists:users,ID',
+        ]);
+
+        $managerId = $request->get('manager_id');
+        $memberId = $request->get('member_id');
+
+        // Verify manager has manager role
+        if (!PermissionService::isManager($managerId)) {
+            return [
+                'error' => 'User must have manager role to assign members',
+            ];
+        }
+
+        // All users are members by default, no need to verify member role
+
+        // Check if assignment already exists
+        $existing = \TaskLedger\App\Models\ManagerMember::where('manager_id', $managerId)
+            ->where('member_id', $memberId)
+            ->first();
+
+        if ($existing) {
+            return [
+                'error' => 'Member is already assigned to this manager',
+                'assignment' => $existing->load(['manager', 'member']),
+            ];
+        }
+
+        $assignment = PermissionService::assignMember($managerId, $memberId);
+
+        return [
+            'assignment' => $assignment->load(['manager', 'member']),
+            'message' => 'Member assigned to manager successfully',
+        ];
+    }
+
+    /**
+     * Remove a member from a manager
+     */
+    public function removeMember(Request $request)
+    {
+        $request->validate([
+            'manager_id' => 'required|exists:users,ID',
+            'member_id' => 'required|exists:users,ID',
+        ]);
+
+        $managerId = $request->get('manager_id');
+        $memberId = $request->get('member_id');
+
+        $deleted = PermissionService::removeMember($managerId, $memberId);
+
+        if ($deleted) {
+            return [
+                'message' => 'Member removed from manager successfully',
+            ];
+        }
+
+        return [
+            'error' => 'Manager-member assignment not found',
+        ];
+    }
+
+    /**
+     * Get all members assigned to a manager
+     */
+    public function getManagedMembers($managerId)
+    {
+        $members = PermissionService::getManagedMembers($managerId);
+
+        return [
+            'manager_id' => $managerId,
+            'members' => $members,
+        ];
+    }
+
+    /**
+     * Get the manager for a member
+     */
+    public function getManager($memberId)
+    {
+        $manager = PermissionService::getManager($memberId);
+
+        return [
+            'member_id' => $memberId,
+            'manager' => $manager,
         ];
     }
 
@@ -166,8 +236,6 @@ class UserRoleController extends Controller
                 'roles' => $userRoles->map(function($urp) {
                     return [
                         'role' => $urp->role,
-                        'board_id' => $urp->board_id,
-                        'is_global' => $urp->isGlobal(),
                     ];
                 }),
             ];
