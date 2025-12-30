@@ -36,7 +36,7 @@
         <!-- Main Content Area -->
         <div class="review-content">
             <!-- Filters Section -->
-            <div class="filters-section">
+            <div class="task-ledger-filters-section">
                 <div class="filters-header">
                     <h3 class="filters-title">Filters</h3>
                 </div>
@@ -737,17 +737,15 @@ export default {
 }
 
 .review-content {
-    width: 100%;
     padding: 0 1rem 1rem;
 }
 
-.filters-section {
+.task-ledger-filters-section {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 0.375rem;
     margin-bottom: 0.75rem;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    width: 100%;
 }
 
 .filters-header {

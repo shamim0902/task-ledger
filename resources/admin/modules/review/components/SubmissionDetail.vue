@@ -203,8 +203,10 @@ export default {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: 1rem;
+    padding: 0.75rem;
     animation: fadeIn 0.2s ease;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -223,6 +225,7 @@ export default {
     flex-direction: column;
     overflow: hidden;
     animation: slideUp 0.2s ease;
+    box-sizing: border-box;
 }
 
 @keyframes slideUp {
@@ -240,7 +243,7 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 1.5rem;
+    padding: 0.875rem 1rem;
     border-bottom: 1px solid #e5e7eb;
     background: #f9fafb;
     flex-shrink: 0;
@@ -333,10 +336,12 @@ export default {
 }
 
 .modal-body {
-    padding: 1.5rem;
+    padding: 1rem;
     overflow-y: auto;
+    overflow-x: hidden;
     flex: 1;
     min-height: 0;
+    box-sizing: border-box;
 }
 
 .loading-state {
@@ -366,8 +371,8 @@ export default {
 }
 
 .notes-section {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.875rem;
     background: #f9fafb;
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
@@ -434,10 +439,11 @@ export default {
 }
 
 .task-item {
-    padding: 1rem;
+    padding: 0.875rem;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
     transition: all 0.2s;
+    box-sizing: border-box;
 
     &:hover {
         border-color: #d1d5db;
@@ -564,7 +570,7 @@ export default {
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
-    padding: 1.25rem 1.5rem;
+    padding: 0.875rem 1rem;
     border-top: 1px solid #e5e7eb;
     background: #f9fafb;
     flex-shrink: 0;
