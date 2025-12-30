@@ -30,26 +30,15 @@ class ReviewController extends Controller
         $isManager = PermissionService::isManager($userId);
         
         if ($isAdmin) {
-            // Admin can review all members
-            $memberRole = Role::where('slug', 'member')->first();
-            if ($memberRole) {
-                $userIds = UserRoleProject::where('role_id', $memberRole->id)
-                    ->pluck('user_id')
-                    ->toArray();
-                $members = User::whereIn('ID', $userIds)->get();
-            } else {
-                $members = collect();
-            }
+            // Admin can review ALL users - get all users who have submitted logs
+            $userIdsWithLogs = Log::distinct()
+                ->pluck('user_id')
+                ->toArray();
             
-            // If admin has no members from role, but is also a manager, fall back to assigned members
-            if ($members->isEmpty() && $isManager) {
-                $memberIds = ManagerMember::where('manager_id', $userId)
-                    ->pluck('member_id')
-                    ->toArray();
-                
-                if (!empty($memberIds)) {
-                    $members = User::whereIn('ID', $memberIds)->get();
-                }
+            if (empty($userIdsWithLogs)) {
+                $members = collect();
+            } else {
+                $members = User::whereIn('ID', $userIdsWithLogs)->get();
             }
         } else {
             // Manager can only review assigned members
@@ -110,22 +99,8 @@ class ReviewController extends Controller
         $isManager = PermissionService::isManager($userId);
         
         if ($isAdmin) {
-            // Admin can review all members
-            $memberRole = Role::where('slug', 'member')->first();
-            if ($memberRole) {
-                $reviewableMemberIds = UserRoleProject::where('role_id', $memberRole->id)
-                    ->pluck('user_id')
-                    ->toArray();
-            } else {
-                $reviewableMemberIds = [];
-            }
-            
-            // If admin has no members from role, but is also a manager, fall back to assigned members
-            if (empty($reviewableMemberIds) && $isManager) {
-                $reviewableMemberIds = ManagerMember::where('manager_id', $userId)
-                    ->pluck('member_id')
-                    ->toArray();
-            }
+            // Admin can review ALL users - no filter needed
+            $reviewableMemberIds = null; // null means all users
         } else {
             // Manager can only review assigned members
             // Get member IDs directly from ManagerMember table
@@ -133,32 +108,41 @@ class ReviewController extends Controller
                 ->pluck('member_id')
                 ->toArray();
             
-        }
-
-        // If no reviewable members, return empty result
-        if (empty($reviewableMemberIds)) {
-            return [
-                'submissions' => [],
-                'current_page' => (int)$page,
-                'per_page' => (int)$perPage,
-                'total' => 0,
-                'total_pages' => 0,
-            ];
+            // If no reviewable members, return empty result
+            if (empty($reviewableMemberIds)) {
+                return [
+                    'submissions' => [],
+                    'current_page' => (int)$page,
+                    'per_page' => (int)$perPage,
+                    'total' => 0,
+                    'total_pages' => 0,
+                ];
+            }
         }
 
         // Build query
         $query = Log::with(['user', 'logItems'])
-            ->whereIn('user_id', $reviewableMemberIds)
             ->orderBy('log_date', 'desc')
             ->orderBy('created_at', 'desc');
         
+        // Only filter by user_id if not admin (admin sees all)
+        if ($reviewableMemberIds !== null) {
+            $query->whereIn('user_id', $reviewableMemberIds);
+        }
+        
 
-        // Filter by member (verify member is in reviewable list)
+        // Filter by member (verify member is in reviewable list for managers)
         if ($memberId) {
-            if (!in_array($memberId, $reviewableMemberIds)) {
-                return $this->sendError('You do not have permission to review this member', 403);
+            if ($isAdmin) {
+                // Admin can review any user
+                $query->where('user_id', $memberId);
+            } else {
+                // Manager can only review assigned members
+                if (!in_array($memberId, $reviewableMemberIds)) {
+                    return $this->sendError('You do not have permission to review this member', 403);
+                }
+                $query->where('user_id', $memberId);
             }
-            $query->where('user_id', $memberId);
         }
 
         // Filter by date range (only if provided and not empty)
