@@ -29,3 +29,5 @@ jQuery(document).on('heartbeat-tick', (event, data) => {
 		globals.appVars.rest.nonce = data[slug];
     }
 });
+
+jQuery('.notice:not(.task-ledger), .error:not(.task-ledger), #ehp-admin-cb:not(.task-ledger)').remove();

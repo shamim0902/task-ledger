@@ -150,12 +150,9 @@ export default {
 
 // Log Section Base Styles
 .log-section {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
     border-radius: 0.625rem;
     overflow: hidden;
     transition: all 0.2s;
-
     &:hover {
         border-color: #d1d5db;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
@@ -395,7 +392,8 @@ export default {
 }
 
 .submit-button {
-    width: 100%;
+    width: 300px;
+    float: right;
     padding: 0.875rem 1.5rem;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;

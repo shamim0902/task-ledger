@@ -227,14 +227,14 @@ export default {
 }
 
 .task-card {
-    padding: 0.75rem;
+    padding: 0.15rem 20px;
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
     background: #f9fafb;
     margin-bottom: 0.5rem;
     transition: all 0.2s ease;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.75rem;
 
     &:hover {
