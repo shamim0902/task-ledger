@@ -12,7 +12,7 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
-    $router->add('/pm-dashboard', 'modules/pm/PMDashboard')
+    $router->add('/pm', 'modules/pm/PMDashboard')
         ->name('pm.dashboard')
         ->icon('DataAnalysis')
         ->title(__('PM Dashboard', 'taskledger'))

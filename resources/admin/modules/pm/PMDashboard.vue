@@ -101,6 +101,38 @@
 
         <!-- Main Content Area -->
         <div class="pm-content">
+            <!-- Date Filter (Top) -->
+            <div class="date-filter-section">
+                <div class="date-filter">
+                    <button @click="goToPreviousDay" class="date-nav-btn" title="Previous Day">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div class="date-picker-wrapper">
+                        <input
+                            type="date"
+                            v-model="currentDateString"
+                            @change="handleDateChange"
+                            class="date-input"
+                        />
+                        <div class="date-display" @click="showDatePicker = !showDatePicker">
+                            {{ formattedDate }}
+                            <svg class="calendar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <button @click="goToNextDay" class="date-nav-btn" title="Next Day">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                    <button @click="goToToday" class="today-btn">Today</button>
+                </div>
+            </div>
+
             <!-- Quick Stats Dashboard -->
             <div class="stats-dashboard">
                 <div class="stat-card stat-primary">
@@ -173,6 +205,7 @@
                             :team-activity="teamActivity" 
                             :loading="loading"
                             :currentDate="currentDateString"
+                            :show-date-filter="false"
                             @date-change="handleDateChange"
                         />
                     </div>
@@ -269,6 +302,7 @@ export default {
             selectedBoards: [],
             showTeamFilter: false,
             showBoardFilter: false,
+            showDatePicker: false,
             teamMembers: [],
             boards: [],
             summaryStats: {
@@ -285,6 +319,17 @@ export default {
                 status: 'all'
             }
         };
+    },
+    computed: {
+        formattedDate() {
+            const date = new Date(this.currentDateString);
+            return date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
     },
     methods: {
         async loadData() {
@@ -343,10 +388,34 @@ export default {
             this.taskFilter = { ...this.taskFilter, ...filter };
             this.loadData();
         },
-        handleDateChange(date) {
+        handleDateChange(event) {
+            let date;
+            if (typeof event === 'string') {
+                date = event;
+            } else if (event?.target?.value) {
+                date = event.target.value;
+            } else {
+                date = this.currentDateString;
+            }
             this.currentDateString = date;
             this.selectedDate = date;
             this.loadData();
+        },
+        goToPreviousDay() {
+            const date = new Date(this.currentDateString);
+            date.setDate(date.getDate() - 1);
+            this.currentDateString = date.toISOString().split('T')[0];
+            this.handleDateChange(this.currentDateString);
+        },
+        goToNextDay() {
+            const date = new Date(this.currentDateString);
+            date.setDate(date.getDate() + 1);
+            this.currentDateString = date.toISOString().split('T')[0];
+            this.handleDateChange(this.currentDateString);
+        },
+        goToToday() {
+            this.currentDateString = new Date().toISOString().split('T')[0];
+            this.handleDateChange(this.currentDateString);
         },
         toggleAllTeamMembers(event) {
             if (event.target.checked) {
@@ -822,7 +891,7 @@ export default {
 .pm-content {
     max-width: 1800px;
     margin: 0 auto;
-    padding: 1.5rem;
+    padding: 0 1.5rem;
 }
 
 // Stats Dashboard
@@ -926,6 +995,101 @@ export default {
         .stat-content .stat-value {
             color: #f59e0b;
         }
+    }
+}
+
+// Date Filter Section (Top)
+.date-filter-section {
+    margin-bottom: 1.5rem;
+}
+
+.date-filter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.date-nav-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 2px solid #e5e7eb;
+    background: white;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #6b7280;
+
+    svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    &:hover {
+        border-color: #4f46e5;
+        color: #4f46e5;
+        background: #eef2ff;
+    }
+}
+
+.date-picker-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 300px;
+
+    .date-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 10;
+        font-size: 0;
+    }
+
+    .date-display {
+        padding: 0.625rem 1rem;
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        pointer-events: none;
+        transition: all 0.2s;
+
+        .calendar-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #6b7280;
+        }
+    }
+
+    &:hover .date-display {
+        border-color: #4f46e5;
+    }
+}
+
+.today-btn {
+    padding: 0.625rem 1.25rem;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+
+    &:hover {
+        background: #4338ca;
     }
 }
 

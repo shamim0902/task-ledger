@@ -85,6 +85,91 @@
 </style>
 
 <script>
+(function() {
+    const slug = '<?php echo esc_js($slug); ?>';
+    
+    // Modify submenu URLs to include hash fragments
+    function modifySubmenuUrls() {
+        const menuLinks = document.querySelectorAll(
+            `#toplevel_page_${slug} .wp-submenu a`
+        );
+        
+        menuLinks.forEach((link, index) => {
+            const href = link.getAttribute('href');
+            if (!href || !href.includes(`page=${slug}`)) return;
+            
+            // First link (Developers) -> /, Second link (Project Manager) -> /pm
+            const route = index === 0 ? '/' : '/pm';
+            const baseUrl = href.split('#')[0];
+            link.setAttribute('href', baseUrl + '#' + route);
+        });
+    }
+    
+    // Intercept WordPress admin menu clicks to prevent page reload
+    function interceptMenuClicks() {
+        const menuLinks = document.querySelectorAll(
+            `#toplevel_page_${slug} a, #toplevel_page_${slug} .wp-submenu a`
+        );
+        
+        menuLinks.forEach(link => {
+            // Remove existing listeners to avoid duplicates
+            const newLink = link.cloneNode(true);
+            link.parentNode.replaceChild(newLink, link);
+            
+            newLink.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (!href || !href.includes(`page=${slug}`)) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Extract route from hash
+                const hashMatch = href.match(/#(.+)$/);
+                const route = hashMatch ? hashMatch[1] : '/';
+                
+                // Use Vue Router if available
+                if (window.fluentFrameworkAdmin?.router) {
+                    window.fluentFrameworkAdmin.router.push(route).catch(() => {
+                        window.location.hash = route;
+                    });
+                } else {
+                    // Update URL without reload
+                    const newUrl = href.split('#')[0] + '#' + route;
+                    window.history.pushState({}, '', newUrl);
+                    window.location.hash = route;
+                }
+                
+                // Update active menu state
+                menuLinks.forEach(l => {
+                    if (l !== newLink) {
+                        l.parentElement?.classList.remove('current');
+                    }
+                });
+                newLink.parentElement?.classList.add('current');
+                
+                return false;
+            });
+        });
+    }
+    
+    // Run on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            modifySubmenuUrls();
+            interceptMenuClicks();
+        });
+    } else {
+        modifySubmenuUrls();
+        interceptMenuClicks();
+    }
+    
+    // Also run after a delay to catch dynamically added menus
+    setTimeout(() => {
+        modifySubmenuUrls();
+        interceptMenuClicks();
+    }, 100);
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
     const app = document.querySelector('#fluent-framework-app');
     const loading = document.querySelector('#fluent-framework-loading');

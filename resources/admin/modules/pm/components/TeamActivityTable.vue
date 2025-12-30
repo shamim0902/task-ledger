@@ -1,7 +1,7 @@
 <template>
     <div class="team-activity-table">
         <!-- Date Filter -->
-        <div class="date-filter">
+        <div v-if="showDateFilter" class="date-filter">
             <button @click="goToPreviousDay" class="date-nav-btn" title="Previous Day">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -190,6 +190,10 @@ export default {
         currentDate: {
             type: String,
             default: () => new Date().toISOString().split('T')[0]
+        },
+        showDateFilter: {
+            type: Boolean,
+            default: true
         }
     },
     emits: ['date-change'],
@@ -263,13 +267,10 @@ export default {
 
 .date-filter {
     display: flex;
-    align-items: center;
+    justify-content: flex-end;
+    align-items: right;
     gap: 0.75rem;
     margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
 }
 
 .date-nav-btn {

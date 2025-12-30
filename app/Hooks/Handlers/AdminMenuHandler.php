@@ -48,7 +48,7 @@ class AdminMenuHandler
         $this->slug = $this->config->get('app.slug');
         $this->baseUrl = $this->app->applyFilters(
             'fluent_connector_base_url',
-            admin_url('admin.php?page=' . $this->slug . '#/')
+            admin_url('admin.php?page=' . $this->slug)
         );
     }
 
@@ -59,6 +59,7 @@ class AdminMenuHandler
      */
     public function add()
     {
+        // Main menu page (this becomes the first submenu item "Task Ledger")
         add_menu_page(
             __('Task Ledger', 'taskledger'),
             __('Task Ledger', 'taskledger'),
@@ -68,6 +69,44 @@ class AdminMenuHandler
             $this->getMenuIcon(),
             $this->position
         );
+
+        // Developers submenu (Dashboard) - explicitly set to override main menu title
+        add_submenu_page(
+            $this->slug,
+            __('Developers', 'taskledger'),
+            __('Developers', 'taskledger'),
+            'manage_options',
+            $this->slug,
+            [$this, 'render']
+        );
+
+        // Project Manager submenu - use same slug but with hash routing
+        add_submenu_page(
+            $this->slug,
+            __('Project Manager', 'taskledger'),
+            __('Project Manager', 'taskledger'),
+            'manage_options',
+            $this->slug, // Use same slug to prevent page reload
+            [$this, 'render'] // Use same render method
+        );
+        
+        // Filter submenu URLs to add hash fragments
+        add_filter('submenu_file', [$this, 'filterSubmenuUrls'], 10, 2);
+    }
+    
+    /**
+     * Filter submenu URLs to add hash fragments for Vue Router
+     * 
+     * @param string $submenu_file
+     * @param string $parent_file
+     * @return string
+     */
+    public function filterSubmenuUrls($submenu_file, $parent_file)
+    {
+        if ($parent_file === $this->slug) {
+            // This filter runs during menu rendering, we'll handle URL modification in JavaScript
+        }
+        return $submenu_file;
     }
 
     /**
@@ -91,8 +130,10 @@ class AdminMenuHandler
         // @phpstan-ignore-next-line
         $this->app->view->render('admin.menu', [
             'slug' => $this->slug,
+            'defaultRoute' => '/',
         ]);
     }
+
 
     /**
      * Enqueue all the scripts and styles

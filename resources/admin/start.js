@@ -16,8 +16,11 @@ if (typeof __webpack_public_path__ !== 'undefined') {
 
 app.vue.use(ElLoading);
 
-app.vue.use(router(app.vue, config.routes));
+const routerInstance = router(app.vue, config.routes);
+app.vue.use(routerInstance);
 
 app.vue.mount('#fluent-framework-app');
 
-window.fluentFrameworkAdmin = {};
+// Expose router globally for menu navigation
+window.fluentFrameworkAdmin = window.fluentFrameworkAdmin || {};
+window.fluentFrameworkAdmin.router = routerInstance;

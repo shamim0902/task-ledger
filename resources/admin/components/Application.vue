@@ -1,6 +1,6 @@
 <template>
     <div class="top-menu">
-        <nav class="top-menu">
+        <!-- <nav class="top-menu">
       <ul>
         <li
           v-for="item in menuItems"
@@ -13,7 +13,7 @@
           </router-link>
         </li>
       </ul>
-    </nav>
+    </nav> -->
     <router-view />
     </div>
   </template>
@@ -49,7 +49,6 @@
   <style lang="scss" scoped>
   .top-menu {
     background-color: #fff;
-    padding: 0 20px;
     border-bottom: 1px solid #e6e6e6;
   
     ul {
