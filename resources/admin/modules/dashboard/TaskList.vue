@@ -344,7 +344,7 @@ export default {
 
 .weight-input {
     width: 60px;
-    padding: 0.375rem 0.5rem;
+    padding: 0 0.5rem;
     font-size: 0.8125rem;
     border-radius: 0.375rem;
     border: 1px solid #d1d5db;

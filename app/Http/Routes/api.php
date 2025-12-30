@@ -27,6 +27,7 @@ $router->post('/logs', 'LogController@create');
 $router->get('/logs', 'LogController@get');
 $router->get('/logs/history', 'LogController@getHistory');
 $router->delete('/logs/items/{id}', 'LogController@deleteLogItem');
+$router->delete('/logs/today', 'LogController@deleteTodayLog');
 $router->get('/today-logs', 'LogController@getTodayLogs');
 
 // PM Dashboard routes

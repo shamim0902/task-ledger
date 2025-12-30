@@ -122,13 +122,22 @@
                                         <span v-if="completedTasksCount > 0">• {{ completedTasksCount }} completed</span>
                                     </div>
                                 </div>
-                                <button @click="handleEditLog" class="btn-edit-log">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                    <span>Edit</span>
-                                </button>
+                                <div class="submitted-actions">
+                                    <button @click="handleEditLog" class="btn-edit-log">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>Edit</span>
+                                    </button>
+                                    <button @click="handleDeleteTodayLog" class="btn-delete-log">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
                             </div>
                             
                             <!-- Submitted Log Details Summary -->
@@ -326,7 +335,7 @@ export default {
         }
     },
     methods: {
-        handleTaskSelect(task) {
+        async handleTaskSelect(task) {
             // Check if task already exists in today's log
             const exists = this.todayLog.tasks.some(t => 
                 (t.task_id && task.id && t.task_id === task.id) ||
@@ -341,7 +350,7 @@ export default {
                 return;
             }
 
-            // Add task to today's log (local only, no API call)
+            // Add task to today's log
             this.todayLog.tasks.push({
                 task_id: task.id,
                 id: task.id,
@@ -356,7 +365,19 @@ export default {
             // Close the modal
             this.showTaskSelectModal = false;
             
-            this.$notify('Task added to log');
+            // Auto-save the log to persist the selected task (silently, without changing submitted state)
+            try {
+                await this.$post('logs', this.todayLog);
+                // Don't set logSubmitted = true here - just save the data
+                // Don't call getTodayLogs() as it might change the submitted state
+                this.$notify(
+                    'Task added to log'
+                );
+            } catch (error) {
+                console.error('Error saving task to log:', error);
+                this.$notify('Failed to save task to log'
+                );
+            }
         },
         clearSelectedTask() {
             this.selectedTask = null;
@@ -437,10 +458,12 @@ export default {
                 return;
             }
 
-            // Auto-save the log when status changes
+            // Auto-save the log when task changes (weight, hours, status, etc.)
+            // But don't change the submitted state - only save the data
             try {
                 await this.$post('logs', this.todayLog);
                 // Silent save - no notification to avoid spam
+                // Don't set logSubmitted = true here - that should only happen on explicit submission
             } catch (error) {
                 console.error('Error auto-saving task update:', error);
                 // Don't show error notification on every status change to avoid spam
@@ -476,10 +499,9 @@ export default {
                     tasks: tasks,
                 };
 
-                // Check if log is already submitted (has tasks or notes)
-                if (tasks.length > 0 || (data?.additional_notes && data.additional_notes.trim())) {
-                    this.logSubmitted = true;
-                }
+                // Only mark as submitted if the log status is actually 'submitted'
+                // Don't mark as submitted just because there are tasks - user might still be editing
+                this.logSubmitted = data?.status === 'submitted';
             }).catch(err => {
                 // this.$notify({
                 //     type: 'error',
@@ -489,6 +511,33 @@ export default {
         },
         handleEditLog() {
             this.logSubmitted = false;
+        },
+        handleDeleteTodayLog() {
+            if (!confirm('Are you sure you want to delete today\'s submitted log? This action cannot be undone.')) {
+                return;
+            }
+
+            this.$delete('logs/today').then(res => {
+                this.$notify({
+                    type: 'success',
+                    text: 'Today\'s log deleted successfully'
+                });
+                
+                // Reset the log state
+                this.todayLog = {
+                    tasks: [],
+                    notes: '',
+                };
+                this.logSubmitted = false;
+                
+                // Refresh today's log to ensure UI is updated
+                this.getTodayLogs();
+            }).catch(err => {
+                this.$notify({
+                    type: 'error',
+                    text: 'Failed to delete today\'s log'
+                });
+            });
         },
         addNewTask(taskData) {
             // This is a placeholder - implement actual API call when backend is ready
@@ -521,9 +570,21 @@ export default {
                 return;
             }
 
-            this.$post('logs', this.todayLog).then(res => {
-                this.$notify(
-                    'Log saved successfully');
+            // Mark log as submitted when user explicitly clicks "Save Daily Log"
+            const logData = {
+                ...this.todayLog,
+                status: 'submitted'
+            };
+            
+            this.$post('logs', logData).then(res => {
+                // Only show notification if this was an explicit user action (not auto-save)
+                // Check if there are actually tasks or notes to save
+                if (this.todayLog.tasks.length > 0 || (this.todayLog.notes && this.todayLog.notes.trim())) {
+                    this.$notify({
+                        type: 'success',
+                        text: 'Log saved successfully'
+                    });
+                }
                 // Set submitted state
                 this.logSubmitted = true;
                 // Refresh today's log to get updated data
@@ -589,9 +650,15 @@ export default {
         this.getTasks();
         this.getTodayLogs();
         
-        // Auto-create log if it doesn't exist
+        // Auto-create log if it doesn't exist (silently, without notification)
         if (!window.taskLedgerAdmin?.hasLogForToday) {
-            this.handleCreateLog();
+            // Create log silently without showing notification
+            this.$post('logs', this.todayLog).then(res => {
+                // Silent creation - no notification
+                this.getTodayLogs();
+            }).catch(err => {
+                // Silent error - no notification
+            });
         }
     }
 };
@@ -998,13 +1065,19 @@ export default {
     flex-wrap: wrap;
 }
 
-.btn-edit-log {
+.submitted-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.btn-edit-log,
+.btn-delete-log {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
     padding: 0.5rem 0.875rem;
-    background: #6366f1;
-    color: white;
     border: none;
     border-radius: 0.375rem;
     font-size: 0.8125rem;
@@ -1019,13 +1092,32 @@ export default {
     }
 
     &:hover {
-        background: #4f46e5;
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     &:active {
         transform: translateY(0);
+    }
+}
+
+.btn-edit-log {
+    background: #6366f1;
+    color: white;
+
+    &:hover {
+        background: #4f46e5;
+        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+    }
+}
+
+.btn-delete-log {
+    background: #ef4444;
+    color: white;
+
+    &:hover {
+        background: #dc2626;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
     }
 }
 
