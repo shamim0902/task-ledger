@@ -38,27 +38,29 @@
         </div>
 
         <!-- Notes Section -->
-        <div class="log-section notes-section">
-            <div class="section-header">
-                <div class="section-title-wrapper">
-                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    <div>
-                        <h3 class="section-title">Daily Notes</h3>
-                        <p class="section-subtitle">Add your thoughts and updates</p>
-                    </div>
-                </div>
-            </div>
+        <div class="notes-section" :class="{ expanded: showNotes }">
+            <button class="notes-toggle-btn" @click.stop="toggleNotes">
+                <svg class="notes-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span class="notes-toggle-text">
+                    <span v-if="notes && !showNotes">{{ notes.length > 40 ? notes.substring(0, 40) + '...' : notes }}</span>
+                    <span v-else>{{ showNotes ? 'Hide notes' : 'Add notes' }}</span>
+                </span>
+                <svg class="notes-chevron" :class="{ expanded: showNotes }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
 
-            <div class="section-content">
+            <div class="notes-content-wrapper" :class="{ 'is-expanded': showNotes }">
                 <textarea 
                     :value="notes" 
                     @input="handleInput"
                     placeholder="What did you work on today? Any blockers, achievements, or important notes..." 
                     rows="5"
                     class="notes-textarea"
+                    ref="notesTextarea"
                 ></textarea>
             </div>
         </div>
@@ -98,9 +100,41 @@ export default {
         }
     },
     emits: ['update:notes', 'toggle-task', 'submit'],
+    data() {
+        return {
+            showNotes: false
+        };
+    },
+    watch: {
+        notes(newVal) {
+            // Auto-expand if notes have content
+            if (newVal && newVal.trim().length > 0) {
+                this.showNotes = true;
+            }
+        }
+    },
+    mounted() {
+        // Auto-expand if notes already have content
+        if (this.notes && this.notes.trim().length > 0) {
+            this.showNotes = true;
+        }
+    },
     methods: {
         handleInput(event) {
             this.$emit('update:notes', event.target.value);
+        },
+        toggleNotes(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.showNotes = !this.showNotes;
+            // Focus textarea when expanded
+            if (this.showNotes) {
+                this.$nextTick(() => {
+                    if (this.$refs.notesTextarea) {
+                        this.$refs.notesTextarea.focus();
+                    }
+                });
+            }
         }
     }
 };
@@ -132,12 +166,40 @@ export default {
     padding: 0.875rem 1rem;
     background: white;
     border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &:hover {
+        background: #f9fafb;
+    }
 }
 
 .section-title-wrapper {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.section-title-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.expand-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #6b7280;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+
+    &.expanded {
+        transform: rotate(180deg);
+    }
 }
 
 .section-icon {
@@ -160,6 +222,18 @@ export default {
     color: #6b7280;
     margin: 0.125rem 0 0 0;
     font-weight: 400;
+
+    &.clickable-link {
+        color: #6366f1;
+        font-weight: 500;
+        cursor: pointer;
+        transition: color 0.2s;
+
+        &:hover {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+    }
 }
 
 .section-content {
@@ -214,6 +288,78 @@ export default {
 // Notes Section
 .notes-section {
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.notes-toggle-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6366f1;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    margin-bottom: 0.5rem;
+
+    &:hover {
+        background: #f3f4f6;
+        color: #4f46e5;
+    }
+
+    &:active {
+        background: #e5e7eb;
+    }
+}
+
+.notes-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    color: #6366f1;
+}
+
+.notes-toggle-text {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    color: #6366f1;
+    font-weight: 500;
+}
+
+.notes-chevron {
+    width: 1rem;
+    height: 1rem;
+    color: #9ca3af;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+
+    &.expanded {
+        transform: rotate(180deg);
+        color: #6366f1;
+    }
+}
+
+.notes-content-wrapper {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.2s ease,
+                padding 0.3s ease;
+
+    &.is-expanded {
+        max-height: 500px;
+        opacity: 1;
+        padding: 0.75rem 0;
+    }
 }
 
 .notes-textarea {
