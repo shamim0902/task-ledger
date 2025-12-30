@@ -89,6 +89,26 @@ class AdminMenuHandler
             $this->slug, // Use same slug to prevent page reload
             [$this, 'render'] // Use same render method
         );
+
+        // Roles submenu
+        add_submenu_page(
+            $this->slug,
+            __('Roles', 'taskledger'),
+            __('Roles', 'taskledger'),
+            'manage_options',
+            $this->slug, // Use same slug to prevent page reload
+            [$this, 'render'] // Use same render method
+        );
+
+        // Projects submenu
+        add_submenu_page(
+            $this->slug,
+            __('Projects', 'taskledger'),
+            __('Projects', 'taskledger'),
+            'manage_options',
+            $this->slug, // Use same slug to prevent page reload
+            [$this, 'render'] // Use same render method
+        );
         
         // Filter submenu URLs to add hash fragments
         add_filter('submenu_file', [$this, 'filterSubmenuUrls'], 10, 2);

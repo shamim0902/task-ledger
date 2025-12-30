@@ -3,6 +3,7 @@
 namespace TaskLedger\App\Http\Controllers;
 
 use FluentBoards\App\Models\Task;
+use TaskLedger\App\Services\PermissionService;
 use TaskLedger\Framework\Http\Request\Request;
 use TaskLedger\App\Models\Meta;
 use TaskLedger\App\Models\LogItem;
@@ -11,17 +12,28 @@ class TaskController extends Controller
 {
     public function get(Request $request)
     {
+        $currentUser = (int) wp_get_current_user()->ID; // ensure int
+
+        // Get all boards the user has access to
+        $userBoards = \FluentBoards\App\Models\Board::byAccessUser($currentUser)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($userBoards)) {
+            return [];
+        }
+
+        // Get all tasks from boards the user has access to
         $tasks = Task::whereNull('archived_at')
         ->whereNull('parent_id')
+        ->whereIn('board_id', $userBoards)
         ->with('assignees')
         ->with('board')
         ->with('taskCustomFields')
         ->with('subtasks')
         ->get();
 
-        $currentUser = (int) wp_get_current_user()->ID; // ensure int
-
-        $tasks = $tasks->filter(function ($task) use ($currentUser) {
+        $tasks = $tasks->map(function ($task) use ($currentUser) {
             // Task weight (cache the meta call)
             $taskWeightMeta = Meta::getMetaForTask($task->id, 'weight');
             $task->weight = $taskWeightMeta ? (int)$taskWeightMeta->meta_value : 8;
@@ -41,15 +53,7 @@ class TaskController extends Controller
                 }
             }
 
-            // Robust check for assignee presence (handles ->ID or ->id)
-            return $task->assignees->contains(function ($assignee) use ($currentUser) {
-                // handle WP user objects (ID) or Eloquent users (id)
-                if (isset($assignee->ID) && (int)$assignee->ID === $currentUser) return true;
-                if (isset($assignee->id) && (int)$assignee->id === $currentUser) return true;
-                // sometimes pivot foreign_id may be present
-                if (isset($assignee->pivot) && isset($assignee->pivot->foreign_id) && (int)$assignee->pivot->foreign_id === $currentUser) return true;
-                return false;
-            });
+            return $task;
         })->values(); // reindex numeric keys so JSON becomes [0=>...,1=>...]
 
         return $tasks;
@@ -57,9 +61,24 @@ class TaskController extends Controller
 
     public function createSubtask(Request $request)
     {
+        $currentUser = (int) wp_get_current_user()->ID;
+        
+        // Check permission to create tasks
+        if (!PermissionService::hasPermission($currentUser, 'create_task') && 
+            !PermissionService::hasPermission($currentUser, 'manage_tasks')) {
+            return $request->abort(403, 'You do not have permission to create tasks');
+        }
+
         $data = $request->all();
         $taskId = $data['task_id'];
         $parentTask = Task::find($taskId);
+        
+        // Check if user has access to the board
+        if ($parentTask && !PermissionService::isAdmin($currentUser)) {
+            if (!PermissionService::canAccessBoard($currentUser, $parentTask->board_id)) {
+                return $request->abort(403, 'You do not have access to this board');
+            }
+        }
         // check have any sub task group exist or not if not create one
         $subTaskGroup = Task::where('parent_id', $taskId)->first();
    

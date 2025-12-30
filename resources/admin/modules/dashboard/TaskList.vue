@@ -85,16 +85,18 @@
                 <!-- Blocker Note (shown when blocked) -->
                 <div v-if="task.status === 'blocked'" class="blocker-note-section">
                     <input
+                        type="text"
                         v-model="task.blocker_reason"
-                        @input="handleTaskUpdate(task)"
-                        placeholder="Why is this task blocked? (required)"
+                        @input="handleBlockerReasonChange(task)"
+                        @blur="handleBlockerReasonChange(task)"
+                        @keyup.enter="handleBlockerReasonChange(task)"
                         class="blocker-input"
-                        :class="{ 'error': !task.blocker_reason || task.blocker_reason.trim() === '' }"
-                        required
+                        :class="{ error: task.status === 'blocked' && !task.blocker_reason }"
+                        placeholder="Why is this task blocked? (required)"
                     />
-                    <div v-if="!task.blocker_reason || task.blocker_reason.trim() === ''" class="error-message">
+                    <span v-if="task.status === 'blocked' && !task.blocker_reason" class="error-message">
                         Blocker reason is required
-                    </div>
+                    </span>
                 </div>
 
                 <!-- Delete Button -->
@@ -140,7 +142,7 @@ export default {
     emits: ['toggle-task', 'delete-task', 'task-update'],
 
     methods: {
-        handleStatusChange(task, newStatus) {
+        async handleStatusChange(task, newStatus) {
             const oldStatus = task.status;
             
             // Initialize status if not set
@@ -174,22 +176,30 @@ export default {
             }
 
             this.$emit('toggle-task', task);
-            this.handleTaskUpdate(task);
+            await this.handleTaskUpdate(task);
         },
 
-        handleTaskUpdate(task) {
+        async handleTaskUpdate(task) {
             // Ensure status defaults to in-progress if not set
             if (!task.status) {
                 task.status = 'in-progress';
             }
 
             // Validate blocker reason when blocked
-            if (task.status === 'blocked' && !task.blocker_reason) {
-                // Don't prevent update, but mark as needing attention
+            if (task.status === 'blocked' && (!task.blocker_reason || task.blocker_reason.trim() === '')) {
+                // Don't save if blocker reason is missing
                 return;
             }
 
+            // Emit update event which will trigger auto-save
             this.$emit('task-update', task);
+        },
+
+        async handleBlockerReasonChange(task) {
+            // Auto-save when blocker reason is entered
+            if (task.status === 'blocked' && task.blocker_reason && task.blocker_reason.trim() !== '') {
+                await this.handleTaskUpdate(task);
+            }
         },
 
         deleteTask(task) {

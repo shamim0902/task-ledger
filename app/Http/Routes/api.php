@@ -38,3 +38,31 @@ $router->get('/pm/blocked-tasks', 'PMDashboardController@getBlockedTasks');
 $router->get('/pm/team-members', 'PMDashboardController@getTeamMembers');
 $router->get('/pm/boards', 'PMDashboardController@getBoards');
 $router->post('/pm/send-reminders', 'PMDashboardController@sendReminders');
+
+// Role Management routes
+$router->get('/roles', 'RoleController@index');
+$router->get('/roles/{id}', 'RoleController@show');
+$router->post('/roles', 'RoleController@store');
+$router->patch('/roles/{id}', 'RoleController@update');
+$router->delete('/roles/{id}', 'RoleController@destroy');
+$router->get('/roles/{id}/permissions', 'RoleController@getPermissions');
+$router->post('/roles/{id}/permissions', 'RoleController@updatePermissions');
+
+// Permission routes
+$router->get('/permissions', 'PermissionController@index');
+$router->get('/permissions/group/{group}', 'PermissionController@byGroup');
+$router->get('/permissions/user', 'PermissionController@getUserPermissions');
+
+// User Role routes
+$router->get('/user-roles/user/{userId}', 'UserRoleController@getUserRoles');
+$router->post('/user-roles/assign', 'UserRoleController@assignRole');
+$router->post('/user-roles/remove', 'UserRoleController@removeRole');
+$router->get('/user-roles/role/{roleId}', 'UserRoleController@getUsersByRole');
+$router->get('/user-roles/all', 'UserRoleController@getAllUsersWithRoles');
+
+// Projects routes
+$router->get('/projects', 'ProjectsController@index');
+$router->post('/projects', 'ProjectsController@create');
+$router->post('/projects/import', 'ProjectsController@import');
+$router->get('/projects/{id}', 'ProjectsController@show');
+$router->get('/projects/{id}/roles', 'ProjectsController@getRoles');

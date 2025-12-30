@@ -3,6 +3,7 @@
 namespace TaskLedger\App\Hooks\Handlers;
 
 use TaskLedger\Database\DBMigrator;
+use TaskLedger\Database\Seeders\RolesAndPermissionsSeeder;
 use TaskLedger\Framework\Foundation\Application;
 
 class ActivationHandler
@@ -48,6 +49,17 @@ class ActivationHandler
     protected function activatePlugin()
     {
         // Plugin Activation Code...
-        // DBMigrator::migrateUp();
+        try {
+            // Run migrations
+            DBMigrator::migrateUp();
+            
+            // Seed default roles and permissions
+            RolesAndPermissionsSeeder::seed();
+        } catch (\Exception $e) {
+            // Log error but don't output during activation
+            error_log('Task Ledger activation error: ' . $e->getMessage());
+            // Don't throw - allow plugin to activate even if migrations fail
+            // They can be run manually later
+        }
     }
 }

@@ -98,8 +98,20 @@
             const href = link.getAttribute('href');
             if (!href || !href.includes(`page=${slug}`)) return;
             
-            // First link (Developers) -> /, Second link (Project Manager) -> /pm
-            const route = index === 0 ? '/' : '/pm';
+            // Determine route based on link text
+            const linkText = link.textContent.trim().toLowerCase();
+            let route = '/';
+            
+            if (linkText.includes('project manager') || linkText.includes('pm')) {
+                route = '/pm';
+            } else if (linkText.includes('roles') || linkText.includes('role')) {
+                route = '/roles';
+            } else if (linkText.includes('projects') || linkText.includes('project')) {
+                route = '/projects';
+            } else if (linkText.includes('developers') || linkText.includes('dashboard')) {
+                route = '/';
+            }
+            
             const baseUrl = href.split('#')[0];
             link.setAttribute('href', baseUrl + '#' + route);
         });
@@ -123,9 +135,21 @@
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Extract route from hash
+                // Extract route from hash or determine from link text
                 const hashMatch = href.match(/#(.+)$/);
-                const route = hashMatch ? hashMatch[1] : '/';
+                let route = hashMatch ? hashMatch[1] : '/';
+                
+                // Fallback: determine route from link text if no hash
+                if (route === '/' && !hashMatch) {
+                    const linkText = this.textContent.trim().toLowerCase();
+                    if (linkText.includes('project manager') || linkText.includes('pm')) {
+                        route = '/pm';
+                    } else if (linkText.includes('roles') || linkText.includes('role')) {
+                        route = '/roles';
+                    } else if (linkText.includes('projects') || linkText.includes('project')) {
+                        route = '/projects';
+                    }
+                }
                 
                 // Use Vue Router if available
                 if (window.fluentFrameworkAdmin?.router) {

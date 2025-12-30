@@ -18,6 +18,23 @@
             </div>
 
             <div class="modal-body">
+                <!-- Board Selector -->
+                <div class="board-selector-wrapper">
+                    <label class="selector-label">
+                        <svg class="selector-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Select Board
+                    </label>
+                    <select v-model="selectedBoardId" @change="handleBoardChange" class="board-select">
+                        <option value="">All Boards</option>
+                        <option v-for="board in boards" :key="board.id" :value="board.id">
+                            {{ board.title || board.name }}
+                        </option>
+                    </select>
+                </div>
+
                 <!-- Search Input -->
                 <div class="search-wrapper">
                     <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,13 +44,19 @@
                     <input
                         type="text"
                         v-model="searchQuery"
-                        placeholder="Search tasks by title or board..."
+                        placeholder="Search tasks by title..."
                         class="search-input"
                     />
                 </div>
 
+                <!-- Loading State -->
+                <div v-if="loadingBoards" class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading boards...</p>
+                </div>
+
                 <!-- Tasks Grid -->
-                <div v-if="filteredTasks.length > 0" class="tasks-grid">
+                <div v-else-if="filteredTasks.length > 0" class="tasks-grid">
                     <div
                         v-for="task in filteredTasks"
                         :key="task.id"
@@ -70,7 +93,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
-                    <p class="empty-text">{{ searchQuery ? 'No tasks found' : 'No tasks available' }}</p>
+                    <p class="empty-text">
+                        {{ searchQuery ? 'No tasks found matching your search' : (selectedBoardId ? 'No tasks available in this board' : 'Please select a board to view tasks') }}
+                    </p>
                 </div>
             </div>
 
@@ -100,21 +125,56 @@ export default {
     },
     data() {
         return {
-            searchQuery: ''
+            searchQuery: '',
+            selectedBoardId: '',
+            boards: [],
+            loadingBoards: false
         };
     },
     computed: {
         filteredTasks() {
-            if (!this.searchQuery.trim()) return this.tasks;
-            const query = this.searchQuery.toLowerCase();
-            return this.tasks?.filter(task =>
-                task?.title?.toLowerCase()?.includes(query) ||
-                task?.board?.title?.toLowerCase()?.includes(query)
-            ) || [];
+            let filtered = this.tasks || [];
+
+            // Filter by selected board
+            if (this.selectedBoardId) {
+                filtered = filtered.filter(task => 
+                    task?.board_id === parseInt(this.selectedBoardId) || 
+                    task?.board?.id === parseInt(this.selectedBoardId)
+                );
+            }
+
+            // Filter by search query
+            if (this.searchQuery.trim()) {
+                const query = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(task =>
+                    task?.title?.toLowerCase()?.includes(query)
+                );
+            }
+
+            return filtered;
         }
     },
     emits: ['close', 'select'],
     methods: {
+        async loadBoards() {
+            this.loadingBoards = true;
+            try {
+                const response = await this.$get('pm/boards');
+                this.boards = response || [];
+            } catch (error) {
+                console.error('Error loading boards:', error);
+                this.$notify({
+                    type: 'error',
+                    text: 'Failed to load boards'
+                });
+            } finally {
+                this.loadingBoards = false;
+            }
+        },
+        handleBoardChange() {
+            // Reset search when board changes
+            this.searchQuery = '';
+        },
         selectTask(task, event) {
             if (event) {
                 event.preventDefault();
@@ -132,9 +192,20 @@ export default {
     },
     watch: {
         show(newVal) {
-            if (!newVal) {
+            if (newVal) {
+                // Load boards when modal opens
+                this.loadBoards();
+            } else {
+                // Reset when modal closes
                 this.searchQuery = '';
+                this.selectedBoardId = '';
             }
+        }
+    },
+    mounted() {
+        // Load boards on mount if modal is already open
+        if (this.show) {
+            this.loadBoards();
         }
     }
 };
@@ -239,6 +310,48 @@ export default {
     overflow-y: auto;
     padding: 1.25rem;
     background: #f9fafb;
+}
+
+.board-selector-wrapper {
+    margin-bottom: 1rem;
+}
+
+.selector-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.selector-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #6366f1;
+}
+
+.board-select {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    background: white;
+    color: #111827;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    &:hover {
+        border-color: #9ca3af;
+    }
 }
 
 .search-wrapper {
@@ -365,6 +478,33 @@ export default {
     .subtask-icon {
         width: 0.875rem;
         height: 0.875rem;
+    }
+}
+
+.loading-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+
+    .spinner {
+        width: 2rem;
+        height: 2rem;
+        margin: 0 auto 1rem;
+        border: 3px solid #e5e7eb;
+        border-top-color: #6366f1;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    p {
+        font-size: 0.875rem;
+        margin: 0;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
 }
 

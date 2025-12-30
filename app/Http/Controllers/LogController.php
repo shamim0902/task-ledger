@@ -4,7 +4,7 @@ namespace TaskLedger\App\Http\Controllers;
 
 use TaskLedger\App\Models\Log;
 use TaskLedger\App\Models\User;
-
+use TaskLedger\App\Services\PermissionService;
 use TaskLedger\Framework\Http\Request\Request;
 use TaskLedger\Framework\Http\Response\Response;
 use TaskLedger\Framework\Http\Controller;
@@ -16,10 +16,17 @@ class LogController extends Controller
 {
     public function create(Request $request)
     {
-        $data = $request->all();
-
         $current_user = wp_get_current_user();
         $user_id = $current_user->ID;
+        
+        // Check permission to create daily log
+        if (!PermissionService::hasPermission($user_id, 'create_daily_log')) {
+            return Response::json([
+                'message' => 'You do not have permission to create daily logs',
+            ], 403);
+        }
+
+        $data = $request->all();
         $today = date('Y-m-d');
 
         // 1️⃣ Find existing log for today
@@ -86,9 +93,20 @@ class LogController extends Controller
     }
 
 
-    public function get()
+    public function get(Request $request)
     {
-        return Log::all();
+        $userId = get_current_user_id();
+        
+        // Check permission to view logs
+        if (PermissionService::hasPermission($userId, 'view_all_logs')) {
+            // User can view all logs
+            return Log::all();
+        } else if (PermissionService::hasPermission($userId, 'view_own_logs')) {
+            // User can only view own logs
+            return Log::where('user_id', $userId)->get();
+        }
+        
+        return $request->abort(403, 'You do not have permission to view logs');
     }
 
     public function getTodayLogs()

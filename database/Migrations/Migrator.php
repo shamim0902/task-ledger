@@ -15,7 +15,10 @@ abstract class Migrator
 
      public static function migrate()
      {
-        echo "Migrating Table: " . static::getTableName() . "\n";
+        // Only output in CLI mode, not during web activation
+        if (defined('WP_CLI') && WP_CLI) {
+            echo "Migrating Table: " . static::getTableName() . "\n";
+        }
          Schema::createTableIfNotExist(
              static::getTableName(),
              static::getSqlSchema()
@@ -40,9 +43,12 @@ abstract class Migrator
          return $wpdb->get_charset_collate();
      }
 
-     public static function dropTable()
-     {
-        echo "Dropping Table: " . static::getTableName() . "\n";
+    public static function dropTable()
+    {
+        // Only output in CLI mode, not during web activation
+        if (defined('WP_CLI') && WP_CLI) {
+            echo "Dropping Table: " . static::getTableName() . "\n";
+        }
          Schema::dropTableIfExists(static::getTableName(false));
      }
  

@@ -116,20 +116,24 @@
                                 </div>
                                 <div class="submitted-text">
                                     <h3 class="submitted-title">Log submitted for today</h3>
-                                    <p class="submitted-message">Your daily log has been saved successfully.</p>
+                                    <div class="submitted-summary">
+                                        <span>{{ todayLog.tasks.length }} task{{ todayLog.tasks.length !== 1 ? 's' : '' }}</span>
+                                        <span v-if="totalStoryPoints > 0">• {{ totalStoryPoints }} pts</span>
+                                        <span v-if="completedTasksCount > 0">• {{ completedTasksCount }} completed</span>
+                                    </div>
                                 </div>
-                                <button @click="logSubmitted = false" class="btn-edit-log">
+                                <button @click="handleEditLog" class="btn-edit-log">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
-                                    <span>Edit Today's Log</span>
+                                    <span>Edit</span>
                                 </button>
                             </div>
                         </div>
 
                         <!-- Daily Log Form (shown when not submitted) -->
-                        <template v-else>
+                        <template v-if="!logSubmitted">
                             <!-- Selected Task Card (Inline) -->
                             <div v-if="selectedTask" class="selected-task-inline">
                                 <div class="selected-task-header-compact">
@@ -176,7 +180,7 @@
 
             <!-- History View -->
             <div v-if="currentView === 'history'" class="history-view">
-                <LogHistory />
+                <LogHistory :key="historyKey" />
             </div>
         </div>
 
@@ -229,7 +233,8 @@ export default {
             showTaskSelectModal: false,
             showAddSubtaskInput: false,
             weight: 1,
-            logSubmitted: false
+            logSubmitted: false,
+            historyKey: 0
         };
     },
     computed: {
@@ -250,6 +255,24 @@ export default {
         },
         totalStoryPoints() {
             return this.todayLog.tasks.reduce((sum, task) => sum + (parseInt(task.complete_weight) || 0), 0);
+        },
+        completedTasks() {
+            return this.todayLog.tasks.filter(t => t.status === 'completed');
+        },
+        inProgressTasks() {
+            return this.todayLog.tasks.filter(t => t.status === 'in-progress');
+        },
+        blockedTasks() {
+            return this.todayLog.tasks.filter(t => t.status === 'blocked');
+        },
+        completedTasksCount() {
+            return this.completedTasks.length;
+        },
+        inProgressTasksCount() {
+            return this.inProgressTasks.length;
+        },
+        blockedTasksCount() {
+            return this.blockedTasks.length;
         }
     },
     methods: {
@@ -357,15 +380,20 @@ export default {
                 task.status = 'in-progress';
             }
         },
-        handleTaskUpdate(task) {
-            // Auto-save task updates (optional - can be debounced)
-            // For now, just ensure data is in sync
-            if (task.status === 'blocked' && !task.blocker_reason) {
-                // Warn user if blocker reason is missing
-                this.$notify({
-                    type: 'warning',
-                    text: 'Please provide a reason why this task is blocked'
-                });
+        async handleTaskUpdate(task) {
+            // Validate blocked tasks have blocker reasons before auto-saving
+            if (task.status === 'blocked' && (!task.blocker_reason || task.blocker_reason.trim() === '')) {
+                // Don't save if blocker reason is missing
+                return;
+            }
+
+            // Auto-save the log when status changes
+            try {
+                await this.$post('logs', this.todayLog);
+                // Silent save - no notification to avoid spam
+            } catch (error) {
+                console.error('Error auto-saving task update:', error);
+                // Don't show error notification on every status change to avoid spam
             }
         },
         getTasks() {
@@ -397,12 +425,20 @@ export default {
                     notes: data?.additional_notes || '',
                     tasks: tasks,
                 };
+
+                // Check if log is already submitted (has tasks or notes)
+                if (tasks.length > 0 || (data?.additional_notes && data.additional_notes.trim())) {
+                    this.logSubmitted = true;
+                }
             }).catch(err => {
                 // this.$notify({
                 //     type: 'error',
                 //     text: 'Failed to load today\'s log'
                 // });
             });
+        },
+        handleEditLog() {
+            this.logSubmitted = false;
         },
         addNewTask(taskData) {
             // This is a placeholder - implement actual API call when backend is ready
@@ -436,14 +472,14 @@ export default {
             }
 
             this.$post('logs', this.todayLog).then(res => {
-                this.$notify({
-                    type: 'success',
-                    text: 'Log saved successfully'
-                });
+                this.$notify(
+                    'Log saved successfully');
                 // Set submitted state
                 this.logSubmitted = true;
                 // Refresh today's log to get updated data
                 this.getTodayLogs();
+                // Force refresh history component by updating key
+                this.historyKey += 1;
             }).catch(err => {
                 this.$notify({
                     type: 'error',
@@ -850,76 +886,83 @@ export default {
 
 // Log Submitted State
 .log-submitted-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 1rem;
-    min-height: 200px;
+    background: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .submitted-content {
-    text-align: center;
-    max-width: 400px;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
 }
 
 .submitted-icon-wrapper {
-    width: 4rem;
-    height: 4rem;
-    margin: 0 auto 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    flex-shrink: 0;
 }
 
 .submitted-icon {
-    width: 2rem;
-    height: 2rem;
+    width: 1.25rem;
+    height: 1.25rem;
     color: white;
 }
 
 .submitted-text {
-    margin-bottom: 1.5rem;
+    flex: 1;
+    min-width: 0;
 }
 
 .submitted-title {
-    font-size: 1.125rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: #111827;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.2;
 }
 
-.submitted-message {
-    font-size: 0.875rem;
+.submitted-summary {
+    font-size: 0.8125rem;
     color: #6b7280;
-    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .btn-edit-log {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
     background: #6366f1;
     color: white;
     border: none;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    flex-shrink: 0;
 
     svg {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 
     &:hover {
         background: #4f46e5;
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
     }
 
     &:active {

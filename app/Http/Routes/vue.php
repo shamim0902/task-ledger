@@ -22,6 +22,36 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
+    $router->add('/roles', 'modules/roles')
+        ->name('roles')
+        ->icon('UserFilled')
+        ->title(__('Roles', 'taskledger'))
+        ->props([
+            'user'     => wp_get_current_user(),
+            'isAdmin'  => current_user_can('manage_options'),
+        ])
+        ->middleware('auth');
+
+    $router->add('/projects', 'modules/projects')
+        ->name('projects')
+        ->icon('FolderOpened')
+        ->title(__('Projects', 'taskledger'))
+        ->props([
+            'user'     => wp_get_current_user(),
+            'isAdmin'  => current_user_can('manage_options'),
+        ])
+        ->middleware('auth');
+
+    $router->add('/projects/:id', 'modules/projects/detail')
+        ->name('projects.detail')
+        ->icon('FolderOpened')
+        ->title(__('Project Details', 'taskledger'))
+        ->props([
+            'user'     => wp_get_current_user(),
+            'isAdmin'  => current_user_can('manage_options'),
+        ])
+        ->middleware('auth');
+
     $router->add('posts-all', 'modules/posts')
         ->name('posts.all')
         ->icon('Memo')
@@ -161,17 +191,18 @@ $router->menu('footer', function ($router) {
 // Define Additional menu items
 // $item = $router->footer->submenu('footer')->submenu('nestedfooter');
 // $item = $router->footer->submenu('footer');
-$item = $router->primary;
+// $item = $router->primary;
 
-$item->addIf('posts', 'modules/posts', fn() => $app->user()->can('manage_options'))
-    ->name('posts')
-    ->label(
-        __('Posts...', 'fluentdoctest')
-    );
+// Example conditional menu items (commented out - requires app instance)
+// $item->addIf('posts', 'modules/posts', fn() => current_user_can('manage_options'))
+//     ->name('posts')
+//     ->label(
+//         __('Posts...', 'fluentdoctest')
+//     );
 
-$item->addIf('media', 'modules/media', $app->user()->can('manage_options'))
-    ->name('media')
-    ->title('Media')
-    ->enqueue(function() {
-        wp_enqueue_media();
-    });
+// $item->addIf('media', 'modules/media', current_user_can('manage_options'))
+//     ->name('media')
+//     ->title('Media')
+//     ->enqueue(function() {
+//         wp_enqueue_media();
+//     });

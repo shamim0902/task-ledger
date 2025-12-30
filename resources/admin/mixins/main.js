@@ -53,6 +53,7 @@ export default {
         $put: Rest.put,
         $patch: Rest.patch,
         $del: Rest.delete,
+        $delete: Rest.delete,
         $alert:ElMessageBox.alert,
         $confirm:ElMessageBox.confirm,
         $capitalize: capitalize,

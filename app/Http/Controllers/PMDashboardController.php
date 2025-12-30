@@ -5,6 +5,7 @@ namespace TaskLedger\App\Http\Controllers;
 use TaskLedger\App\Models\Log;
 use TaskLedger\App\Models\LogItem;
 use TaskLedger\App\Models\User;
+use TaskLedger\App\Services\PermissionService;
 use TaskLedger\Framework\Http\Request\Request;
 use FluentBoards\App\Models\Task;
 use FluentBoards\App\Models\Board;
@@ -17,9 +18,26 @@ class PMDashboardController extends Controller
      */
     public function getTeamActivity(Request $request)
     {
+        $userId = get_current_user_id();
+        
+        // Check permission to view PM dashboard
+        if (!PermissionService::hasPermission($userId, 'view_pm_dashboard')) {
+            return $request->abort(403, 'You do not have permission to view the PM Dashboard');
+        }
+
         $date = $request->get('date', date('Y-m-d'));
         $teamMembers = $request->get('team_members', 'all');
         $boardIds = $request->get('boards', 'all');
+        
+        // Filter boards by user access
+        if (!PermissionService::isAdmin($userId)) {
+            $userBoards = PermissionService::getUserBoards($userId);
+            if ($boardIds === 'all') {
+                $boardIds = $userBoards;
+            } else if (is_array($boardIds)) {
+                $boardIds = array_intersect($boardIds, $userBoards);
+            }
+        }
         
         // Get all users who have submitted logs
         $userIds = Log::where('log_date', $date)
@@ -176,8 +194,25 @@ class PMDashboardController extends Controller
      */
     public function getSummaryStats(Request $request)
     {
+        $userId = get_current_user_id();
+        
+        // Check permission to view PM dashboard
+        if (!PermissionService::hasPermission($userId, 'view_pm_dashboard')) {
+            return $request->abort(403, 'You do not have permission to view the PM Dashboard');
+        }
+
         $date = $request->get('date', date('Y-m-d'));
         $boardIds = $request->get('boards', 'all');
+        
+        // Filter boards by user access
+        if (!PermissionService::isAdmin($userId)) {
+            $userBoards = PermissionService::getUserBoards($userId);
+            if ($boardIds === 'all') {
+                $boardIds = $userBoards;
+            } else if (is_array($boardIds)) {
+                $boardIds = array_intersect($boardIds, $userBoards);
+            }
+        }
 
         $logs = Log::where('log_date', $date)
             ->with('logItems')
@@ -233,9 +268,26 @@ class PMDashboardController extends Controller
      */
     public function getTaskAnalytics(Request $request)
     {
+        $userId = get_current_user_id();
+        
+        // Check permission to view PM dashboard
+        if (!PermissionService::hasPermission($userId, 'view_pm_dashboard')) {
+            return $request->abort(403, 'You do not have permission to view the PM Dashboard');
+        }
+
         $date = $request->get('date', date('Y-m-d'));
         $boardIds = $request->get('boards', 'all');
         $teamMembers = $request->get('team_members', 'all');
+        
+        // Filter boards by user access
+        if (!PermissionService::isAdmin($userId)) {
+            $userBoards = PermissionService::getUserBoards($userId);
+            if ($boardIds === 'all') {
+                $boardIds = $userBoards;
+            } else if (is_array($boardIds)) {
+                $boardIds = array_intersect($boardIds, $userBoards);
+            }
+        }
 
         $logs = Log::where('log_date', $date)
             ->with('logItems')
@@ -419,9 +471,26 @@ class PMDashboardController extends Controller
      */
     public function getTaskOverview(Request $request)
     {
+        $userId = get_current_user_id();
+        
+        // Check permission to view tasks
+        if (!PermissionService::hasPermission($userId, 'view_all_tasks')) {
+            return $request->abort(403, 'You do not have permission to view tasks');
+        }
+
         $date = $request->get('date', date('Y-m-d'));
         $status = $request->get('status', 'all');
         $boardIds = $request->get('boards', 'all');
+        
+        // Filter boards by user access
+        if (!PermissionService::isAdmin($userId)) {
+            $userBoards = PermissionService::getUserBoards($userId);
+            if ($boardIds === 'all') {
+                $boardIds = $userBoards;
+            } else if (is_array($boardIds)) {
+                $boardIds = array_intersect($boardIds, $userBoards);
+            }
+        }
 
         $logs = Log::where('log_date', $date)
             ->with(['logItems', 'user'])
@@ -474,8 +543,25 @@ class PMDashboardController extends Controller
      */
     public function getBlockedTasks(Request $request)
     {
+        $userId = get_current_user_id();
+        
+        // Check permission to view PM dashboard
+        if (!PermissionService::hasPermission($userId, 'view_pm_dashboard')) {
+            return $request->abort(403, 'You do not have permission to view the PM Dashboard');
+        }
+
         $date = $request->get('date', date('Y-m-d'));
         $boardIds = $request->get('boards', 'all');
+        
+        // Filter boards by user access
+        if (!PermissionService::isAdmin($userId)) {
+            $userBoards = PermissionService::getUserBoards($userId);
+            if ($boardIds === 'all') {
+                $boardIds = $userBoards;
+            } else if (is_array($boardIds)) {
+                $boardIds = array_intersect($boardIds, $userBoards);
+            }
+        }
         
         $logs = Log::where('log_date', $date)
             ->with(['logItems', 'user'])
@@ -517,8 +603,18 @@ class PMDashboardController extends Controller
     /**
      * Get all team members
      */
-    public function getTeamMembers()
+    public function getTeamMembers(Request $request = null)
     {
+        $userId = get_current_user_id();
+        
+        // Check permission to view members
+        if (!PermissionService::hasPermission($userId, 'view_members')) {
+            if ($request) {
+                return $request->abort(403, 'You do not have permission to view team members');
+            }
+            return [];
+        }
+
         $userIds = Log::distinct()->pluck('user_id')->toArray();
         $users = User::whereIn('ID', $userIds)->get();
 
@@ -539,11 +635,26 @@ class PMDashboardController extends Controller
     {
         $userId = get_current_user_id();
         
+        // Check permission to view boards
+        if (!PermissionService::hasPermission($userId, 'view_assigned_boards') && 
+            !PermissionService::hasPermission($userId, 'view_all_boards')) {
+            return [];
+        }
+
         // Get boards accessible to the current user
-        $boards = Board::byAccessUser($userId)
-            ->whereNull('archived_at')
-            ->orderBy('title', 'asc')
-            ->get();
+        if (PermissionService::isAdmin($userId) || PermissionService::hasPermission($userId, 'view_all_boards')) {
+            // Admin or user with view_all_boards permission can see all boards
+            $boards = Board::whereNull('archived_at')
+                ->orderBy('title', 'asc')
+                ->get();
+        } else {
+            // Filter by user's accessible boards
+            $userBoards = PermissionService::getUserBoards($userId);
+            $boards = Board::whereIn('id', $userBoards)
+                ->whereNull('archived_at')
+                ->orderBy('title', 'asc')
+                ->get();
+        }
 
         return $boards->map(function($board) {
             return [
@@ -559,6 +670,13 @@ class PMDashboardController extends Controller
      */
     public function sendReminders(Request $request)
     {
+        $userId = get_current_user_id();
+        
+        // Check permission to manage members
+        if (!PermissionService::hasPermission($userId, 'manage_members')) {
+            return $request->abort(403, 'You do not have permission to send reminders');
+        }
+
         $date = $request->get('date', date('Y-m-d'));
         $teamMembers = $request->get('team_members', []);
         
