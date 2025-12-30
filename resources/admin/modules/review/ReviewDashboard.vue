@@ -35,23 +35,88 @@
 
         <!-- Main Content Area -->
         <div class="review-content">
-            <!-- Date Range Filter -->
-            <div class="date-range-section">
-                <div class="date-range-filter">
-                    <label>Date Range:</label>
-                    <input
-                        type="date"
-                        v-model="startDate"
-                        @change="loadSubmissions"
-                        class="date-input"
-                    />
-                    <span>to</span>
-                    <input
-                        type="date"
-                        v-model="endDate"
-                        @change="loadSubmissions"
-                        class="date-input"
-                    />
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filters-header">
+                    <h3 class="filters-title">Filters</h3>
+                </div>
+                <div class="filters-content">
+                    <!-- Quick Date Filters -->
+                    <div class="task-ledger-filter-group">
+                        <div class="quick-filters">
+                            <button
+                                v-for="filter in quickDateFilters"
+                                :key="filter.value"
+                                @click="applyQuickDateFilter(filter.value)"
+                                :class="['quick-filter-btn', { active: dateFilterType === filter.value }]"
+                            >
+                                {{ filter.label }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Date Range (shown when custom is selected) -->
+                    <div v-if="dateFilterType === 'custom'" class="task-ledger-filter-group">
+                        <div class="date-range-inputs">
+                            <input
+                                type="date"
+                                v-model="startDate"
+                                @change="applyCustomDateRange"
+                                class="date-input"
+                                placeholder="Start date"
+                            />
+                            <span class="date-separator">to</span>
+                            <input
+                                type="date"
+                                v-model="endDate"
+                                @change="applyCustomDateRange"
+                                class="date-input"
+                                placeholder="End date"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Member Filter -->
+                    <div class="task-ledger-filter-group">
+                        <div class="filter-wrapper">
+                            <button
+                                @click.stop="showMemberFilter = !showMemberFilter"
+                                :class="['member-filter-btn', { active: selectedMemberId }]"
+                            >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                <span>{{ selectedMemberName || 'All Members' }}</span>
+                                <svg v-if="selectedMemberId" @click.stop="clearMemberFilter" class="clear-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <transition name="dropdown">
+                                <div v-if="showMemberFilter" class="filter-dropdown">
+                                    <div class="filter-header">
+                                        <span>Select Member</span>
+                                        <button @click.stop="showMemberFilter = false" class="close-filter">×</button>
+                                    </div>
+                                    <div class="filter-options">
+                                        <label class="filter-checkbox" @click="handleMemberSelect(null)">
+                                            <input type="radio" :checked="selectedMemberId === null" />
+                                            <span><strong>All Members</strong></span>
+                                        </label>
+                                        <label
+                                            v-for="member in members"
+                                            :key="member.id"
+                                            class="filter-checkbox"
+                                            @click="handleMemberSelect(member.id)"
+                                        >
+                                            <input type="radio" :checked="selectedMemberId === member.id" />
+                                            <span>{{ member.name }}</span>
+                                            <span v-if="member.unread_count > 0" class="unread-badge">{{ member.unread_count }}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </transition>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -122,8 +187,16 @@ export default {
             reviewedFilter: 'all', // 'all', 'reviewed', 'unreviewed' - Default to 'all' to show everything
             showMemberFilter: false,
             showStatusFilter: false,
+            dateFilterType: 'all', // 'all', 'today', 'monthly', 'yearly', 'custom'
             startDate: '', // No default date filter - show all submissions
             endDate: '',
+            quickDateFilters: [
+                { label: 'All Time', value: 'all' },
+                { label: 'Today', value: 'today' },
+                { label: 'This Month', value: 'monthly' },
+                { label: 'This Year', value: 'yearly' },
+                { label: 'Custom Range', value: 'custom' },
+            ],
             pagination: {
                 current_page: 1,
                 per_page: 20,
@@ -145,6 +218,57 @@ export default {
         });
     },
     methods: {
+        getTodayDate() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        },
+        getMonthStartDate() {
+            const today = new Date();
+            return new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+        },
+        getYearStartDate() {
+            const today = new Date();
+            return new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+        },
+        applyQuickDateFilter(filterType) {
+            this.dateFilterType = filterType;
+            
+            if (filterType === 'all') {
+                this.startDate = '';
+                this.endDate = '';
+            } else if (filterType === 'today') {
+                const today = this.getTodayDate();
+                this.startDate = today;
+                this.endDate = today;
+            } else if (filterType === 'monthly') {
+                this.startDate = this.getMonthStartDate();
+                this.endDate = this.getTodayDate();
+            } else if (filterType === 'yearly') {
+                this.startDate = this.getYearStartDate();
+                this.endDate = this.getTodayDate();
+            } else if (filterType === 'custom') {
+                // Keep existing dates or set to empty
+                if (!this.startDate && !this.endDate) {
+                    this.startDate = this.getMonthStartDate();
+                    this.endDate = this.getTodayDate();
+                }
+            }
+            
+            this.loadSubmissions(1);
+        },
+        applyCustomDateRange() {
+            if (this.startDate && this.endDate) {
+                this.dateFilterType = 'custom';
+            }
+            this.loadSubmissions(1);
+        },
+        clearMemberFilter() {
+            this.selectedMemberId = null;
+            this.selectedMemberName = null;
+            this.showMemberFilter = false;
+            this.selectedSubmissions = [];
+            this.loadSubmissions(1);
+        },
         getDateDaysAgo(days) {
             const date = new Date();
             date.setDate(date.getDate() - days);
@@ -222,6 +346,10 @@ export default {
             }
         },
         handleMemberSelect(memberId) {
+            if (memberId === null) {
+                this.clearMemberFilter();
+                return;
+            }
             this.selectedMemberId = memberId;
             const member = this.members.find(m => m.id === memberId);
             this.selectedMemberName = member ? member.name : null;
@@ -373,56 +501,59 @@ export default {
 .review-header {
     background: white;
     border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .header-content {
     max-width: 1800px;
     margin: 0 auto;
-    padding: 1rem 1.5rem;
+    padding: 0.625rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .header-brand {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .brand-icon {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2rem;
+    height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     border-radius: 0.5rem;
     color: white;
+    box-shadow: 0 2px 4px -1px rgba(16, 185, 129, 0.3);
+    flex-shrink: 0;
 
     svg {
-        width: 1.5rem;
-        height: 1.5rem;
+        width: 1.125rem;
+        height: 1.125rem;
     }
 }
 
 .brand-text {
     .brand-title {
-        font-size: 1.25rem;
+        font-size: 0.9375rem;
         font-weight: 700;
         color: #111827;
         margin: 0;
-        letter-spacing: -0.025em;
+        line-height: 1.2;
     }
 
     .brand-subtitle {
-        font-size: 0.8125rem;
+        font-size: 0.6875rem;
         color: #6b7280;
-        margin: 0.125rem 0 0 0;
+        margin: 0;
+        font-weight: 500;
     }
 }
 
@@ -431,9 +562,11 @@ export default {
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+    flex: 1;
+    justify-content: flex-end;
 }
 
-.filter-group {
+.task-ledger-filter-group {
     display: flex;
     gap: 0.5rem;
 }
@@ -475,13 +608,14 @@ export default {
 
 .filter-dropdown {
     position: absolute;
-    top: calc(100% + 0.5rem);
+    top: calc(100% + 0.375rem);
     left: 0;
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     min-width: 200px;
+    max-width: 280px;
     max-height: 300px;
     overflow-y: auto;
     z-index: 50;
@@ -491,42 +625,47 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-bottom: 1px solid #e5e7eb;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
+    background: #f9fafb;
 }
 
 .close-filter {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     color: #6b7280;
     cursor: pointer;
     padding: 0;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
 
     &:hover {
+        background: #f3f4f6;
         color: #111827;
     }
 }
 
 .filter-options {
-    padding: 0.5rem;
+    padding: 0.375rem;
 }
 
 .filter-checkbox {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.4375rem 0.5rem;
     cursor: pointer;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
+    border-radius: 0.25rem;
+    font-size: 0.8125rem;
+    transition: all 0.2s;
 
     &:hover {
         background: #f9fafb;
@@ -535,6 +674,8 @@ export default {
     input[type="checkbox"],
     input[type="radio"] {
         cursor: pointer;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 }
 
@@ -596,35 +737,153 @@ export default {
 }
 
 .review-content {
-    max-width: 1800px;
-    margin: 0 auto;
-    padding: 0 1.5rem 1.5rem;
+    width: 100%;
+    padding: 0 1rem 1rem;
 }
 
-.date-range-section {
+.filters-section {
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    border-radius: 0.375rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    width: 100%;
 }
 
-.date-range-filter {
+.filters-header {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.filters-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filters-content {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.task-ledger-filter-group {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+}
 
-    label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #374151;
+.quick-filters {
+    display: flex;
+    gap: 0.375rem;
+    flex-wrap: nowrap;
+}
+
+.quick-filter-btn {
+    padding: 0.375rem 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+
+    &:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
     }
 
-    .date-input {
-        padding: 0.5rem 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
+    &.active {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: white;
+    }
+}
+
+.date-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-wrap: nowrap;
+}
+
+.date-input {
+    padding: 0.375rem 0.625rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    color: #374151;
+    background: white;
+    transition: all 0.2s;
+    width: 140px;
+
+    &:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    }
+}
+
+.date-separator {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.member-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    min-width: 140px;
+    justify-content: space-between;
+
+    svg {
+        width: 0.875rem;
+        height: 0.875rem;
+        flex-shrink: 0;
+    }
+
+    .clear-icon {
+        width: 0.75rem;
+        height: 0.75rem;
+        opacity: 0.6;
+        
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    &:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    &.active {
+        background: #eef2ff;
+        border-color: #6366f1;
+        color: #6366f1;
     }
 }
 

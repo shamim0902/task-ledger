@@ -91,8 +91,8 @@ class ReviewController extends Controller
         $endDate = $request->get('end_date');
         $memberId = $request->get('member_id');
         $reviewed = $request->get('reviewed'); // 'all', 'reviewed', 'unreviewed'
-        $page = $request->get('page', 1);
-        $perPage = $request->get('per_page', 20);
+        $page = (int)$request->get('page', 1);
+        $perPage = (int)$request->get('per_page', 20);
 
         // Get reviewable member IDs
         $isAdmin = PermissionService::isAdmin($userId);
@@ -146,11 +146,17 @@ class ReviewController extends Controller
         }
 
         // Filter by date range (only if provided and not empty)
-        if (!empty($startDate)) {
-            $query->where('log_date', '>=', $startDate);
+        if (!empty($startDate) && is_string($startDate)) {
+            // Validate date format (YYYY-MM-DD)
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
+                $query->where('log_date', '>=', $startDate);
+            }
         }
-        if (!empty($endDate)) {
-            $query->where('log_date', '<=', $endDate);
+        if (!empty($endDate) && is_string($endDate)) {
+            // Validate date format (YYYY-MM-DD)
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
+                $query->where('log_date', '<=', $endDate);
+            }
         }
 
         // Filter by reviewed status

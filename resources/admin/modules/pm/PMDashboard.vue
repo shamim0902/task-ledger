@@ -16,7 +16,7 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <div class="filter-group">
+                    <div class="task-ledger-filter-group">
                         <div class="filter-wrapper">
                             <button 
                                 @click.stop="showTeamFilter = !showTeamFilter"
@@ -620,47 +620,47 @@ export default {
 .pm-header {
     background: white;
     border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .header-content {
     max-width: 1800px;
     margin: 0 auto;
-    padding: 1rem 1.5rem;
+    padding: 0.625rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .header-brand {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 
     .brand-icon {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 2rem;
+        height: 2rem;
         background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        border-radius: 0.625rem;
+        border-radius: 0.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 2px 4px -1px rgba(99, 102, 241, 0.3);
         flex-shrink: 0;
 
         svg {
-            width: 1.5rem;
-            height: 1.5rem;
+            width: 1.125rem;
+            height: 1.125rem;
         }
     }
 
     .brand-text {
         .brand-title {
-            font-size: 1.125rem;
+            font-size: 0.9375rem;
             font-weight: 700;
             color: #111827;
             margin: 0;
@@ -668,7 +668,7 @@ export default {
         }
 
         .brand-subtitle {
-            font-size: 0.75rem;
+            font-size: 0.6875rem;
             color: #6b7280;
             margin: 0;
             font-weight: 500;
@@ -685,7 +685,7 @@ export default {
     justify-content: flex-end;
 }
 
-.filter-group {
+.task-ledger-filter-group {
     display: flex;
     flex-direction: row;
     gap: 0.5rem;
@@ -708,21 +708,21 @@ export default {
 .filter-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.875rem;
+    gap: 0.375rem;
+    padding: 0.4375rem 0.75rem;
     border: 1px solid #d1d5db;
     background: #f9fafb;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     font-weight: 500;
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: #374151;
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
 
     svg {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 
     &:hover {
@@ -740,17 +740,17 @@ export default {
 
 .filter-dropdown {
     position: absolute;
-    top: calc(100% + 0.5rem);
+    top: calc(100% + 0.375rem);
     right: 0;
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     z-index: 1000;
-    min-width: 220px;
-    max-width: 300px;
-    max-height: 320px;
+    min-width: 180px;
+    max-width: 240px;
+    max-height: 280px;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -771,24 +771,24 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #111827;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.375rem;
     border-bottom: 1px solid #e5e7eb;
 }
 
 .close-filter {
     background: none;
     border: none;
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: #6b7280;
     cursor: pointer;
     line-height: 1;
     padding: 0;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -809,28 +809,28 @@ export default {
 .filter-checkbox {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 0.375rem;
-    font-size: 0.8125rem;
+    padding: 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
 
     &:hover {
         background: #f9fafb;
     }
 
     input[type="checkbox"] {
-        width: 0.875rem;
-        height: 0.875rem;
+        width: 0.8125rem;
+        height: 0.8125rem;
         cursor: pointer;
     }
 }
 
 .no-boards {
-    padding: 0.75rem;
+    padding: 0.5rem;
     text-align: center;
     color: #9ca3af;
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
 }
 
 .action-group {
@@ -844,21 +844,21 @@ export default {
 .action-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.875rem;
+    gap: 0.375rem;
+    padding: 0.4375rem 0.75rem;
     border: 1px solid #d1d5db;
     background: white;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     font-weight: 500;
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: #374151;
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
 
     svg {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 
     &:hover:not(:disabled) {
@@ -888,46 +888,46 @@ export default {
 .pm-content {
     max-width: 1800px;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 1rem;
 }
 
 // Stats Dashboard
 .stats-dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .stat-card {
     background: white;
-    border-radius: 0.75rem;
-    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
-    gap: 0.875rem;
+    gap: 0.625rem;
     border: 1px solid #e5e7eb;
-    transition: all 0.3s;
+    transition: all 0.2s;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 
     &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
     }
 
     .stat-icon-wrapper {
-        width: 2.75rem;
-        height: 2.75rem;
-        border-radius: 0.625rem;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        transition: all 0.3s;
+        transition: all 0.2s;
 
         svg {
-            width: 1.375rem;
-            height: 1.375rem;
+            width: 1.125rem;
+            height: 1.125rem;
         }
     }
 
@@ -936,14 +936,14 @@ export default {
         min-width: 0;
 
         .stat-value {
-            font-size: 1.375rem;
+            font-size: 1.125rem;
             font-weight: 700;
             line-height: 1.2;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.125rem;
         }
 
         .stat-label {
-            font-size: 0.75rem;
+            font-size: 0.6875rem;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -998,22 +998,22 @@ export default {
 
 // Date Filter Section (Top)
 .date-filter-section {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .date-filter {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .date-nav-btn {
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 2px solid #e5e7eb;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid #e5e7eb;
     background: white;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1022,8 +1022,8 @@ export default {
     color: #6b7280;
 
     svg {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
     }
 
     &:hover {
@@ -1036,7 +1036,7 @@ export default {
 .date-picker-wrapper {
     position: relative;
     flex: 1;
-    max-width: 300px;
+    max-width: 240px;
 
     .date-input {
         position: absolute;
@@ -1051,11 +1051,12 @@ export default {
     }
 
     .date-display {
-        padding: 0.625rem 1rem;
+        padding: 0.5rem 0.875rem;
         background: #f9fafb;
-        border: 2px solid #e5e7eb;
-        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
         font-weight: 500;
+        font-size: 0.8125rem;
         color: #374151;
         display: flex;
         align-items: center;
@@ -1064,8 +1065,8 @@ export default {
         transition: all 0.2s;
 
         .calendar-icon {
-            width: 1.25rem;
-            height: 1.25rem;
+            width: 1rem;
+            height: 1rem;
             color: #6b7280;
         }
     }
@@ -1076,12 +1077,13 @@ export default {
 }
 
 .today-btn {
-    padding: 0.625rem 1.25rem;
+    padding: 0.5rem 1rem;
     background: #4f46e5;
     color: white;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     font-weight: 500;
+    font-size: 0.8125rem;
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
@@ -1095,24 +1097,24 @@ export default {
 .dashboard-sections {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .dashboard-section {
     background: white;
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     overflow: hidden;
     transition: box-shadow 0.2s;
 
     &:hover {
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
     }
 }
 
 .section-header {
-    padding: 1rem 1.25rem;
+    padding: 0.625rem 0.875rem;
     background: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
 }
@@ -1120,18 +1122,18 @@ export default {
 .section-title-wrapper {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .section-icon {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1rem;
+    height: 1rem;
     color: #6366f1;
     flex-shrink: 0;
 }
 
 .section-title {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #111827;
     margin: 0;
@@ -1139,14 +1141,14 @@ export default {
 }
 
 .section-subtitle {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     color: #6b7280;
-    margin: 0.125rem 0 0 0;
+    margin: 0.0625rem 0 0 0;
     font-weight: 400;
 }
 
 .section-content {
-    padding: 1.25rem;
+    padding: 0.875rem;
 }
 
 // Responsive Design
@@ -1166,7 +1168,7 @@ export default {
         justify-content: space-between;
     }
 
-    .filter-group {
+    .task-ledger-filter-group {
         flex: 1;
         min-width: 0;
         border: none;
@@ -1179,7 +1181,7 @@ export default {
 
 @media (max-width: 768px) {
     .header-content {
-        padding: 0.75rem 1rem;
+        padding: 0.5rem 0.75rem;
         flex-direction: column;
         align-items: stretch;
     }
@@ -1192,13 +1194,13 @@ export default {
     .header-actions {
         flex-direction: column;
         width: 100%;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
     
-    .filter-group {
+    .task-ledger-filter-group {
         width: 100%;
         flex-direction: row;
-        gap: 0.5rem;
+        gap: 0.375rem;
         justify-content: flex-start;
         border: none;
     }
@@ -1233,15 +1235,15 @@ export default {
 
     .stats-dashboard {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .section-header {
-        padding: 0.875rem 1rem;
+        padding: 0.5rem 0.75rem;
     }
 
     .section-content {
-        padding: 1rem;
+        padding: 0.75rem;
     }
 }
 </style>

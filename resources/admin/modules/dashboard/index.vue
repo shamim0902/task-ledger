@@ -675,41 +675,42 @@ export default {
 .app-navbar {
     background: white;
     border-bottom: 1px solid #e5e7eb;
-    padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     position: sticky;
     top: 0;
     z-index: 100;
 }
 
 .navbar-brand {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0.625rem 1rem;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 
     .brand-icon {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 2rem;
+        height: 2rem;
         background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        border-radius: 0.625rem;
+        border-radius: 0.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 2px 4px -1px rgba(99, 102, 241, 0.3);
+        flex-shrink: 0;
 
         svg {
-            width: 1.5rem;
-            height: 1.5rem;
+            width: 1.125rem;
+            height: 1.125rem;
         }
     }
 
     .brand-text {
         .brand-title {
-            font-size: 1.25rem;
+            font-size: 0.9375rem;
             font-weight: 700;
             color: #111827;
             margin: 0;
@@ -717,7 +718,7 @@ export default {
         }
 
         .brand-subtitle {
-            font-size: 0.75rem;
+            font-size: 0.6875rem;
             color: #6b7280;
             margin: 0;
             font-weight: 500;
