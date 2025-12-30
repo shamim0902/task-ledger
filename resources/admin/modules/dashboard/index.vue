@@ -130,6 +130,56 @@
                                     <span>Edit</span>
                                 </button>
                             </div>
+                            
+                            <!-- Submitted Log Details Summary -->
+                            <div class="submitted-details">
+                                <!-- <div v-if="todayLog.tasks.length > 0" class="submitted-tasks-list">
+                                    <div 
+                                        v-for="(task, index) in todayLog.tasks" 
+                                        :key="task.id || task.task_id || index"
+                                        class="submitted-task-item"
+                                    >
+                                        <div class="task-item-content">
+                                            <div class="task-item-header">
+                                                <span class="task-item-title">{{ task.task_title || task.title || 'Untitled Task' }}</span>
+                                                <div class="task-item-badges">
+                                                    <span 
+                                                        :class="['status-badge', `status-${task.activity_type || task.status}`]"
+                                                    >
+                                                        {{ formatStatus(task.activity_type || task.status) }}
+                                                    </span>
+                                                    <span v-if="task.complete_weight" class="points-badge">{{ task.complete_weight }} pts</span>
+                                                    <span v-if="task.time_spent || task.hours" class="hours-badge">
+                                                        {{ parseFloat(task.time_spent || task.hours || 0).toFixed(1) }}h
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div v-if="task.note" class="task-item-note">
+                                                <svg class="note-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                                </svg>
+                                                <span>{{ task.note }}</span>
+                                            </div>
+                                            <div v-if="task.block_reason" class="task-item-blocker">
+                                                <svg class="blocker-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                </svg>
+                                                <span>{{ task.block_reason }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                                
+                                <div v-if="todayLog.notes && todayLog.notes.trim()" class="submitted-notes">
+                                    <div class="notes-header">
+                                        <svg class="notes-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <span class="notes-title">Additional Notes</span>
+                                    </div>
+                                    <div class="notes-content">{{ todayLog.notes }}</div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Daily Log Form (shown when not submitted) -->
@@ -524,6 +574,15 @@ export default {
                     text: 'Task removed from log'
                 });
             }
+        },
+        formatStatus(status) {
+            if (!status) return 'In Progress';
+            const statusMap = {
+                'completed': 'Completed',
+                'in-progress': 'In Progress',
+                'blocked': 'Blocked'
+            };
+            return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ');
         }
     },
     mounted() {
@@ -968,6 +1027,177 @@ export default {
     &:active {
         transform: translateY(0);
     }
+}
+
+// Submitted Log Details
+.submitted-details {
+    border-top: 1px solid #e5e7eb;
+    padding: 0.875rem 1rem;
+    background: #f9fafb;
+}
+
+.submitted-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin-bottom: 0.875rem;
+}
+
+.submitted-task-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: #d1d5db;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+}
+
+.task-item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.task-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.task-item-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    flex: 1;
+    min-width: 0;
+    line-height: 1.4;
+}
+
+.task-item-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.status-badge {
+    padding: 0.1875rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+
+    &.status-completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    &.status-in-progress {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    &.status-blocked {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+}
+
+.points-badge {
+    padding: 0.1875rem 0.5rem;
+    background: #f3f4f6;
+    color: #374151;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+.hours-badge {
+    padding: 0.1875rem 0.5rem;
+    background: #eff6ff;
+    color: #1e40af;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+.task-item-note,
+.task-item-blocker {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.375rem;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    color: #4b5563;
+    line-height: 1.4;
+
+    svg {
+        width: 0.875rem;
+        height: 0.875rem;
+        flex-shrink: 0;
+        margin-top: 0.125rem;
+    }
+}
+
+.task-item-note {
+    .note-icon {
+        color: #6366f1;
+    }
+}
+
+.task-item-blocker {
+    background: #fef2f2;
+    color: #991b1b;
+
+    .blocker-icon {
+        color: #dc2626;
+    }
+}
+
+.submitted-notes {
+    margin-top: 0.875rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.notes-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+
+    .notes-icon {
+        width: 1rem;
+        height: 1rem;
+        color: #6b7280;
+    }
+
+    .notes-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #374151;
+    }
+}
+
+.notes-content {
+    padding: 0.625rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    color: #4b5563;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 // Selected Task Inline
