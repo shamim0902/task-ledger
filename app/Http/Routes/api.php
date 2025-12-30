@@ -37,3 +37,4 @@ $router->get('/pm/task-overview', 'PMDashboardController@getTaskOverview');
 $router->get('/pm/blocked-tasks', 'PMDashboardController@getBlockedTasks');
 $router->get('/pm/team-members', 'PMDashboardController@getTeamMembers');
 $router->get('/pm/boards', 'PMDashboardController@getBoards');
+$router->post('/pm/send-reminders', 'PMDashboardController@sendReminders');

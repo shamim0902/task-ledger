@@ -25,6 +25,26 @@
                     >
                         {{ selectedBoards.length === boards.length || boards.length === 0 ? 'All Boards' : `${selectedBoards.length} Selected` }}
                     </button>
+                    <div class="action-buttons">
+                        <button class="action-btn" @click="exportCSV" :disabled="loading">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Export CSV
+                        </button>
+                        <button class="action-btn" @click="exportPDF" :disabled="loading">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            Export PDF
+                        </button>
+                        <button class="action-btn primary" @click="sendReminders" :disabled="loading">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            Send Reminders
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -35,6 +55,14 @@
                     <button @click="showTeamFilter = false" class="close-filter">×</button>
                 </div>
                 <div class="filter-options">
+                    <label class="filter-checkbox">
+                        <input 
+                            type="checkbox" 
+                            :checked="selectedTeamMembers.length === teamMembers.length"
+                            @change="toggleAllTeamMembers"
+                        />
+                        <span><strong>Select All</strong></span>
+                    </label>
                     <label v-for="member in teamMembers" :key="member.id" class="filter-checkbox">
                         <input 
                             type="checkbox" 
@@ -44,6 +72,34 @@
                         />
                         <span>{{ member.name }}</span>
                     </label>
+                </div>
+            </div>
+            <div v-if="showBoardFilter" class="filter-dropdown">
+                <div class="filter-header">
+                    <span>Select Boards</span>
+                    <button @click="showBoardFilter = false" class="close-filter">×</button>
+                </div>
+                <div class="filter-options">
+                    <label v-if="boards.length > 0" class="filter-checkbox">
+                        <input 
+                            type="checkbox" 
+                            :checked="selectedBoards.length === boards.length"
+                            @change="toggleAllBoards"
+                        />
+                        <span><strong>Select All</strong></span>
+                    </label>
+                    <label v-for="board in boards" :key="board.id" class="filter-checkbox">
+                        <input 
+                            type="checkbox" 
+                            :value="board.id" 
+                            v-model="selectedBoards"
+                            @change="loadData"
+                        />
+                        <span>{{ board.title || board.name }}</span>
+                    </label>
+                    <div v-if="boards.length === 0" class="no-boards">
+                        <p>No boards available</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -111,7 +167,7 @@
                 <TeamActivityTable 
                     :team-activity="teamActivity" 
                     :loading="loading"
-                    :current-date="currentDateString"
+                    :currentDate="currentDateString"
                     @date-change="handleDateChange"
                 />
             </div>
@@ -216,10 +272,10 @@ export default {
                     this.$get('pm/blocked-tasks', { date })
                 ]);
 
-                this.summaryStats = stats;
+                this.summaryStats = stats.all ? stats.all() : stats;
                 this.teamActivity = activity.all ? activity.all() : activity;
                 this.taskOverview = overview.all ? overview.all() : overview;
-                this.analytics = analytics;
+                this.analytics = analytics.all ? analytics.all() : analytics;
                 this.blockedTasks = blocked.all ? blocked.all() : blocked;
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
@@ -257,6 +313,173 @@ export default {
             this.currentDateString = date;
             this.selectedDate = date;
             this.loadData();
+        },
+        toggleAllTeamMembers(event) {
+            if (event.target.checked) {
+                this.selectedTeamMembers = this.teamMembers.map(m => m.id);
+            } else {
+                this.selectedTeamMembers = [];
+            }
+            this.loadData();
+        },
+        toggleAllBoards(event) {
+            if (event.target.checked) {
+                this.selectedBoards = this.boards.map(b => b.id);
+            } else {
+                this.selectedBoards = [];
+            }
+            this.loadData();
+        },
+        exportCSV() {
+            try {
+                const date = this.selectedDate === 'today' ? this.currentDateString : this.selectedDate;
+                const csvData = this.generateCSV();
+                const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `pm-dashboard-${date}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                this.$notify({
+                    type: 'success',
+                    text: 'CSV exported successfully'
+                });
+            } catch (error) {
+                console.error('Error exporting CSV:', error);
+                this.$notify({
+                    type: 'error',
+                    text: 'Failed to export CSV'
+                });
+            }
+        },
+        exportPDF() {
+            this.$notify({
+                type: 'info',
+                text: 'PDF export functionality will be available soon. For now, please use the browser print function (Ctrl/Cmd + P) and save as PDF.'
+            });
+        },
+        async sendReminders() {
+            try {
+                this.loading = true;
+                const date = this.selectedDate === 'today' ? this.currentDateString : this.selectedDate;
+                const membersNeedingReminders = this.getMembersNeedingReminders();
+                
+                if (membersNeedingReminders.length === 0) {
+                    this.$notify({
+                        type: 'info',
+                        text: 'No reminders needed - all team members are up to date!'
+                    });
+                    return;
+                }
+
+                // Show confirmation
+                if (!confirm(`Send reminders to ${membersNeedingReminders.length} team member(s) with missing updates or blockers?`)) {
+                    return;
+                }
+
+                // Get member IDs
+                const memberIds = membersNeedingReminders.map(m => m.id);
+
+                // Call API endpoint
+                const response = await this.$post('pm/send-reminders', {
+                    date: date,
+                    team_members: memberIds
+                });
+
+                if (response.success) {
+                    this.$notify({
+                        type: 'success',
+                        text: `Reminders sent to ${response.reminders_sent} team member(s)`
+                    });
+                    
+                    if (response.errors && response.errors.length > 0) {
+                        console.warn('Some reminders failed:', response.errors);
+                    }
+                } else {
+                    throw new Error(response.message || 'Failed to send reminders');
+                }
+            } catch (error) {
+                console.error('Error sending reminders:', error);
+                this.$notify({
+                    type: 'error',
+                    text: error.message || 'Failed to send reminders'
+                });
+            } finally {
+                this.loading = false;
+            }
+        },
+        getMembersNeedingReminders() {
+            const members = [];
+            
+            // Members with missing updates
+            this.teamActivity.forEach(member => {
+                if (!member.has_update) {
+                    members.push({
+                        id: member.user_id,
+                        name: member.user_name,
+                        reason: 'Missing update'
+                    });
+                } else if (member.blocked_tasks > 0) {
+                    members.push({
+                        id: member.user_id,
+                        name: member.user_name,
+                        reason: `${member.blocked_tasks} blocked task(s)`
+                    });
+                }
+            });
+
+            return members;
+        },
+        generateCSV() {
+            const date = this.selectedDate === 'today' ? this.currentDateString : this.selectedDate;
+            const rows = [];
+            
+            // Header
+            rows.push('Team Activity Dashboard Report');
+            rows.push(`Date: ${date}`);
+            rows.push('');
+            
+            // Summary Stats
+            rows.push('Summary Statistics');
+            rows.push(`Updates Submitted,${this.summaryStats.updates_submitted || 0}`);
+            rows.push(`Tasks Completed,${this.summaryStats.tasks_completed || 0}`);
+            rows.push(`Blocked Tasks,${this.summaryStats.blocked_tasks || 0}`);
+            rows.push(`Missing Updates,${this.summaryStats.missing_updates || 0}`);
+            rows.push('');
+            
+            // Team Activity
+            rows.push('Team Activity');
+            rows.push('Team Member,Tasks Worked On,Completed,Blocked,Notes');
+            this.teamActivity.forEach(member => {
+                rows.push([
+                    member.user_name,
+                    member.tasks_worked_on,
+                    member.completed_tasks,
+                    member.blocked_tasks,
+                    `"${(member.notes || '').replace(/"/g, '""')}"`
+                ].join(','));
+            });
+            rows.push('');
+            
+            // Task Overview
+            rows.push('Task Overview');
+            rows.push('Task Title,Status,Assignee,Board,Hours,Story Points,Blocker Reason');
+            this.taskOverview.forEach(task => {
+                rows.push([
+                    `"${task.title.replace(/"/g, '""')}"`,
+                    task.status,
+                    task.assignee?.name || 'Unassigned',
+                    task.board?.title || 'N/A',
+                    task.hours || 0,
+                    task.story_points || 0,
+                    `"${(task.blocker_reason || '').replace(/"/g, '""')}"`
+                ].join(','));
+            });
+            
+            return rows.join('\n');
         }
     },
     mounted() {
@@ -331,6 +554,57 @@ export default {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border: 2px solid #e5e7eb;
+    background: white;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    white-space: nowrap;
+
+    svg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    &:hover:not(:disabled) {
+        border-color: #4f46e5;
+        color: #4f46e5;
+        background: #eef2ff;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &.primary {
+        background: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+
+        &:hover:not(:disabled) {
+            background: #4338ca;
+            border-color: #4338ca;
+        }
+    }
 }
 
 .filter-btn {
@@ -417,6 +691,13 @@ export default {
         height: 1rem;
         cursor: pointer;
     }
+}
+
+.no-boards {
+    padding: 1rem;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.875rem;
 }
 
 .stats-grid {

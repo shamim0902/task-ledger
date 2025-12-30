@@ -7,6 +7,7 @@ use TaskLedger\App\Models\LogItem;
 use TaskLedger\App\Models\User;
 use TaskLedger\Framework\Http\Request\Request;
 use FluentBoards\App\Models\Task;
+use FluentBoards\App\Models\Board;
 use TaskLedger\App\Models\Meta;
 
 class PMDashboardController extends Controller
@@ -18,6 +19,7 @@ class PMDashboardController extends Controller
     {
         $date = $request->get('date', date('Y-m-d'));
         $teamMembers = $request->get('team_members', 'all');
+        $boardIds = $request->get('boards', 'all');
         
         // Get all users who have submitted logs
         $userIds = Log::where('log_date', $date)
@@ -27,6 +29,25 @@ class PMDashboardController extends Controller
 
         if ($teamMembers !== 'all' && is_array($teamMembers)) {
             $userIds = array_intersect($userIds, $teamMembers);
+        }
+        
+        // Filter by board if specified
+        if ($boardIds !== 'all' && is_array($boardIds)) {
+            $logs = Log::where('log_date', $date)->with('logItems')->get();
+            $filteredUserIds = [];
+            
+            foreach ($logs as $log) {
+                $hasMatchingTask = $log->logItems->filter(function($item) use ($boardIds) {
+                    $task = Task::find($item->task_id);
+                    return $task && in_array($task->board_id, $boardIds);
+                })->count() > 0;
+                
+                if ($hasMatchingTask) {
+                    $filteredUserIds[] = $log->user_id;
+                }
+            }
+            
+            $userIds = array_intersect($userIds, array_unique($filteredUserIds));
         }
 
         $teamActivity = [];
@@ -42,15 +63,24 @@ class PMDashboardController extends Controller
 
             if (!$log) continue;
 
-            $tasksWorkedOn = $log->logItems->count();
-            $completedTasks = $log->logItems->where('activity_type', 'completed')->count();
-            $blockedTasks = $log->logItems->where('activity_type', 'blocked')->count();
-            $totalHours = $log->logItems->sum('time_spent');
-            $totalStoryPoints = $log->logItems->sum('complete_weight');
+            // Filter log items by board if specified
+            $logItems = $log->logItems;
+            if ($boardIds !== 'all' && is_array($boardIds)) {
+                $logItems = $logItems->filter(function($item) use ($boardIds) {
+                    $task = Task::find($item->task_id);
+                    return $task && in_array($task->board_id, $boardIds);
+                });
+            }
+
+            $tasksWorkedOn = $logItems->count();
+            $completedTasks = $logItems->where('activity_type', 'completed')->count();
+            $blockedTasks = $logItems->where('activity_type', 'blocked')->count();
+            $totalHours = $logItems->sum('time_spent');
+            $totalStoryPoints = $logItems->sum('complete_weight');
 
             // Get task details for this member
             $taskDetails = [];
-            foreach ($log->logItems as $item) {
+            foreach ($logItems as $item) {
                 $task = Task::find($item->task_id);
                 if (!$task) continue;
 
@@ -153,6 +183,16 @@ class PMDashboardController extends Controller
             ->with('logItems')
             ->get();
 
+        // Filter by board if specified
+        if ($boardIds !== 'all' && is_array($boardIds)) {
+            $logs = $logs->filter(function($log) use ($boardIds) {
+                return $log->logItems->filter(function($item) use ($boardIds) {
+                    $task = Task::find($item->task_id);
+                    return $task && in_array($task->board_id, $boardIds);
+                })->count() > 0;
+            });
+        }
+
         $totalUpdates = $logs->count();
         $totalTasksCompleted = 0;
         $totalBlockedTasks = 0;
@@ -160,9 +200,19 @@ class PMDashboardController extends Controller
 
         $allUserIds = [];
         foreach ($logs as $log) {
+            $logItems = $log->logItems;
+            
+            // Filter by board if needed
+            if ($boardIds !== 'all' && is_array($boardIds)) {
+                $logItems = $logItems->filter(function($item) use ($boardIds) {
+                    $task = Task::find($item->task_id);
+                    return $task && in_array($task->board_id, $boardIds);
+                });
+            }
+            
             $allUserIds[] = $log->user_id;
-            $totalTasksCompleted += $log->logItems->where('activity_type', 'completed')->count();
-            $totalBlockedTasks += $log->logItems->where('activity_type', 'blocked')->count();
+            $totalTasksCompleted += $logItems->where('activity_type', 'completed')->count();
+            $totalBlockedTasks += $logItems->where('activity_type', 'blocked')->count();
         }
 
         // Get users who have submitted logs before but not today
@@ -185,13 +235,36 @@ class PMDashboardController extends Controller
     {
         $date = $request->get('date', date('Y-m-d'));
         $boardIds = $request->get('boards', 'all');
+        $teamMembers = $request->get('team_members', 'all');
 
         $logs = Log::where('log_date', $date)
             ->with('logItems')
             ->get();
 
-        // Get all users
+        // Filter by board if specified
+        if ($boardIds !== 'all' && is_array($boardIds)) {
+            $logItemIds = LogItem::whereIn('log_id', $logs->pluck('id'))
+                ->get()
+                ->filter(function($item) use ($boardIds) {
+                    $task = Task::find($item->task_id);
+                    return $task && in_array($task->board_id, $boardIds);
+                })
+                ->pluck('id')
+                ->toArray();
+            
+            // Filter logs to only include those with matching log items
+            $logs = $logs->filter(function($log) use ($logItemIds) {
+                return $log->logItems->whereIn('id', $logItemIds)->count() > 0;
+            });
+        }
+
+        // Get all users or filtered users
         $allUserIds = Log::distinct()->pluck('user_id')->toArray();
+        
+        if ($teamMembers !== 'all' && is_array($teamMembers)) {
+            $allUserIds = array_intersect($allUserIds, $teamMembers);
+        }
+        
         $users = User::whereIn('ID', $allUserIds)->get();
 
         $tasksTouchedByUser = [];
@@ -202,11 +275,30 @@ class PMDashboardController extends Controller
             'blocked' => 0,
         ];
 
+        // Calculate totals for general stats
+        $totalTouched = 0;
+        $totalCompleted = 0;
+
         foreach ($users as $user) {
             $userLog = $logs->where('user_id', $user->ID)->first();
             if ($userLog) {
-                $tasksTouchedByUser[$user->ID] = $userLog->logItems->count();
-                $tasksCompletedByUser[$user->ID] = $userLog->logItems->where('activity_type', 'completed')->count();
+                // Filter log items by board if needed
+                $userLogItems = $userLog->logItems;
+                if ($boardIds !== 'all' && is_array($boardIds)) {
+                    $userLogItems = $userLogItems->filter(function($item) use ($boardIds) {
+                        $task = Task::find($item->task_id);
+                        return $task && in_array($task->board_id, $boardIds);
+                    });
+                }
+                
+                $touched = $userLogItems->count();
+                $completed = $userLogItems->where('activity_type', 'completed')->count();
+                
+                $tasksTouchedByUser[$user->ID] = $touched;
+                $tasksCompletedByUser[$user->ID] = $completed;
+                
+                $totalTouched += $touched;
+                $totalCompleted += $completed;
             } else {
                 $tasksTouchedByUser[$user->ID] = 0;
                 $tasksCompletedByUser[$user->ID] = 0;
@@ -215,7 +307,17 @@ class PMDashboardController extends Controller
 
         // Work distribution
         foreach ($logs as $log) {
-            foreach ($log->logItems as $item) {
+            $logItems = $log->logItems;
+            
+            // Filter by board if needed
+            if ($boardIds !== 'all' && is_array($boardIds)) {
+                $logItems = $logItems->filter(function($item) use ($boardIds) {
+                    $task = Task::find($item->task_id);
+                    return $task && in_array($task->board_id, $boardIds);
+                });
+            }
+            
+            foreach ($logItems as $item) {
                 if ($item->activity_type === 'completed') {
                     $workDistribution['completed']++;
                 } elseif ($item->activity_type === 'blocked') {
@@ -283,6 +385,18 @@ class PMDashboardController extends Controller
             }
         }
 
+        // Determine if we should show general stats (more than 100 users or single member selected)
+        $showGeneralStats = false;
+        $generalStats = null;
+        
+        if ($users->count() > 100 || ($teamMembers !== 'all' && is_array($teamMembers) && count($teamMembers) === 1)) {
+            $showGeneralStats = true;
+            $generalStats = [
+                'all_touched' => $totalTouched,
+                'all_completed' => $totalCompleted,
+            ];
+        }
+
         return [
             'tasks_touched_by_user' => $tasksTouchedByUser,
             'tasks_completed_by_user' => $tasksCompletedByUser,
@@ -295,6 +409,8 @@ class PMDashboardController extends Controller
                     'name' => $user->display_name ?? $user->user_nicename,
                 ];
             })->values(),
+            'show_general_stats' => $showGeneralStats,
+            'general_stats' => $generalStats,
         ];
     }
 
@@ -321,6 +437,11 @@ class PMDashboardController extends Controller
 
                 $task = Task::find($item->task_id);
                 if (!$task) continue;
+
+                // Filter by board if specified
+                if ($boardIds !== 'all' && is_array($boardIds) && !in_array($task->board_id, $boardIds)) {
+                    continue;
+                }
 
                 $taskData = [
                     'id' => $item->id,
@@ -354,6 +475,7 @@ class PMDashboardController extends Controller
     public function getBlockedTasks(Request $request)
     {
         $date = $request->get('date', date('Y-m-d'));
+        $boardIds = $request->get('boards', 'all');
         
         $logs = Log::where('log_date', $date)
             ->with(['logItems', 'user'])
@@ -365,6 +487,11 @@ class PMDashboardController extends Controller
             foreach ($log->logItems->where('activity_type', 'blocked') as $item) {
                 $task = Task::find($item->task_id);
                 if (!$task) continue;
+
+                // Filter by board if specified
+                if ($boardIds !== 'all' && is_array($boardIds) && !in_array($task->board_id, $boardIds)) {
+                    continue;
+                }
 
                 $blockedTasks[] = [
                     'id' => $item->id,
@@ -410,9 +537,97 @@ class PMDashboardController extends Controller
      */
     public function getBoards()
     {
-        // This would need to be implemented based on your board structure
-        // For now, returning empty array
-        return [];
+        $userId = get_current_user_id();
+        
+        // Get boards accessible to the current user
+        $boards = Board::byAccessUser($userId)
+            ->whereNull('archived_at')
+            ->orderBy('title', 'asc')
+            ->get();
+
+        return $boards->map(function($board) {
+            return [
+                'id' => $board->id,
+                'title' => $board->title,
+                'name' => $board->title, // For compatibility
+            ];
+        })->values();
+    }
+
+    /**
+     * Send reminders to team members
+     */
+    public function sendReminders(Request $request)
+    {
+        $date = $request->get('date', date('Y-m-d'));
+        $teamMembers = $request->get('team_members', []);
+        
+        if (empty($teamMembers) || !is_array($teamMembers)) {
+            return [
+                'success' => false,
+                'message' => 'No team members selected'
+            ];
+        }
+
+        $logs = Log::where('log_date', $date)
+            ->whereIn('user_id', $teamMembers)
+            ->with('logItems')
+            ->get();
+
+        $remindersSent = 0;
+        $errors = [];
+
+        foreach ($teamMembers as $memberId) {
+            $user = User::find($memberId);
+            if (!$user) {
+                $errors[] = "User ID {$memberId} not found";
+                continue;
+            }
+
+            $userLog = $logs->where('user_id', $memberId)->first();
+            $hasUpdate = $userLog !== null;
+            $blockedCount = $userLog ? $userLog->logItems->where('activity_type', 'blocked')->count() : 0;
+
+            // Only send reminder if user needs one
+            if (!$hasUpdate || $blockedCount > 0) {
+                $subject = 'Task Update Reminder';
+                $message = "Hello {$user->display_name},\n\n";
+                
+                if (!$hasUpdate) {
+                    $message .= "This is a reminder that you haven't submitted your daily update for {$date}.\n\n";
+                }
+                
+                if ($blockedCount > 0) {
+                    $message .= "You have {$blockedCount} blocked task(s) that need attention.\n\n";
+                }
+                
+                $message .= "Please submit your update at your earliest convenience.\n\n";
+                $message .= "Thank you!";
+
+                $emailSent = wp_mail(
+                    $user->user_email,
+                    $subject,
+                    $message,
+                    [
+                        'Content-Type: text/plain; charset=UTF-8',
+                        'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>'
+                    ]
+                );
+
+                if ($emailSent) {
+                    $remindersSent++;
+                } else {
+                    $errors[] = "Failed to send reminder to {$user->display_name}";
+                }
+            }
+        }
+
+        return [
+            'success' => true,
+            'reminders_sent' => $remindersSent,
+            'total_members' => count($teamMembers),
+            'errors' => $errors
+        ];
     }
 
     /**

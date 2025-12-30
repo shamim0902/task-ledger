@@ -8,7 +8,30 @@
             <div class="chart-card">
                 <h3 class="chart-title">Tasks Touched vs Completed</h3>
                 <div class="chart-container">
-                    <div class="chart-bars">
+                    <!-- General Stats View (when >100 users or single member filter) -->
+                    <div v-if="analytics.show_general_stats" class="chart-bars general-stats">
+                        <div class="bar-group">
+                            <div class="bar-label">All Touched</div>
+                            <div class="bars-wrapper">
+                                <div
+                                    class="bar bar-touched"
+                                    :style="{ height: `${getGeneralBarHeight(analytics.general_stats?.all_touched || 0, 'touched')}%` }"
+                                    :title="`Touched: ${analytics.general_stats?.all_touched || 0}`"
+                                >
+                                    <span class="bar-value">{{ analytics.general_stats?.all_touched || 0 }}</span>
+                                </div>
+                                <div
+                                    class="bar bar-completed"
+                                    :style="{ height: `${getGeneralBarHeight(analytics.general_stats?.all_completed || 0, 'completed')}%` }"
+                                    :title="`Completed: ${analytics.general_stats?.all_completed || 0}`"
+                                >
+                                    <span class="bar-value">{{ analytics.general_stats?.all_completed || 0 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Individual User Stats View -->
+                    <div v-else class="chart-bars">
                         <div
                             v-for="user in users"
                             :key="user.id"
@@ -222,6 +245,15 @@ export default {
             );
             return maxValue > 0 ? (value / maxValue) * 100 : 0;
         },
+        getGeneralBarHeight(value, type) {
+            const stats = this.analytics.general_stats || {};
+            const maxValue = Math.max(
+                stats.all_touched || 0,
+                stats.all_completed || 0,
+                1
+            );
+            return maxValue > 0 ? (value / maxValue) * 100 : 0;
+        },
         getTrendBarHeight(value) {
             const maxValue = Math.max(...this.blockedTasksTrend.map(d => d.count), 1);
             return maxValue > 0 ? (value / maxValue) * 100 : 0;
@@ -272,6 +304,10 @@ export default {
     height: 200px;
     margin-bottom: 1rem;
     padding: 0 0.5rem;
+
+    &.general-stats {
+        justify-content: center;
+    }
 }
 
 .bar-group {
