@@ -9,6 +9,16 @@ class Log extends Model
     public $timestamps = false;
     public $primaryKey = 'id';
 
+    protected $fillable = [
+        'user_id',
+        'log_date',
+        'community_post_id',
+        'additional_notes',
+        'status',
+        'reviewed',
+        'reviewed_at',
+        'reviewed_by',
+    ];
 
     public function user()
     {

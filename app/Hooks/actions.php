@@ -31,6 +31,43 @@ $app->addAction('admin_init', function() use ($app) {
     }
 }, 1);
 
+// Ensure review columns exist in logs and log_items tables
+$app->addAction('admin_init', function() use ($app) {
+    global $wpdb;
+    
+    // Check and add columns to task_ledger_logs
+    $logsTable = $wpdb->prefix . 'task_ledger_logs';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$logsTable'") == $logsTable) {
+        $columns = $wpdb->get_col("SHOW COLUMNS FROM $logsTable");
+        
+        if (!in_array('reviewed', $columns)) {
+            $wpdb->query("ALTER TABLE $logsTable ADD COLUMN `reviewed` BOOLEAN DEFAULT FALSE AFTER `status`");
+        }
+        if (!in_array('reviewed_at', $columns)) {
+            $wpdb->query("ALTER TABLE $logsTable ADD COLUMN `reviewed_at` TIMESTAMP NULL AFTER `reviewed`");
+        }
+        if (!in_array('reviewed_by', $columns)) {
+            $wpdb->query("ALTER TABLE $logsTable ADD COLUMN `reviewed_by` BIGINT UNSIGNED NULL AFTER `reviewed_at`");
+        }
+    }
+    
+    // Check and add columns to task_ledger_log_items
+    $logItemsTable = $wpdb->prefix . 'task_ledger_log_items';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$logItemsTable'") == $logItemsTable) {
+        $columns = $wpdb->get_col("SHOW COLUMNS FROM $logItemsTable");
+        
+        if (!in_array('reviewed', $columns)) {
+            $wpdb->query("ALTER TABLE $logItemsTable ADD COLUMN `reviewed` BOOLEAN DEFAULT FALSE AFTER `block_reason`");
+        }
+        if (!in_array('reviewed_at', $columns)) {
+            $wpdb->query("ALTER TABLE $logItemsTable ADD COLUMN `reviewed_at` TIMESTAMP NULL AFTER `reviewed`");
+        }
+        if (!in_array('reviewed_by', $columns)) {
+            $wpdb->query("ALTER TABLE $logItemsTable ADD COLUMN `reviewed_by` BIGINT UNSIGNED NULL AFTER `reviewed_at`");
+        }
+    }
+}, 2);
+
 $app->addCustomAction('exception', 'ExceptionHandler');
 
 if (defined('WP_CLI') && WP_CLI) {

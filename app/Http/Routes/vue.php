@@ -32,6 +32,16 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
+    $router->add('/review', 'modules/review/ReviewDashboard')
+        ->name('review')
+        ->icon('DocumentChecked')
+        ->title(__('Review Tasks', 'taskledger'))
+        ->props([
+            'user'     => wp_get_current_user(),
+            'isAdmin'  => current_user_can('manage_options'),
+        ])
+        ->middleware('auth');
+
     $router->add('posts-all', 'modules/posts')
         ->name('posts.all')
         ->icon('Memo')

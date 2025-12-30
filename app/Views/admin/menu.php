@@ -106,6 +106,8 @@
                 route = '/pm';
             } else if (linkText.includes('roles') || linkText.includes('role')) {
                 route = '/roles';
+            } else if (linkText.includes('review tasks') || linkText.includes('review')) {
+                route = '/review';
             } else if (linkText.includes('developers') || linkText.includes('dashboard')) {
                 route = '/';
             }

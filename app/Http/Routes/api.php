@@ -61,3 +61,11 @@ $router->get('/projects', 'ProjectsController@index');
 $router->post('/projects', 'ProjectsController@create');
 $router->post('/projects/import', 'ProjectsController@import');
 $router->get('/projects/{id}', 'ProjectsController@show');
+
+// Review routes
+$router->get('/review/members', 'ReviewController@getReviewableMembers');
+$router->get('/review/submissions', 'ReviewController@getSubmissions');
+$router->get('/review/submissions/{id}', 'ReviewController@getSubmissionDetails');
+$router->post('/review/logs/{id}/review', 'ReviewController@markLogReviewed');
+$router->post('/review/log-items/{id}/review', 'ReviewController@markLogItemReviewed');
+$router->post('/review/bulk-review', 'ReviewController@bulkMarkReviewed');
