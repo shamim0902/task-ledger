@@ -45,7 +45,7 @@ export default {
     border: 1px solid #e5e7eb;
     margin-bottom: 0.75rem;
     overflow: hidden;
-    width: 240px;
+    width: 192px;
 }
 
 .nav-tabs {

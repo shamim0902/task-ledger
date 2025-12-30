@@ -83,7 +83,7 @@
                     <div class="unified-header">
                         <div class="header-top">
                             <div class="header-title-section">
-                                <h2 class="main-title">Daily Log</h2>
+                                <h2 class="main-title">Daily Tasks</h2>
                                 <span class="date-badge">{{ todayDate }}</span>
                             </div>
                             <button @click="showAddTaskModal = true" class="btn-add-task-compact">
@@ -92,42 +92,14 @@
                                 </svg>
                                 <span>Add custom task</span>
                             </button>
-                        </div>
-                        
-                        <!-- Task Search -->
-                        <div class="search-container-compact">
-                            <div class="search-input-wrapper">
-                                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <input
-                                    type="text"
-                        v-model="taskSearchQuery"
-                                    @focus="showDropdown = true"
-                                    @input="showDropdown = taskSearchQuery.trim().length > 0"
-                                    placeholder="Search and add todays tasks from board..."
-                                    class="search-input"
-                                />
-                            </div>
-
-                            <!-- Task Dropdown -->
-                            <transition name="dropdown-fade">
-                                <div v-if="showDropdown && filteredTasks.length > 0" class="task-dropdown" @click.stop>
-                                    <div
-                                        v-for="task in filteredTasks"
-                                        :key="task.id"
-                                        @click.stop="selectTask(task)"
-                                        class="dropdown-item"
-                                    >
-                                        <div class="dropdown-item-content">
-                                            <span class="dropdown-task-title">{{ task.title }}</span>
-                                            <span class="dropdown-task-board">{{ task.board?.title }}</span>
-                                        </div>
-                                        <span class="weight-badge">{{ task.weight }} pts</span>
-                                    </div>
-                                </div>
-                            </transition>
+                                <!-- Task Selection Button -->
+                        <button @click="showTaskSelectModal = true" class="btn-select-tasks">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                            <span>Pick from boards</span>
+                        </button>
                         </div>
                     </div>
 
@@ -195,6 +167,7 @@
                     @delete-task="deleteTaskFromLog"
                     @task-update="handleTaskUpdate"
                     @submit="handleCreateLog"
+                    @open-task-select="showTaskSelectModal = true"
                 />
                         </template>
                     </div>
@@ -213,6 +186,15 @@
             @close="showAddTaskModal = false"
             @submit="addNewTask"
         />
+
+        <!-- Task Select Modal -->
+        <TaskSelectModal
+            :show="showTaskSelectModal"
+            :tasks="tasks"
+            :selected-task-ids="selectedTaskIds"
+            @close="showTaskSelectModal = false"
+            @select="handleTaskSelect"
+        />
     </div>
 </template>
 
@@ -222,6 +204,7 @@ import DailyLogForm from './components/DailyLogForm.vue';
 import AddTaskModal from './components/AddTaskModal.vue';
 import LogHistory from './components/LogHistory.vue';
 import NavigationTabs from './components/NavigationTabs.vue';
+import TaskSelectModal from './components/TaskSelectModal.vue';
 
 export default {
     name: 'DailyReportApp',
@@ -230,7 +213,8 @@ export default {
         DailyLogForm,
         AddTaskModal,
         LogHistory,
-        NavigationTabs
+        NavigationTabs,
+        TaskSelectModal
     },
     data() {
         return {
@@ -241,10 +225,9 @@ export default {
             },
             selectedTask: null,
             currentView: 'create',
-            taskSearchQuery: '',
             showAddTaskModal: false,
+            showTaskSelectModal: false,
             showAddSubtaskInput: false,
-            showDropdown: false,
             weight: 1,
             logSubmitted: false
         };
@@ -259,13 +242,8 @@ export default {
         }
     },
     computed: {
-        filteredTasks() {
-            if (!this.taskSearchQuery.trim()) return this.tasks;
-            const query = this.taskSearchQuery.toLowerCase();
-            return this.tasks?.filter(task =>
-                task?.title?.toLowerCase()?.includes(query) ||
-                task?.board?.title?.toLowerCase()?.includes(query)
-            );
+        selectedTaskIds() {
+            return this.todayLog.tasks.map(t => t.task_id || t.id).filter(Boolean);
         },
         totalHoursToday() {
             return this.todayLog.tasks.reduce((sum, task) => sum + (parseFloat(task.hours) || 0), 0);
@@ -275,22 +253,43 @@ export default {
         }
     },
     methods: {
-        selectTask(task) {
-            this.selectedTask = task;
-            this.taskSearchQuery = '';
-            this.showDropdown = false;
-            // Focus management
-            this.$nextTick(() => {
-                const input = this.$el?.querySelector('.search-input');
-                if (input) {
-                    input.blur();
-                }
+        handleTaskSelect(task) {
+            // Check if task already exists in today's log
+            const exists = this.todayLog.tasks.some(t => 
+                (t.task_id && task.id && t.task_id === task.id) ||
+                (t.id && task.id && t.id === task.id)
+            );
+            
+            if (exists) {
+                this.$notify({
+                    type: 'warning',
+                    text: 'This task is already in today\'s log'
+                });
+                return;
+            }
+
+            // Add task to today's log (local only, no API call)
+            this.todayLog.tasks.push({
+                task_id: task.id,
+                id: task.id,
+                title: task.title,
+                weight: task.weight,
+                complete_weight: 0,
+                hours: 0,
+                status: 'in-progress',
+                board: task.board
+            });
+
+            // Close the modal
+            this.showTaskSelectModal = false;
+            
+            this.$notify({
+                type: 'success',
+                text: 'Task added to log'
             });
         },
         clearSelectedTask() {
             this.selectedTask = null;
-            this.taskSearchQuery = '';
-            this.showDropdown = false;
         },
         handleAddSubtask(data) {
             if (!this.selectedTask) return;
@@ -502,13 +501,6 @@ export default {
         if (!window.taskLedgerAdmin?.hasLogForToday) {
             this.handleCreateLog();
         }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-container-compact')) {
-                this.showDropdown = false;
-            }
-        });
     }
 };
 </script>
@@ -690,10 +682,7 @@ export default {
 
 // Unified Panel
 .unified-panel {
-    background: white;
     border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -743,8 +732,8 @@ export default {
     align-items: center;
     gap: 0.25rem;
     padding: 0.375rem 0.625rem;
-    background: #6366f1;
-    color: white;
+    background: none;
+    color: rgb(0, 0, 0);
     border: none;
     border-radius: 0.375rem;
     font-size: 0.75rem;
@@ -760,19 +749,47 @@ export default {
     }
 
     &:hover {
-        background: #4f46e5;
+        background: none;
         transform: translateY(-1px);
-        box-shadow: 0 1px 3px rgba(99, 102, 241, 0.3);
+        // box-shadow: 0 1px 3px rgba(99, 102, 241, 0.3);
     }
 }
 
-.search-container-compact {
-    position: relative;
-    max-width: 600px;
+.btn-select-tasks {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    background: white;
+    color: #6366f1;
+    border: 1.5px solid #6366f1;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    line-height: 1.2;
+
+    svg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    &:hover {
+        background: #6366f1;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
 }
 
 .unified-content {
-    padding: 0.75rem;
+    padding-top: 0.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.625rem;
@@ -1174,11 +1191,7 @@ export default {
 
 // History View
 .history-view {
-    background: white;
     border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    padding: 0.875rem;
 }
 
 // Responsive Design
@@ -1195,6 +1208,11 @@ export default {
     }
 
     .btn-add-task-compact {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-select-tasks {
         width: 100%;
         justify-content: center;
     }

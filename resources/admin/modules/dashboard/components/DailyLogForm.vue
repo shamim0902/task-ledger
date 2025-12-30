@@ -32,51 +32,76 @@
                         </svg>
                     </div>
                     <p class="empty-text">No tasks in your log yet</p>
-                    <p class="empty-hint">Select tasks from the left panel to add them</p>
+                    <p class="empty-hint">Select tasks from board or create custom tasks</p>
+                    <button @click.stop="$emit('open-task-select')" class="btn-pick-tasks">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        <span>Pick from boards</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Notes Section -->
-        <div class="notes-section" :class="{ expanded: showNotes }">
-            <button class="notes-toggle-btn" @click.stop="toggleNotes">
-                <svg class="notes-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                <span class="notes-toggle-text">
-                    <span v-if="notes && !showNotes">{{ notes.length > 40 ? notes.substring(0, 40) + '...' : notes }}</span>
-                    <span v-else>{{ showNotes ? 'Hide notes' : 'Add notes' }}</span>
-                </span>
-                <svg class="notes-chevron" :class="{ expanded: showNotes }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-            </button>
-
-            <div class="notes-content-wrapper" :class="{ 'is-expanded': showNotes }">
-                <textarea 
-                    :value="notes" 
-                    @input="handleInput"
-                    placeholder="What did you work on today? Any blockers, achievements, or important notes..." 
-                    rows="5"
-                    class="notes-textarea"
-                    ref="notesTextarea"
-                ></textarea>
+        <!-- Submit Today's Reports Section -->
+        <div class="log-section submit-section-card">
+            <div class="section-header">
+                <div class="section-title-wrapper">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <h3 class="section-title">Submit Today's Reports</h3>
+                        <p class="section-subtitle">Add notes and submit your daily log</p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Submit Section -->
-        <div class="submit-section">
-            <button @click="$emit('submit')" class="submit-button">
-                <svg class="submit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Save Daily Log</span>
-                <svg class="submit-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-            </button>
+            <div class="section-content">
+                <!-- Notes Section -->
+                <div class="notes-section" :class="{ expanded: showNotes }">
+                    <button class="notes-toggle-btn" @click.stop="toggleNotes">
+                        <svg class="notes-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span class="notes-toggle-text">
+                            <span v-if="notes && !showNotes">{{ notes.length > 40 ? notes.substring(0, 40) + '...' : notes }}</span>
+                            <span v-else>{{ showNotes ? 'Hide notes' : 'Add notes' }}</span>
+                        </span>
+                        <svg class="notes-chevron" :class="{ expanded: showNotes }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div class="notes-content-wrapper" :class="{ 'is-expanded': showNotes }">
+                        <textarea 
+                            :value="notes" 
+                            @input="handleInput"
+                            placeholder="What did you work on today? Any blockers, achievements, or important notes..." 
+                            rows="5"
+                            class="notes-textarea"
+                            ref="notesTextarea"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="submit-button-wrapper">
+                    <button type="button" @click.stop="$emit('submit')" class="submit-button">
+                        <svg class="submit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Save Daily Log</span>
+                        <svg class="submit-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -99,7 +124,7 @@ export default {
             default: ''
         }
     },
-    emits: ['update:notes', 'toggle-task', 'submit'],
+    emits: ['update:notes', 'toggle-task', 'submit', 'open-task-select'],
     data() {
         return {
             showNotes: false
@@ -243,6 +268,9 @@ export default {
     min-height: 0;
     display: flex;
     flex-direction: column;
+    background: white;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .empty-state-tasks {
@@ -278,13 +306,53 @@ export default {
     .empty-hint {
         font-size: 0.8125rem;
         color: #9ca3af;
-        margin: 0;
+        margin: 0 0 1rem 0;
     }
+}
+
+.btn-pick-tasks {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: white;
+    color: #6366f1;
+    border: 1.5px solid #6366f1;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+
+    svg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    &:hover {
+        background: #6366f1;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+// Submit Section Card
+.submit-section-card {
+    flex-shrink: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 // Notes Section
 .notes-section {
-    flex-shrink: 0;
+    margin-bottom: 1rem;
     overflow: hidden;
 }
 
@@ -384,16 +452,16 @@ export default {
     }
 }
 
-// Submit Section
-.submit-section {
-    flex-shrink: 0;
-    padding-top: 0.5rem;
+// Submit Button Wrapper
+.submit-button-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.75rem;
     border-top: 1px solid #e5e7eb;
+    margin-top: 0.75rem;
 }
 
 .submit-button {
-    width: 300px;
-    float: right;
     padding: 0.875rem 1.5rem;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
@@ -471,6 +539,11 @@ export default {
     .submit-button {
         padding: 0.75rem 1.25rem;
         font-size: 0.875rem;
+        width: 100%;
+    }
+
+    .submit-button-wrapper {
+        justify-content: stretch;
     }
 }
 </style>
