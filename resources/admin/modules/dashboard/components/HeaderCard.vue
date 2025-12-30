@@ -97,11 +97,12 @@ export default {
 
 <style scoped lang="scss">
     .header-card {
-      background: #f9fafb;
+      background: white;
       border-radius: 0.75rem;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-      padding: 1.25rem;
-      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      border: 1px solid #e5e7eb;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
     }
     
     .header-content {
@@ -109,30 +110,32 @@ export default {
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 1.25rem;
-      gap: 1rem;
+      margin-bottom: 0.875rem;
+      gap: 0.75rem;
     }
     
     .header-left {
       .title {
-        font-size: 1.5rem;
-        font-weight: 700;
+        font-size: 1.125rem;
+        font-weight: 600;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        color: #1f2937;
+        color: #111827;
+        margin: 0;
     
         svg {
-          width: 1.5rem;
-          height: 1.5rem;
+          width: 1.25rem;
+          height: 1.25rem;
           color: #6366f1;
         }
       }
     
       .subtitle {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         color: #6b7280;
         margin-top: 0.25rem;
+        margin-bottom: 0;
       }
     }
     
@@ -140,46 +143,55 @@ export default {
       text-align: right;
     
       .date-label {
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         font-weight: 500;
-        color: #6b7280;
+        color: #9ca3af;
         margin-bottom: 0.125rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
     
       .date-value {
-        font-size: 1rem;
+        font-size: 0.875rem;
         font-weight: 600;
         color: #6366f1;
         display: flex;
         align-items: center;
-        gap: 0.35rem;
+        gap: 0.375rem;
         justify-content: flex-end;
     
         svg {
-          width: 1rem;
-          height: 1rem;
+          width: 0.875rem;
+          height: 0.875rem;
         }
       }
     }
     
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
     }
     
     .stat-card {
-      background: white;
-      border-radius: 0.75rem;
-      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      min-height: 70px;
+      gap: 0.625rem;
+      min-height: 56px;
+      border: 1px solid #e5e7eb;
+      transition: all 0.2s;
+    
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
     
       .stat-icon {
-        width: 2.25rem;
-        height: 2.25rem;
+        width: 2rem;
+        height: 2rem;
         border-radius: 0.5rem;
         display: flex;
         align-items: center;
@@ -187,31 +199,38 @@ export default {
         flex-shrink: 0;
     
         svg {
-          width: 1.2rem;
-          height: 1.2rem;
+          width: 1rem;
+          height: 1rem;
         }
       }
     
       .stat-content {
+        flex: 1;
+        min-width: 0;
+    
         .stat-label {
-          font-size: 0.75rem;
+          font-size: 0.6875rem;
           font-weight: 500;
           color: #6b7280;
           margin-bottom: 0.125rem;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
         }
     
         .stat-value {
-          font-size: 1.25rem;
+          font-size: 1.125rem;
           font-weight: 700;
           color: #111827;
+          line-height: 1.2;
         }
       }
     
       &.stat-indigo {
         background: #eef2ff;
+        border-color: #c7d2fe;
         .stat-icon {
-          background: #dbeafe;
-          color: #4f46e5;
+          background: #6366f1;
+          color: white;
         }
         .stat-label {
           color: #4f46e5;
@@ -222,42 +241,44 @@ export default {
       }
     
       &.stat-green {
-        background: #edfaf4;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
         .stat-icon {
-          background: #d1fae5;
-          color: #10b981;
+          background: #10b981;
+          color: white;
         }
         .stat-label {
-          color: #10b981;
+          color: #059669;
         }
         .stat-value {
-          color: #065f46;
+          color: #047857;
         }
       }
     
       &.stat-purple {
-        background: #f5f3ff;
+        background: #faf5ff;
+        border-color: #e9d5ff;
         .stat-icon {
-          background: #ede9fe;
-          color: #9333ea;
+          background: #9333ea;
+          color: white;
         }
         .stat-label {
-          color: #9333ea;
+          color: #7e22ce;
         }
         .stat-value {
-          color: #7e22ce;
+          color: #6b21a8;
         }
       }
     }
     
     .icon-large {
-      width: 1.5rem;
-      height: 1.5rem;
+      width: 1.25rem;
+      height: 1.25rem;
     }
     
     .icon-small {
-      width: 1rem;
-      height: 1rem;
+      width: 0.875rem;
+      height: 0.875rem;
     }
     
     @media (max-width: 768px) {
@@ -273,6 +294,12 @@ export default {
     
       .stats-grid {
         grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .stat-card {
+        padding: 0.625rem;
+        min-height: 52px;
       }
     }
     </style>

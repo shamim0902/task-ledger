@@ -1,212 +1,246 @@
 <template>
     <div class="pm-dashboard">
-        <div class="dashboard-header">
+        <!-- Top Navigation Bar -->
+        <div class="pm-header">
             <div class="header-content">
-                <div class="header-left">
-                    <h1 class="dashboard-title">
-                        <svg class="icon-large" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="header-brand">
+                    <div class="brand-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        Project Manager Dashboard
-                    </h1>
-                    <p class="dashboard-subtitle">Track team updates, tasks, and blockers in real-time</p>
+                    </div>
+                    <div class="brand-text">
+                        <h1 class="brand-title">Project Manager</h1>
+                        <p class="brand-subtitle">Team Dashboard</p>
+                    </div>
                 </div>
                 <div class="header-actions">
-                    <button 
-                        @click="showTeamFilter = !showTeamFilter"
-                        :class="['filter-btn', { active: selectedTeamMembers.length > 0 && selectedTeamMembers.length < teamMembers.length }]"
-                    >
-                        {{ selectedTeamMembers.length === teamMembers.length ? 'All Team Members' : `${selectedTeamMembers.length} Selected` }}
-                    </button>
-                    <button 
-                        @click="showBoardFilter = !showBoardFilter"
-                        :class="['filter-btn', { active: selectedBoards.length > 0 && selectedBoards.length < boards.length }]"
-                    >
-                        {{ selectedBoards.length === boards.length || boards.length === 0 ? 'All Boards' : `${selectedBoards.length} Selected` }}
-                    </button>
-                    <div class="action-buttons">
-                        <button class="action-btn" @click="exportCSV" :disabled="loading">
+                    <div class="filter-group">
+                        <div class="filter-wrapper">
+                            <button 
+                                @click.stop="showTeamFilter = !showTeamFilter"
+                                :class="['filter-btn', { active: selectedTeamMembers.length > 0 && selectedTeamMembers.length < teamMembers.length }]"
+                            >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                <span>{{ selectedTeamMembers.length === teamMembers.length ? 'All Team' : `${selectedTeamMembers.length} Selected` }}</span>
+                            </button>
+                            <transition name="dropdown">
+                                <div v-if="showTeamFilter" class="filter-dropdown">
+                                    <div class="filter-header">
+                                        <span>Team Members</span>
+                                        <button @click.stop="showTeamFilter = false" class="close-filter">×</button>
+                                    </div>
+                                    <div class="filter-options">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" :checked="selectedTeamMembers.length === teamMembers.length" @change="toggleAllTeamMembers" />
+                                            <span><strong>Select All</strong></span>
+                                        </label>
+                                        <label v-for="member in teamMembers" :key="member.id" class="filter-checkbox">
+                                            <input type="checkbox" :value="member.id" v-model="selectedTeamMembers" @change="loadData" />
+                                            <span>{{ member.name }}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </transition>
+                        </div>
+                        <div class="filter-wrapper">
+                            <button 
+                                @click.stop="showBoardFilter = !showBoardFilter"
+                                :class="['filter-btn', { active: selectedBoards.length > 0 && selectedBoards.length < boards.length }]"
+                            >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <span>{{ selectedBoards.length === boards.length || boards.length === 0 ? 'All Boards' : `${selectedBoards.length} Selected` }}</span>
+                            </button>
+                            <transition name="dropdown">
+                                <div v-if="showBoardFilter" class="filter-dropdown">
+                                    <div class="filter-header">
+                                        <span>Boards</span>
+                                        <button @click.stop="showBoardFilter = false" class="close-filter">×</button>
+                                    </div>
+                                    <div class="filter-options">
+                                        <label v-if="boards.length > 0" class="filter-checkbox">
+                                            <input type="checkbox" :checked="selectedBoards.length === boards.length" @change="toggleAllBoards" />
+                                            <span><strong>Select All</strong></span>
+                                        </label>
+                                        <label v-for="board in boards" :key="board.id" class="filter-checkbox">
+                                            <input type="checkbox" :value="board.id" v-model="selectedBoards" @change="loadData" />
+                                            <span>{{ board.title || board.name }}</span>
+                                        </label>
+                                        <div v-if="boards.length === 0" class="no-boards">No boards available</div>
+                                    </div>
+                                </div>
+                            </transition>
+                        </div>
+                    </div>
+                    <div class="action-group">
+                        <button class="action-btn" @click="exportCSV" :disabled="loading" title="Export CSV">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Export CSV
                         </button>
-                        <button class="action-btn" @click="exportPDF" :disabled="loading">
+                        <button class="action-btn" @click="exportPDF" :disabled="loading" title="Export PDF">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            Export PDF
                         </button>
-                        <button class="action-btn primary" @click="sendReminders" :disabled="loading">
+                        <button class="action-btn primary" @click="sendReminders" :disabled="loading" title="Send Reminders">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
-                            Send Reminders
+                            <span>Reminders</span>
                         </button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Filter Dropdowns -->
-            <div v-if="showTeamFilter" class="filter-dropdown">
-                <div class="filter-header">
-                    <span>Select Team Members</span>
-                    <button @click="showTeamFilter = false" class="close-filter">×</button>
+        <!-- Main Content Area -->
+        <div class="pm-content">
+            <!-- Quick Stats Dashboard -->
+            <div class="stats-dashboard">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon-wrapper">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ summaryStats.updates_submitted || 0 }}</div>
+                        <div class="stat-label">Updates Submitted</div>
+                    </div>
                 </div>
-                <div class="filter-options">
-                    <label class="filter-checkbox">
-                        <input 
-                            type="checkbox" 
-                            :checked="selectedTeamMembers.length === teamMembers.length"
-                            @change="toggleAllTeamMembers"
-                        />
-                        <span><strong>Select All</strong></span>
-                    </label>
-                    <label v-for="member in teamMembers" :key="member.id" class="filter-checkbox">
-                        <input 
-                            type="checkbox" 
-                            :value="member.id" 
-                            v-model="selectedTeamMembers"
-                            @change="loadData"
-                        />
-                        <span>{{ member.name }}</span>
-                    </label>
+                <div class="stat-card stat-success">
+                    <div class="stat-icon-wrapper">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ summaryStats.tasks_completed || 0 }}</div>
+                        <div class="stat-label">Tasks Completed</div>
+                    </div>
                 </div>
-            </div>
-            <div v-if="showBoardFilter" class="filter-dropdown">
-                <div class="filter-header">
-                    <span>Select Boards</span>
-                    <button @click="showBoardFilter = false" class="close-filter">×</button>
+                <div class="stat-card stat-danger">
+                    <div class="stat-icon-wrapper">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ summaryStats.blocked_tasks || 0 }}</div>
+                        <div class="stat-label">Blocked Tasks</div>
+                    </div>
                 </div>
-                <div class="filter-options">
-                    <label v-if="boards.length > 0" class="filter-checkbox">
-                        <input 
-                            type="checkbox" 
-                            :checked="selectedBoards.length === boards.length"
-                            @change="toggleAllBoards"
-                        />
-                        <span><strong>Select All</strong></span>
-                    </label>
-                    <label v-for="board in boards" :key="board.id" class="filter-checkbox">
-                        <input 
-                            type="checkbox" 
-                            :value="board.id" 
-                            v-model="selectedBoards"
-                            @change="loadData"
-                        />
-                        <span>{{ board.title || board.name }}</span>
-                    </label>
-                    <div v-if="boards.length === 0" class="no-boards">
-                        <p>No boards available</p>
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon-wrapper">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ summaryStats.missing_updates || 0 }}</div>
+                        <div class="stat-label">Missing Updates</div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Summary Stats -->
-        <div class="stats-grid">
-            <div class="stat-card stat-blue">
-                <div class="stat-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+            <!-- Dashboard Sections -->
+            <div class="dashboard-sections">
+                <!-- Team Activity Section -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <div>
+                                <h2 class="section-title">Team Activity</h2>
+                                <p class="section-subtitle">Daily updates and progress</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <TeamActivityTable 
+                            :team-activity="teamActivity" 
+                            :loading="loading"
+                            :currentDate="currentDateString"
+                            @date-change="handleDateChange"
+                        />
+                    </div>
                 </div>
-                <div class="stat-content">
-                    <div class="stat-label">Updates Submitted</div>
-                    <div class="stat-value">{{ summaryStats.updates_submitted || 0 }}</div>
-                </div>
-            </div>
-            <div class="stat-card stat-green">
-                <div class="stat-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">Tasks Completed</div>
-                    <div class="stat-value">{{ summaryStats.tasks_completed || 0 }}</div>
-                </div>
-            </div>
-            <div class="stat-card stat-red">
-                <div class="stat-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">Blocked Tasks</div>
-                    <div class="stat-value">{{ summaryStats.blocked_tasks || 0 }}</div>
-                </div>
-            </div>
-            <div class="stat-card stat-orange">
-                <div class="stat-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">Missing Updates</div>
-                    <div class="stat-value">{{ summaryStats.missing_updates || 0 }}</div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Main Content -->
-        <div class="dashboard-content">
-            <!-- Team Activity Section -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">Team Activity</h2>
-                    <p class="section-subtitle">View detailed activity for each team member</p>
+                <!-- Task Overview Section -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            <div>
+                                <h2 class="section-title">Task Overview</h2>
+                                <p class="section-subtitle">Monitor progress and activity</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <TaskOverview 
+                            :tasks="taskOverview" 
+                            :loading="loading"
+                            @filter-change="handleTaskFilterChange"
+                        />
+                    </div>
                 </div>
-                <TeamActivityTable 
-                    :team-activity="teamActivity" 
-                    :loading="loading"
-                    :currentDate="currentDateString"
-                    @date-change="handleDateChange"
-                />
-            </div>
 
-            <!-- Task Overview Section -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">Task Overview</h2>
-                    <p class="section-subtitle">Monitor task progress and activity history</p>
+                <!-- Analytics & Insights -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <div>
+                                <h2 class="section-title">Analytics & Insights</h2>
+                                <p class="section-subtitle">Performance metrics and trends</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <AnalyticsSection 
+                            :analytics="analytics"
+                            :loading="loading"
+                        />
+                    </div>
                 </div>
-                <TaskOverview 
-                    :tasks="taskOverview" 
-                    :loading="loading"
-                    @filter-change="handleTaskFilterChange"
-                />
-            </div>
 
-            <!-- Analytics & Insights -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">Analytics & Insights</h2>
-                    <p class="section-subtitle">Visualize team performance and identify bottlenecks</p>
+                <!-- Blocked Tasks -->
+                <div class="dashboard-section" v-if="blockedTasks.length > 0">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div>
+                                <h2 class="section-title">Blocked Tasks</h2>
+                                <p class="section-subtitle">Requires immediate attention</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <BlockedTasksList 
+                            :tasks="blockedTasks"
+                            :loading="loading"
+                        />
+                    </div>
                 </div>
-                <AnalyticsSection 
-                    :analytics="analytics"
-                    :loading="loading"
-                />
-            </div>
-
-            <!-- Blocked Tasks -->
-            <div class="content-section" v-if="blockedTasks.length > 0">
-                <div class="section-header">
-                    <h2 class="section-title">Blocked Tasks</h2>
-                    <p class="section-subtitle">Tasks that need immediate attention</p>
-                </div>
-                <BlockedTasksList 
-                    :tasks="blockedTasks"
-                    :loading="loading"
-                />
             </div>
         </div>
     </div>
@@ -486,6 +520,14 @@ export default {
         this.loadTeamMembers();
         this.loadBoards();
         this.loadData();
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.filter-wrapper')) {
+                this.showTeamFilter = false;
+                this.showBoardFilter = false;
+            }
+        });
     },
     watch: {
         selectedDate() {
@@ -504,21 +546,22 @@ export default {
 <style lang="scss" scoped>
 .pm-dashboard {
     min-height: 100vh;
-    background: #f5f7fa;
-    padding: 1.5rem;
+    background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.dashboard-header {
+// Top Header
+.pm-header {
     background: white;
-    border-radius: 0.75rem;
-    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    position: relative;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .header-content {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -526,57 +569,89 @@ export default {
     gap: 1rem;
 }
 
-.header-left {
-    .dashboard-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin: 0 0 0.5rem 0;
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .brand-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        border-radius: 0.625rem;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+        flex-shrink: 0;
 
-        .icon-large {
-            width: 2rem;
-            height: 2rem;
-            color: #4f46e5;
+        svg {
+            width: 1.5rem;
+            height: 1.5rem;
         }
     }
 
-    .dashboard-subtitle {
-        color: #6b7280;
-        margin: 0;
-        font-size: 0.9375rem;
+    .brand-text {
+        .brand-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin: 0;
+            font-weight: 500;
+        }
     }
 }
 
 .header-actions {
     display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
     align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: flex-end;
 }
 
-.action-buttons {
+.filter-group {
     display: flex;
+    flex-direction: row;
     gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-left: auto;
+    align-items: center;
+    border: none;
 }
 
-.action-btn {
+.filter-wrapper {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    
+    // Prevent overflow issues
+    &:last-child .filter-dropdown {
+        right: 0;
+        left: auto;
+    }
+}
+
+.filter-btn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    border: 2px solid #e5e7eb;
-    background: white;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
     border-radius: 0.5rem;
     font-weight: 500;
+    font-size: 0.8125rem;
     color: #374151;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 0.875rem;
     white-space: nowrap;
 
     svg {
@@ -584,94 +659,85 @@ export default {
         height: 1rem;
     }
 
-    &:hover:not(:disabled) {
-        border-color: #4f46e5;
-        color: #4f46e5;
-        background: #eef2ff;
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    &.primary {
-        background: #4f46e5;
-        color: white;
-        border-color: #4f46e5;
-
-        &:hover:not(:disabled) {
-            background: #4338ca;
-            border-color: #4338ca;
-        }
-    }
-}
-
-.filter-btn {
-    padding: 0.625rem 1.25rem;
-    border: 2px solid #e5e7eb;
-    background: white;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.875rem;
-
     &:hover {
-        border-color: #4f46e5;
-        color: #4f46e5;
+        border-color: #6366f1;
+        background: #eef2ff;
+        color: #6366f1;
     }
 
     &.active {
-        background: #4f46e5;
+        background: #6366f1;
         color: white;
-        border-color: #4f46e5;
+        border-color: #6366f1;
     }
 }
 
 .filter-dropdown {
     position: absolute;
-    top: 100%;
-    left: 0;
+    top: calc(100% + 0.5rem);
     right: 0;
-    margin-top: 0.5rem;
     background: white;
-    border: 2px solid #e5e7eb;
+    border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    z-index: 50;
-    max-height: 300px;
+    padding: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    min-width: 220px;
+    max-width: 300px;
+    max-height: 320px;
     overflow-y: auto;
+    overflow-x: hidden;
+}
+
+// Dropdown transition
+.dropdown-enter-active,
+.dropdown-leave-active {
+    transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
 }
 
 .filter-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #1f2937;
+    font-size: 0.875rem;
+    color: #111827;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .close-filter {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     color: #6b7280;
     cursor: pointer;
     line-height: 1;
+    padding: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.25rem;
 
     &:hover {
-        color: #1f2937;
+        background: #f3f4f6;
+        color: #111827;
     }
 }
 
 .filter-options {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
 .filter-checkbox {
@@ -681,28 +747,88 @@ export default {
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 0.375rem;
+    font-size: 0.8125rem;
 
     &:hover {
         background: #f9fafb;
     }
 
     input[type="checkbox"] {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
         cursor: pointer;
     }
 }
 
 .no-boards {
-    padding: 1rem;
+    padding: 0.75rem;
     text-align: center;
     color: #9ca3af;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
 }
 
-.stats-grid {
+.action-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+
+    svg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    &:hover:not(:disabled) {
+        border-color: #6366f1;
+        color: #6366f1;
+        background: #eef2ff;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &.primary {
+        background: #6366f1;
+        color: white;
+        border-color: #6366f1;
+
+        &:hover:not(:disabled) {
+            background: #4f46e5;
+            border-color: #4f46e5;
+        }
+    }
+}
+
+// Main Content
+.pm-content {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+// Stats Dashboard
+.stats-dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -710,63 +836,69 @@ export default {
 .stat-card {
     background: white;
     border-radius: 0.75rem;
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
+    gap: 0.875rem;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 
     &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    .stat-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 0.75rem;
+    .stat-icon-wrapper {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.625rem;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
 
         svg {
-            width: 1.5rem;
-            height: 1.5rem;
+            width: 1.25rem;
+            height: 1.25rem;
         }
     }
 
     .stat-content {
         flex: 1;
-
-        .stat-label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #6b7280;
-            margin-bottom: 0.25rem;
-        }
+        min-width: 0;
 
         .stat-value {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            line-height: 1;
+            line-height: 1.2;
+            margin-bottom: 0.125rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            opacity: 0.7;
         }
     }
 
-    &.stat-blue {
-        .stat-icon {
-            background: #dbeafe;
-            color: #2563eb;
+    &.stat-primary {
+        border-left: 4px solid #3b82f6;
+        .stat-icon-wrapper {
+            background: #eff6ff;
+            color: #3b82f6;
         }
         .stat-content .stat-value {
-            color: #2563eb;
+            color: #3b82f6;
         }
     }
 
-    &.stat-green {
-        .stat-icon {
-            background: #d1fae5;
+    &.stat-success {
+        border-left: 4px solid #10b981;
+        .stat-icon-wrapper {
+            background: #ecfdf5;
             color: #10b981;
         }
         .stat-content .stat-value {
@@ -774,9 +906,10 @@ export default {
         }
     }
 
-    &.stat-red {
-        .stat-icon {
-            background: #fee2e2;
+    &.stat-danger {
+        border-left: 4px solid #ef4444;
+        .stat-icon-wrapper {
+            background: #fef2f2;
             color: #ef4444;
         }
         .stat-content .stat-value {
@@ -784,59 +917,169 @@ export default {
         }
     }
 
-    &.stat-orange {
-        .stat-icon {
-            background: #fed7aa;
-            color: #f97316;
+    &.stat-warning {
+        border-left: 4px solid #f59e0b;
+        .stat-icon-wrapper {
+            background: #fffbeb;
+            color: #f59e0b;
         }
         .stat-content .stat-value {
-            color: #f97316;
+            color: #f59e0b;
         }
     }
 }
 
-.dashboard-content {
+// Dashboard Sections
+.dashboard-sections {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
-.content-section {
+.dashboard-section {
     background: white;
     border-radius: 0.75rem;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+
+    &:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
 }
 
 .section-header {
-    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
 
-    .section-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin: 0 0 0.25rem 0;
+.section-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #6366f1;
+    flex-shrink: 0;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.section-subtitle {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0.125rem 0 0 0;
+    font-weight: 400;
+}
+
+.section-content {
+    padding: 1.25rem;
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+    .pm-content {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .header-content {
+        flex-wrap: wrap;
     }
 
-    .section-subtitle {
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin: 0;
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 0;
+        border: none;
+    }
+
+    .action-group {
+        flex-shrink: 0;
     }
 }
 
 @media (max-width: 768px) {
-    .pm-dashboard {
-        padding: 1rem;
-    }
-
     .header-content {
+        padding: 0.75rem 1rem;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
     }
 
-    .stats-grid {
+    .header-brand {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+    }
+    
+    .filter-group {
+        width: 100%;
+        flex-direction: row;
+        gap: 0.5rem;
+        justify-content: flex-start;
+        border: none;
+    }
+
+    .filter-wrapper {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .filter-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .filter-dropdown {
+        right: 0;
+        left: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .action-group {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .action-btn {
+        flex: 1;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .stats-dashboard {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .section-header {
+        padding: 0.875rem 1rem;
+    }
+
+    .section-content {
+        padding: 1rem;
     }
 }
 </style>

@@ -214,39 +214,38 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .points {
-    font-size: 12px;
-    color: #4a505b;
+    font-size: 0.75rem;
+    color: #6b7280;
     font-weight: 600;
 }
+
 .task-panel {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 14px;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
 }
 
 .task-card {
-    // display: flex;
-    // justify-content: space-between;
-    // align-items: flex-start;
-    padding: 14px;
-    border-radius: 10px;
-    border: 2px solid #eef2f7;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
     background: #f9fafb;
-    margin-bottom: 12px;
+    margin-bottom: 0.5rem;
     transition: all 0.2s ease;
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 
     &:hover {
         background: #f3f4f6;
         border-color: #d1d5db;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     &.task-completed {
-        background: #f0fdf4;
-        border-color: #bbf7d0;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
 
         .task-title {
             text-decoration: line-through;
@@ -257,7 +256,7 @@ export default {
     &.task-blocked {
         background: #fef2f2;
         border-color: #fecaca;
-        border-left: 4px solid #ef4444;
+        border-left: 3px solid #ef4444;
     }
 
     &.task-in-progress {
@@ -269,21 +268,20 @@ export default {
 .task-left {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 0.625rem;
     flex: 1;
     min-width: 0;
-    margin-bottom: 8px;
 }
 
 .task-checkbox-wrapper {
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 0.125rem;
 }
 
 .task-checkbox {
-    width: 18px;
-    height: 18px;
-    accent-color: #22c55e;
+    width: 16px;
+    height: 16px;
+    accent-color: #10b981;
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -292,27 +290,30 @@ export default {
     flex: 1;
     min-width: 0;
     display: flex;
-    gap: 20px;
+    gap: 0.75rem;
     justify-content: space-between;
+    align-items: flex-start;
 }
 
 .task-title {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #111827;
-    margin-bottom: 4px;
+    margin: 0;
     word-wrap: break-word;
+    line-height: 1.4;
 }
 
 .task-meta {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #6b7280;
+    flex-shrink: 0;
 }
 
 .task-right {
     display: flex;
-    align-items: flex-end;
-    gap: 8px;
+    align-items: center;
+    gap: 0.5rem;
     flex-wrap: wrap;
     flex-shrink: 0;
 }
@@ -320,59 +321,59 @@ export default {
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
 }
 
 .input-label {
-    font-size: 10px;
+    font-size: 0.625rem;
     color: #6b7280;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .weight-input {
-    width: 70px;
-    height: 20px;
-    padding: 6px 8px;
-    font-size: 13px;
-    border-radius: 6px;
+    width: 60px;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.8125rem;
+    border-radius: 0.375rem;
     border: 1px solid #d1d5db;
     text-align: center;
     transition: all 0.2s;
+    background: white;
 
     &:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #6366f1;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
     }
 }
 
 .status-selector {
     display: flex;
-    gap: 4px;
+    gap: 0.125rem;
     background: #f3f4f6;
-    padding: 2px;
-    border-radius: 8px;
+    padding: 0.125rem;
+    border-radius: 0.375rem;
 }
 
 .status-btn {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 10px;
+    gap: 0.25rem;
+    padding: 0.375rem 0.625rem;
     border: none;
     background: transparent;
-    border-radius: 6px;
+    border-radius: 0.25rem;
     cursor: pointer;
-    transition: all 0.2s;
-    font-size: 12px;
+    transition: all 0.15s;
+    font-size: 0.75rem;
     font-weight: 500;
     color: #6b7280;
 
     .status-icon {
-        width: 14px;
-        height: 14px;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 
     .status-text {
@@ -380,7 +381,7 @@ export default {
     }
 
     &:hover {
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.6);
         color: #374151;
     }
 
@@ -407,22 +408,19 @@ export default {
 }
 
 .blocker-note-section {
-    min-width: 200px;
+    min-width: 180px;
     flex: 1;
-}
-
-.blocker-note-section {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0.25rem;
 }
 
 .blocker-input {
     width: 100%;
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 6px;
-    border: 2px solid #fee2e2;
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid #fecaca;
     background: white;
     color: #991b1b;
     transition: all 0.2s;
@@ -434,7 +432,7 @@ export default {
     &:focus {
         outline: none;
         border-color: #ef4444;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
     }
 
     &.error {
@@ -444,15 +442,15 @@ export default {
 }
 
 .error-message {
-    font-size: 11px;
+    font-size: 0.625rem;
     color: #dc2626;
     font-weight: 500;
-    margin-top: 2px;
+    margin-top: 0.125rem;
 }
 
 .delete-btn {
-    width: 2rem;
-    height: 2rem;
+    width: 1.75rem;
+    height: 1.75rem;
     border: none;
     background: #fee2e2;
     color: #dc2626;
@@ -466,13 +464,13 @@ export default {
     flex-shrink: 0;
 
     svg {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 
     &:hover {
         background: #fecaca;
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
 
     &:active {
@@ -483,8 +481,7 @@ export default {
 // Responsive adjustments
 @media (max-width: 768px) {
     .task-card {
-        flex-direction: column;
-        align-items: stretch;
+        padding: 0.625rem;
     }
 
     .task-right {
@@ -504,6 +501,11 @@ export default {
     }
 
     .blocker-note-section {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .weight-input {
         width: 100%;
     }
 }

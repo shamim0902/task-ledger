@@ -135,10 +135,10 @@ export default {
 
 <style lang="scss" scoped>
 .subtasks-section {
-    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-    border-radius: 0.75rem;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
     border: 1px solid #e5e7eb;
 }
 
@@ -146,88 +146,93 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 
     .subtasks-title {
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: #1f2937;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
         margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
     }
 }
 
 .add-subtask-button {
-    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    background: #6366f1;
     color: white;
     border: none;
-    border-radius: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.375rem;
     transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+    box-shadow: 0 1px 2px rgba(99, 102, 241, 0.2);
 
     .icon-tiny {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 
     &:hover {
+        background: #4f46e5;
         transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
     }
 }
 
 .add-subtask-form {
-    margin-bottom: 1.25rem;
-    padding: 1rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
     background: white;
     border-radius: 0.5rem;
-    border: 2px solid #e5e7eb;
+    border: 1px solid #e5e7eb;
 
     .el-input-number {
-        width: 120px;
+        width: 100px;
     }
 
     .form-group {
         display: flex;
-        gap: 0.75rem;
+        gap: 0.5rem;
         align-items: center;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
     }
 
     .subtask-input {
         flex: 1;
-        padding: 0.625rem 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        font-size: 0.8125rem;
         transition: all 0.2s;
+        background: #f9fafb;
 
         &:focus {
             outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: #6366f1;
+            background: white;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
         }
     }
 }
 
 .subtask-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.5rem;
     justify-content: flex-end;
 
     .btn-save {
         background: #10b981;
         color: white;
         border: none;
-        border-radius: 0.5rem;
-        padding: 0.625rem 1.25rem;
-        font-size: 0.875rem;
+        border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.8125rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
@@ -242,9 +247,9 @@ export default {
         background: #6b7280;
         color: white;
         border: none;
-        border-radius: 0.5rem;
-        padding: 0.625rem 1.25rem;
-        font-size: 0.875rem;
+        border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.8125rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
@@ -258,28 +263,28 @@ export default {
 .subtasks-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .subtask-item {
     background: white;
-    padding: 1rem;
-    border-radius: 0.625rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     transition: all 0.2s;
-    border: 2px solid #e5e7eb;
+    border: 1px solid #e5e7eb;
 
     &:hover {
-        border-color: #cbd5e1;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border-color: #d1d5db;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     &.completed {
         opacity: 0.7;
-        background: #f0fdf4;
-        border-color: #bbf7d0;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
 
         .subtask-text {
             text-decoration: line-through;
@@ -295,15 +300,15 @@ export default {
     opacity: 0.5;
 
     input[type="checkbox"] {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
         cursor: pointer;
         opacity: 0;
         position: absolute;
 
         &:checked + .checkmark {
-            background: #4f46e5;
-            border-color: #4f46e5;
+            background: #6366f1;
+            border-color: #6366f1;
 
             &::after {
                 display: block;
@@ -312,10 +317,10 @@ export default {
     }
 
     .checkmark {
-        width: 1.25rem;
-        height: 1.25rem;
-        border: 2px solid #d1d5db;
-        border-radius: 0.375rem;
+        width: 1rem;
+        height: 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.25rem;
         background: white;
         position: relative;
         transition: all 0.2s;
@@ -324,12 +329,12 @@ export default {
             content: '';
             position: absolute;
             display: none;
-            left: 0.35rem;
+            left: 0.3rem;
             top: 0.1rem;
-            width: 0.35rem;
-            height: 0.6rem;
+            width: 0.3rem;
+            height: 0.5rem;
             border: solid white;
-            border-width: 0 2px 2px 0;
+            border-width: 0 1.5px 1.5px 0;
             transform: rotate(45deg);
         }
     }
@@ -338,54 +343,57 @@ export default {
 .subtask-text {
     flex: 1;
     color: #374151;
-    font-size: 0.9375rem;
+    font-size: 0.8125rem;
     font-weight: 500;
+    line-height: 1.4;
 }
 
 .weight-badge-small {
     background: #f3e8ff;
     color: #6b21a8;
-    padding: 0.375rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.6875rem;
     font-weight: 600;
+    border: 1px solid #e9d5ff;
 }
 
 .completed-badge {
     background: #d1fae5;
     color: #065f46;
-    padding: 0.375rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.6875rem;
     font-weight: 600;
+    border: 1px solid #a7f3d0;
 }
 
 .subtask-actions-inline {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.375rem;
 
     .btn-action {
         font-size: 0.75rem;
-        padding: 0.5rem 1rem;
+        padding: 0.375rem 0.75rem;
     }
 }
 
 .no-subtasks {
     text-align: center;
-    padding: 2.5rem 1rem;
+    padding: 2rem 1rem;
     color: #6b7280;
 
     .empty-icon {
-        width: 3rem;
-        height: 3rem;
-        margin: 0 auto 1rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        margin: 0 auto 0.75rem;
         opacity: 0.4;
         color: #9ca3af;
     }
 
     p {
         margin: 0;
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
     }
 }
 </style>

@@ -55,92 +55,95 @@ export default {
 
 <style lang="scss" scoped>
 .selected-task-section {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 2px solid #e5e7eb;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
 }
 
 .selected-task-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1.5rem;
-    gap: 1rem;
+    margin-bottom: 1rem;
+    gap: 0.75rem;
 }
 
 .selected-task-info {
     flex: 1;
+    min-width: 0;
 
     .selected-task-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin: 0 0 0.75rem 0;
-        line-height: 1.3;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.4;
     }
 }
 
 .task-meta {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
 .meta-badge {
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    background: #eef2ff;
     color: #4338ca;
-    padding: 0.375rem 0.875rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    border: 1px solid rgba(67, 56, 202, 0.2);
+    border: 1px solid #c7d2fe;
 }
 
 .status-badge {
-    padding: 0.375rem 0.875rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
     font-weight: 600;
 
     &.status-progress {
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        background: #dbeafe;
         color: #1e40af;
-        border: 1px solid rgba(30, 64, 175, 0.2);
+        border: 1px solid #93c5fd;
     }
 
     &.status-todo {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        background: #fef3c7;
         color: #92400e;
-        border: 1px solid rgba(146, 64, 14, 0.2);
+        border: 1px solid #fde68a;
     }
 }
 
 .weight-badge {
-    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+    background: #f3e8ff;
     color: #6b21a8;
-    padding: 0.375rem 0.875rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    border: 1px solid rgba(107, 33, 168, 0.2);
+    border: 1px solid #e9d5ff;
 }
 
 .clear-button {
     background: #fee2e2;
     color: #dc2626;
     border: none;
-    border-radius: 0.5rem;
-    padding: 0.625rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
 
     .icon-small {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
     }
 
     &:hover {

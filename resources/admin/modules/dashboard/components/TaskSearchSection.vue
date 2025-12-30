@@ -100,8 +100,9 @@ export default {
 <style lang="scss" scoped>
 .task-search-section {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: flex-end;
 }
 
 .search-wrapper {
@@ -110,10 +111,12 @@ export default {
 
     .form-label {
         display: block;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         font-weight: 600;
         color: #374151;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.375rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
     }
 }
 
@@ -122,29 +125,33 @@ export default {
 
     .search-icon {
         position: absolute;
-        left: 1rem;
+        left: 0.75rem;
         top: 50%;
         transform: translateY(-50%);
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
         color: #9ca3af;
         z-index: 1;
     }
 
     .search-input {
         width: 100%;
-        padding: 0.875rem 1rem 0.875rem 3rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 0.625rem;
-        font-size: 1rem;
+        padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
         transition: all 0.2s;
         background: #f9fafb;
 
         &:focus {
             outline: none;
-            border-color: #4f46e5;
+            border-color: #6366f1;
             background: white;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        &::placeholder {
+            color: #9ca3af;
         }
     }
 }
@@ -155,27 +162,27 @@ export default {
     left: 0;
     right: 0;
     background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.625rem;
-    margin-top: 0.5rem;
-    max-height: 320px;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    margin-top: 0.375rem;
+    max-height: 280px;
     overflow-y: auto;
     width: 159%;
     z-index: 50;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
     &::-webkit-scrollbar {
-        width: 6px;
+        width: 4px;
     }
 
     &::-webkit-scrollbar-track {
         background: #f1f5f9;
-        border-radius: 3px;
+        border-radius: 2px;
     }
 
     &::-webkit-scrollbar-thumb {
         background: #cbd5e1;
-        border-radius: 3px;
+        border-radius: 2px;
 
         &:hover {
             background: #94a3b8;
@@ -184,12 +191,12 @@ export default {
 }
 
 .dropdown-item {
-    padding: 1rem;
+    padding: 0.75rem;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: background 0.2s;
+    transition: background 0.15s;
 
     &:hover {
         background: #f9fafb;
@@ -203,23 +210,25 @@ export default {
 .dropdown-item-content {
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: 0.25rem;
     flex: 1;
+    min-width: 0;
 
     .dropdown-task-title {
         font-weight: 600;
-        color: #1f2937;
-        font-size: 0.9375rem;
+        color: #111827;
+        font-size: 0.875rem;
+        line-height: 1.3;
 
         .subtask-count {
             font-weight: 400;
             color: #6b7280;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
         }
     }
 
     .dropdown-task-board {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         color: #6b7280;
     }
 }
@@ -227,40 +236,56 @@ export default {
 .weight-badge-small {
     background: #f3e8ff;
     color: #6b21a8;
-    padding: 0.375rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     white-space: nowrap;
+    border: 1px solid #e9d5ff;
 }
 
 .add-task-button {
-    padding: 0.875rem 1.75rem;
-    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    padding: 0.625rem 1.25rem;
+    background: #6366f1;
     color: white;
     border: none;
-    border-radius: 0.625rem;
+    border-radius: 0.5rem;
     font-weight: 600;
+    font-size: 0.875rem;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     transition: all 0.2s;
-    margin-top: 1.75rem;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+    white-space: nowrap;
+    box-shadow: 0 1px 2px 0 rgba(99, 102, 241, 0.2);
 
     .icon-small {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
     }
 
     &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px -2px rgba(79, 70, 229, 0.4);
+        background: #4f46e5;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px 0 rgba(99, 102, 241, 0.3);
     }
 
     &:active {
         transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .task-search-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .add-task-button {
+        width: 100%;
+        justify-content: center;
+        margin-top: 0;
     }
 }
 </style>

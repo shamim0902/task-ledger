@@ -41,23 +41,28 @@ export default {
 .nav-card {
     background: white;
     border-radius: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 0.75rem;
     overflow: hidden;
 }
 
 .nav-tabs {
     display: flex;
-    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    padding: 0.25rem;
+    gap: 0.25rem;
 }
 
 .nav-tab {
     flex: 1;
-    padding: 1rem 1.5rem;
+    padding: 0.625rem 1rem;
     font-weight: 500;
+    font-size: 0.875rem;
     color: #6b7280;
-    background: none;
+    background: transparent;
     border: none;
+    border-radius: 0.5rem;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -67,28 +72,20 @@ export default {
     position: relative;
 
     .icon-small {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
     }
 
     &:hover {
-        background: #f9fafb;
         color: #4f46e5;
+        background: rgba(99, 102, 241, 0.1);
     }
 
     &.active {
         color: #4f46e5;
-        background: #eef2ff;
-
-        &::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: #4f46e5;
-        }
+        background: white;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        font-weight: 600;
     }
 }
 </style>
