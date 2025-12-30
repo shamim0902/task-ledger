@@ -40,14 +40,16 @@ export default {
 <style lang="scss" scoped>
 .nav-card {
     background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     border: 1px solid #e5e7eb;
     margin-bottom: 0.75rem;
     overflow: hidden;
+    width: 240px;
 }
 
 .nav-tabs {
+    float: right;
     display: flex;
     background: #f9fafb;
     padding: 0.25rem;
@@ -56,36 +58,45 @@ export default {
 
 .nav-tab {
     flex: 1;
-    padding: 0.625rem 1rem;
+    padding: 0.375rem 0.625rem;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #6b7280;
     background: transparent;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
     position: relative;
+    line-height: 1.2;
+    white-space: nowrap;
 
     .icon-small {
-        width: 1rem;
-        height: 1rem;
+        width: 0.75rem;
+        height: 0.75rem;
+        flex-shrink: 0;
     }
 
     &:hover {
-        color: #4f46e5;
-        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+        background: rgba(99, 102, 241, 0.08);
     }
 
     &.active {
-        color: #4f46e5;
+        color: #6366f1;
         background: white;
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         font-weight: 600;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-card {
+        width: 100%;
     }
 }
 </style>

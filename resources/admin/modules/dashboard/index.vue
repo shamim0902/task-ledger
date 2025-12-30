@@ -14,29 +14,6 @@
                     <p class="brand-subtitle">Daily Work Tracker</p>
                 </div>
             </div>
-            <div class="navbar-actions">
-                <div class="view-switcher">
-                    <button
-                        @click="currentView = 'create'"
-                        :class="['view-btn', { active: currentView === 'create' }]"
-                    >
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span>Create Log</span>
-                    </button>
-                    <button
-                        @click="currentView = 'history'"
-                        :class="['view-btn', { active: currentView === 'history' }]"
-                    >
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span>History</span>
-                    </button>
-                </div>
-            </div>
         </nav>
 
         <!-- Main Content Area -->
@@ -92,6 +69,12 @@
                     </div>
                 </div>
         </div>
+
+                <!-- Navigation Tabs -->
+            <NavigationTabs 
+                :current-view="currentView" 
+                @view-change="currentView = $event"
+            />
 
                 <!-- Create Log View -->
             <div v-if="currentView === 'create'" class="create-view">
@@ -238,6 +221,7 @@ import SelectedTaskSection from './components/SelectedTaskSection.vue';
 import DailyLogForm from './components/DailyLogForm.vue';
 import AddTaskModal from './components/AddTaskModal.vue';
 import LogHistory from './components/LogHistory.vue';
+import NavigationTabs from './components/NavigationTabs.vue';
 
 export default {
     name: 'DailyReportApp',
@@ -245,7 +229,8 @@ export default {
         SelectedTaskSection,
         DailyLogForm,
         AddTaskModal,
-        LogHistory
+        LogHistory,
+        NavigationTabs
     },
     data() {
         return {
@@ -589,51 +574,6 @@ export default {
     }
 }
 
-.navbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.view-switcher {
-    display: flex;
-    gap: 0.5rem;
-    background: #f3f4f6;
-    padding: 0.25rem;
-    border-radius: 0.5rem;
-}
-
-.view-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #6b7280;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    svg {
-        width: 1rem;
-        height: 1rem;
-    }
-
-    &:hover {
-        color: #6366f1;
-        background: rgba(99, 102, 241, 0.1);
-    }
-
-    &.active {
-    background: white;
-        color: #6366f1;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        font-weight: 600;
-    }
-}
 
 // Main Content
 .app-content {
@@ -1277,16 +1217,6 @@ export default {
     }
 
     .navbar-brand {
-        justify-content: center;
-    }
-
-    .view-switcher {
-        width: 100%;
-        justify-content: stretch;
-    }
-
-    .view-btn {
-        flex: 1;
         justify-content: center;
     }
 
