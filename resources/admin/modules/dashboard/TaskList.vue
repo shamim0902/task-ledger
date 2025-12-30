@@ -278,6 +278,7 @@ export default {
 .task-left {
     display: flex;
     align-items: flex-start;
+    align-items: center;
     gap: 0.625rem;
     flex: 1;
     min-width: 0;
