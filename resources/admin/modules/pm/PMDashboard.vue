@@ -471,10 +471,7 @@ export default {
                 const membersNeedingReminders = this.getMembersNeedingReminders();
                 
                 if (membersNeedingReminders.length === 0) {
-                    this.$notify({
-                        type: 'info',
-                        text: 'No reminders needed - all team members are up to date!'
-                    });
+                    this.$notify('No reminders needed - all team members are up to date!');
                     return;
                 }
 
@@ -905,7 +902,7 @@ export default {
 .stat-card {
     background: white;
     border-radius: 0.75rem;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     display: flex;
     align-items: center;
     gap: 0.875rem;
@@ -919,17 +916,18 @@ export default {
     }
 
     .stat-icon-wrapper {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 2.75rem;
+        height: 2.75rem;
         border-radius: 0.625rem;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        transition: all 0.3s;
 
         svg {
-            width: 1.25rem;
-            height: 1.25rem;
+            width: 1.375rem;
+            height: 1.375rem;
         }
     }
 
@@ -938,17 +936,17 @@ export default {
         min-width: 0;
 
         .stat-value {
-            font-size: 1.5rem;
+            font-size: 1.375rem;
             font-weight: 700;
             line-height: 1.2;
-            margin-bottom: 0.125rem;
+            margin-bottom: 0.25rem;
         }
 
         .stat-label {
             font-size: 0.75rem;
             font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
             opacity: 0.7;
         }
     }

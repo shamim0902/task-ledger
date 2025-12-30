@@ -283,10 +283,7 @@ export default {
             // Close the modal
             this.showTaskSelectModal = false;
             
-            this.$notify({
-                type: 'success',
-                text: 'Task added to log'
-            });
+            this.$notify('Task added to log');
         },
         clearSelectedTask() {
             this.selectedTask = null;
@@ -577,7 +574,7 @@ export default {
 // Stats Dashboard
 .stats-dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -585,10 +582,10 @@ export default {
 .stat-card {
     background: white;
     border-radius: 0.75rem;
-    padding: 1.25rem;
+    padding: 1rem 1.25rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.875rem;
     border: 1px solid #e5e7eb;
     transition: all 0.3s;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -599,17 +596,18 @@ export default {
     }
 
     .stat-icon-wrapper {
-        width: 3rem;
-        height: 3rem;
+        width: 2.75rem;
+        height: 2.75rem;
         border-radius: 0.625rem;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        transition: all 0.3s;
 
         svg {
-            width: 1.5rem;
-            height: 1.5rem;
+            width: 1.375rem;
+            height: 1.375rem;
         }
     }
 
@@ -618,8 +616,8 @@ export default {
         min-width: 0;
 
         .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
+            font-size: 1.375rem;
+            font-weight: 700;
             line-height: 1.2;
             margin-bottom: 0.25rem;
         }
@@ -634,46 +632,98 @@ export default {
     }
 
     &.stat-primary {
-        border-left: 4px solid #6366f1;
+        background: linear-gradient(135deg, #eef2ff 0%, #ffffff 100%);
+        border-color: #c7d2fe;
+        
         .stat-icon-wrapper {
-            background: #eef2ff;
-            color: #6366f1;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
         }
         .stat-value {
             color: #6366f1;
+        }
+        
+        &:hover {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f5f7ff 100%);
+            border-color: #a5b4fc;
+            
+            .stat-icon-wrapper {
+                transform: scale(1.1);
+                box-shadow: 0 6px 12px rgba(99, 102, 241, 0.4);
+            }
         }
     }
 
     &.stat-success {
-        border-left: 4px solid #10b981;
+        background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+        border-color: #a7f3d0;
+        
         .stat-icon-wrapper {
-            background: #ecfdf5;
-            color: #10b981;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
         }
         .stat-value {
             color: #10b981;
+        }
+        
+        &:hover {
+            background: linear-gradient(135deg, #d1fae5 0%, #f0fdf4 100%);
+            border-color: #6ee7b7;
+            
+            .stat-icon-wrapper {
+                transform: scale(1.1);
+                box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+            }
         }
     }
 
     &.stat-warning {
-        border-left: 4px solid #f59e0b;
+        background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+        border-color: #fde68a;
+        
         .stat-icon-wrapper {
-            background: #fffbeb;
-            color: #f59e0b;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
         }
         .stat-value {
             color: #f59e0b;
+        }
+        
+        &:hover {
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+            border-color: #fcd34d;
+            
+            .stat-icon-wrapper {
+                transform: scale(1.1);
+                box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4);
+            }
         }
     }
 
     &.stat-info {
-        border-left: 4px solid #3b82f6;
+        background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+        border-color: #bfdbfe;
+        
         .stat-icon-wrapper {
-            background: #eff6ff;
-            color: #3b82f6;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
         }
         .stat-value {
             color: #3b82f6;
+        }
+        
+        &:hover {
+            background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+            border-color: #93c5fd;
+            
+            .stat-icon-wrapper {
+                transform: scale(1.1);
+                box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
+            }
         }
     }
 }
@@ -1186,8 +1236,8 @@ export default {
     .empty-text {
             margin: 0;
         font-size: 0.875rem;
+        }
     }
-}
 
 // History View
 .history-view {
