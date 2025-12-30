@@ -95,48 +95,46 @@
 
                 <!-- Create Log View -->
             <div v-if="currentView === 'create'" class="create-view">
-                <div class="view-layout">
-                    <!-- Left Panel: Task Selection -->
-                    <div class="panel-left">
-                        <div class="panel-header">
-                            <h2 class="panel-title">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                Select Tasks
-                            </h2>
-                            <button @click="showAddTaskModal = true" class="btn-add-task">
+                <div class="unified-panel">
+                    <!-- Compact Header -->
+                    <div class="unified-header">
+                        <div class="header-top">
+                            <div class="header-title-section">
+                                <h2 class="main-title">Daily Log</h2>
+                                <span class="date-badge">{{ todayDate }}</span>
+                            </div>
+                            <button @click="showAddTaskModal = true" class="btn-add-task-compact">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
-                                New Task
+                                <span>New Task</span>
                             </button>
                         </div>
-
-                        <div class="panel-body">
-                            <!-- Task Search -->
-                            <div class="search-container">
-                                <div class="search-input-wrapper">
-                                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    <input
-                                        type="text"
+                        
+                        <!-- Task Search -->
+                        <div class="search-container-compact">
+                            <div class="search-input-wrapper">
+                                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input
+                                    type="text"
                         v-model="taskSearchQuery"
-                                        @focus="showDropdown = true"
-                                        placeholder="Search tasks by title or board..."
-                                        class="search-input"
-                                    />
-                                </div>
+                                    @focus="showDropdown = true"
+                                    @input="showDropdown = taskSearchQuery.trim().length > 0"
+                                    placeholder="Search and add tasks to your log..."
+                                    class="search-input"
+                                />
+                            </div>
 
-                                <!-- Task Dropdown -->
-                                <div v-if="showDropdown && filteredTasks.length > 0" class="task-dropdown">
+                            <!-- Task Dropdown -->
+                            <transition name="dropdown-fade">
+                                <div v-if="showDropdown && filteredTasks.length > 0" class="task-dropdown" @click.stop>
                                     <div
                                         v-for="task in filteredTasks"
                                         :key="task.id"
-                                        @click="selectTask(task)"
+                                        @click.stop="selectTask(task)"
                                         class="dropdown-item"
                                     >
                                         <div class="dropdown-item-content">
@@ -146,26 +144,54 @@
                                         <span class="weight-badge">{{ task.weight }} pts</span>
                                     </div>
                                 </div>
-                            </div>
+                            </transition>
+                        </div>
+                    </div>
 
-                    <!-- Selected Task Details -->
-                            <div v-if="selectedTask" class="selected-task-card">
-                                <div class="selected-task-header">
-                                    <div class="task-title-section">
-                                        <h3 class="task-title">{{ selectedTask.title }}</h3>
-                                        <div class="task-meta-badges">
-                                            <span class="meta-badge">{{ selectedTask.board?.title }}</span>
-                                            <span class="meta-badge weight">{{ selectedTask.weight }} pts</span>
+                    <!-- Main Content -->
+                    <div class="unified-content">
+                        <!-- Log Submitted State -->
+                        <div v-if="logSubmitted" class="log-submitted-state">
+                            <div class="submitted-content">
+                                <div class="submitted-icon-wrapper">
+                                    <svg class="submitted-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="submitted-text">
+                                    <h3 class="submitted-title">Log submitted for today</h3>
+                                    <p class="submitted-message">Your daily log has been saved successfully.</p>
+                                </div>
+                                <button @click="logSubmitted = false" class="btn-edit-log">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    <span>Edit Today's Log</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Daily Log Form (shown when not submitted) -->
+                        <template v-else>
+                            <!-- Selected Task Card (Inline) -->
+                            <div v-if="selectedTask" class="selected-task-inline">
+                                <div class="selected-task-header-compact">
+                                    <div class="task-title-compact">
+                                        <span class="task-title-text">{{ selectedTask.title }}</span>
+                                        <div class="task-badges-compact">
+                                            <span class="badge-small">{{ selectedTask.board?.title }}</span>
+                                            <span class="badge-small weight">{{ selectedTask.weight }} pts</span>
                                         </div>
                                     </div>
-                                    <button @click="clearSelectedTask" class="btn-clear">
+                                    <button @click="clearSelectedTask" class="btn-clear-small">
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
-
                     <SelectedTaskSection
                         :task="selectedTask"
                         :show-add-subtask-input="showAddSubtaskInput"
@@ -177,31 +203,7 @@
                     />
                 </div>
 
-                            <!-- Empty State -->
-                            <div v-else class="empty-state">
-                                <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <p class="empty-text">Search and select a task to add to your daily log</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Panel: Daily Log -->
-                    <div class="panel-right">
-                        <div class="panel-header">
-                            <h2 class="panel-title">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                Daily Log
-                            </h2>
-                            <div class="log-date-badge">{{ todayDate }}</div>
-                        </div>
-
-                        <div class="panel-body">
+                <!-- Daily Log Form -->
                 <DailyLogForm
                     :tasks="todayLog.tasks"
                     :notes="todayLog.notes"
@@ -211,7 +213,7 @@
                     @task-update="handleTaskUpdate"
                     @submit="handleCreateLog"
                 />
-                        </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -262,7 +264,8 @@ export default {
             showAddTaskModal: false,
             showAddSubtaskInput: false,
             showDropdown: false,
-            weight: 1
+            weight: 1,
+            logSubmitted: false
         };
     },
     computed: {
@@ -295,6 +298,13 @@ export default {
             this.selectedTask = task;
             this.taskSearchQuery = '';
             this.showDropdown = false;
+            // Focus management
+            this.$nextTick(() => {
+                const input = this.$el?.querySelector('.search-input');
+                if (input) {
+                    input.blur();
+                }
+            });
         },
         clearSelectedTask() {
             this.selectedTask = null;
@@ -449,34 +459,40 @@ export default {
             }
 
             this.$post('logs', this.todayLog).then(res => {
-                this.$notify('Log saved successfully');
+                this.$notify({
+                    type: 'success',
+                    text: 'Log saved successfully'
+                });
+                // Set submitted state
+                this.logSubmitted = true;
                 // Refresh today's log to get updated data
                 this.getTodayLogs();
             }).catch(err => {
-                this.$notify('Log save failed');
+                this.$notify({
+                    type: 'error',
+                    text: 'Log save failed'
+                });
             });
         },
         deleteTaskFromLog(task) {
-            if (!task.id) {
-                // If task doesn't have a log item ID, just remove from local array
-                const index = this.todayLog.tasks.findIndex(t => t.task_id === task.task_id || t.id === task.id);
+            // Remove from local array first for immediate UI update
+            const index = this.todayLog.tasks.findIndex(t => 
+                (t.id && task.id && t.id === task.id) || 
+                (t.task_id && task.task_id && t.task_id === task.task_id) ||
+                (t.title === task.title && t.weight === task.weight)
+            );
+            
                 if (index > -1) {
                     this.todayLog.tasks.splice(index, 1);
-                    this.handleCreateLog();
-                }
-                return;
             }
 
+            // If task has a log item ID, delete from server
+            if (task.id) {
             this.$delete(`logs/items/${task.id}`).then(res => {
                 this.$notify({
                     type: 'success',
                     text: 'Task removed from log'
                 });
-                // Remove from local array
-                const index = this.todayLog.tasks.findIndex(t => t.id === task.id);
-                if (index > -1) {
-                    this.todayLog.tasks.splice(index, 1);
-                }
                 // Refresh to get updated data
                 this.getTodayLogs();
             }).catch(err => {
@@ -484,7 +500,17 @@ export default {
                     type: 'error',
                     text: 'Failed to remove task from log'
                 });
-            });
+                    // Revert local change on error
+                    this.getTodayLogs();
+                });
+            } else {
+                // For tasks without ID, just save the updated log
+                this.handleCreateLog();
+                this.$notify({
+                    type: 'success',
+                    text: 'Task removed from log'
+                });
+            }
         }
     },
     mounted() {
@@ -498,7 +524,7 @@ export default {
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-container')) {
+            if (!e.target.closest('.search-container-compact')) {
                 this.showDropdown = false;
             }
         });
@@ -724,66 +750,154 @@ export default {
     }
 }
 
-// Create View Layout
-.create-view {
-    .view-layout {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    }
-}
+// Create View Layout - Unified panel styles below
 
-// Panel Styles
-.panel-left,
-.panel-right {
+// Unified Panel
+.unified-panel {
     background: white;
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
-.panel-header {
-    padding: 1.25rem 1.5rem;
+.unified-header {
+    padding: 0.625rem 0.875rem;
     border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     background: #f9fafb;
 }
 
-.panel-title {
-    font-size: 1rem;
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+}
+
+.header-title-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.main-title {
+    font-size: 0.9375rem;
     font-weight: 600;
     color: #111827;
     margin: 0;
+    line-height: 1.2;
+}
+
+.date-badge {
+    padding: 0.125rem 0.5rem;
+    background: #eef2ff;
+    color: #6366f1;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.btn-add-task-compact {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
+    padding: 0.375rem 0.625rem;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    line-height: 1.2;
 
     svg {
-        width: 1.25rem;
-        height: 1.25rem;
-        color: #6366f1;
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+
+    &:hover {
+        background: #4f46e5;
+        transform: translateY(-1px);
+        box-shadow: 0 1px 3px rgba(99, 102, 241, 0.3);
     }
 }
 
-.panel-body {
-    padding: 1.25rem;
-    flex: 1;
-    overflow-y: auto;
+.search-container-compact {
+    position: relative;
+}
+
+.unified-content {
+    padding: 0.75rem;
     display: flex;
     flex-direction: column;
+    gap: 0.625rem;
+    flex: 1;
+    overflow-y: auto;
     min-height: 0;
 }
 
-.btn-add-task {
+// Log Submitted State
+.log-submitted-state {
     display: flex;
     align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    min-height: 200px;
+}
+
+.submitted-content {
+    text-align: center;
+    max-width: 400px;
+}
+
+.submitted-icon-wrapper {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+}
+
+.submitted-icon {
+    width: 2rem;
+    height: 2rem;
+    color: white;
+}
+
+.submitted-text {
+    margin-bottom: 1.5rem;
+}
+
+.submitted-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.5rem 0;
+}
+
+.submitted-message {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.btn-edit-log {
+    display: inline-flex;
+    align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.25rem;
     background: #6366f1;
     color: white;
     border: none;
@@ -803,15 +917,90 @@ export default {
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
     }
+
+    &:active {
+        transform: translateY(0);
+    }
 }
 
-.log-date-badge {
-    padding: 0.375rem 0.75rem;
-    background: #eef2ff;
-    color: #6366f1;
+// Selected Task Inline
+.selected-task-inline {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
     border-radius: 0.375rem;
+    padding: 0.625rem;
+    margin-bottom: 0.375rem;
+}
+
+.selected-task-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+    gap: 0.5rem;
+}
+
+.task-title-compact {
+    flex: 1;
+    min-width: 0;
+}
+
+.task-title-text {
+    display: block;
     font-size: 0.8125rem;
     font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+}
+
+.task-badges-compact {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.badge-small {
+    padding: 0.125rem 0.375rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: #6b7280;
+    line-height: 1.3;
+
+    &.weight {
+        background: #f3e8ff;
+        border-color: #e9d5ff;
+        color: #6b21a8;
+    }
+}
+
+.btn-clear-small {
+    width: 1.25rem;
+    height: 1.25rem;
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    padding: 0;
+
+    svg {
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+
+    &:hover {
+        background: #fecaca;
+        transform: scale(1.05);
+    }
 }
 
 // Search Container
@@ -827,9 +1016,9 @@ export default {
 
     .search-icon {
         position: absolute;
-        left: 1rem;
-        width: 1.25rem;
-        height: 1.25rem;
+        left: 0.625rem;
+        width: 1rem;
+        height: 1rem;
         color: #9ca3af;
         pointer-events: none;
         z-index: 1;
@@ -837,18 +1026,19 @@ export default {
 
     .search-input {
         width: 100%;
-        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        padding: 0.5rem 0.75rem 0.5rem 2rem;
         border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
+        border-radius: 0.375rem;
+        font-size: 0.8125rem;
         background: #f9fafb;
         transition: all 0.2s;
+        line-height: 1.4;
 
         &:focus {
             outline: none;
             border-color: #6366f1;
             background: white;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
         }
     }
 }
@@ -860,12 +1050,12 @@ export default {
     right: 0;
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    margin-top: 0.5rem;
-    max-height: 300px;
+    border-radius: 0.375rem;
+    margin-top: 0.375rem;
+    max-height: 250px;
     overflow-y: auto;
     z-index: 50;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 
     &::-webkit-scrollbar {
         width: 6px;
@@ -885,8 +1075,20 @@ export default {
     }
 }
 
+// Dropdown transition
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-5px);
+}
+
 .dropdown-item {
-    padding: 0.875rem 1rem;
+    padding: 0.5rem 0.75rem;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
@@ -911,23 +1113,27 @@ export default {
         display: block;
         font-weight: 600;
         color: #111827;
-        font-size: 0.875rem;
-        margin-bottom: 0.25rem;
+        font-size: 0.8125rem;
+        margin-bottom: 0.125rem;
+        line-height: 1.3;
     }
 
     .dropdown-task-board {
         display: block;
-        font-size: 0.8125rem;
+        font-size: 0.75rem;
         color: #6b7280;
+        line-height: 1.3;
     }
 }
 
 .weight-badge {
     background: #f3e8ff;
     color: #6b21a8;
-    padding: 0.25rem 0.625rem;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.3;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -1058,9 +1264,26 @@ export default {
 }
 
 // Responsive Design
-@media (max-width: 1200px) {
-    .create-view .view-layout {
-        grid-template-columns: 1fr;
+@media (max-width: 768px) {
+    .unified-header {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .header-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-add-task-compact {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .unified-content {
+        padding: 0.625rem;
+        gap: 0.5rem;
     }
 }
 
