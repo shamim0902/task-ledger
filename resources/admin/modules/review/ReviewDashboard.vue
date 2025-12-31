@@ -278,13 +278,28 @@ export default {
             this.loadingMembers = true;
             try {
                 const response = await this.$get('review/members');
-                this.members = response.all ? response.all() : response;
+                // Handle both wrapped and direct responses
+                let membersData = response;
+                if (response && typeof response.all === 'function') {
+                    membersData = response.all();
+                } else if (response && Array.isArray(response)) {
+                    membersData = response;
+                } else if (response && response.data && Array.isArray(response.data)) {
+                    membersData = response.data;
+                }
+                
+                // Ensure it's an array
+                this.members = Array.isArray(membersData) ? membersData : [];
             } catch (error) {
                 console.error('Error loading members:', error);
+                // Check if error has a message
+                const errorMessage = error?.message || error?.responseJSON?.message || 'Failed to load members';
                 this.$notify({
                     type: 'error',
-                    text: 'Failed to load members',
+                    text: errorMessage,
                 });
+                // Set empty array on error to prevent UI issues
+                this.members = [];
             } finally {
                 this.loadingMembers = false;
             }

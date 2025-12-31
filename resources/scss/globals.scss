@@ -302,6 +302,10 @@ html.dark {
     font-weight: 600; /* optional: stronger emphasis */
 }
 
+ul.el-menu {
+    padding-left: 0 !important;
+}
+
 /* Submenu hover */
 .el-sub-menu__title:hover,
 .el-sub-menu__title:focus {

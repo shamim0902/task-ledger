@@ -243,7 +243,7 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.875rem 1rem;
+    padding: 0.625rem 0.75rem;
     border-bottom: 1px solid #e5e7eb;
     background: #f9fafb;
     flex-shrink: 0;
@@ -252,12 +252,12 @@ export default {
 .header-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .member-avatar-large {
-    width: 3rem;
-    height: 3rem;
+    width: 2.25rem;
+    height: 2.25rem;
     border-radius: 50%;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     display: flex;
@@ -267,42 +267,44 @@ export default {
 
     span {
         color: white;
-        font-size: 1.125rem;
+        font-size: 0.875rem;
         font-weight: 600;
     }
 }
 
 .modal-title {
-    font-size: 1.125rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: #111827;
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 0.125rem 0;
+    line-height: 1.2;
 }
 
 .modal-subtitle {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #6b7280;
     margin: 0;
+    line-height: 1.2;
 }
 
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.8125rem;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
     font-weight: 500;
 
     svg {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 
     &.reviewed {
@@ -312,106 +314,15 @@ export default {
 }
 
 .close-btn {
-    width: 2rem;
-    height: 2rem;
+    width: 1.75rem;
+    height: 1.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #f9fafb;
     border: none;
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
     color: #6b7280;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    svg {
-        width: 1.25rem;
-        height: 1.25rem;
-    }
-
-    &:hover {
-        background: #f3f4f6;
-        color: #111827;
-    }
-}
-
-.modal-body {
-    padding: 1rem;
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 1;
-    min-height: 0;
-    box-sizing: border-box;
-}
-
-.loading-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: #6b7280;
-
-    .spinner {
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #10b981;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 1rem;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    p {
-        margin: 0;
-        font-size: 0.875rem;
-    }
-}
-
-.notes-section {
-    margin-bottom: 1rem;
-    padding: 0.875rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
-}
-
-.section-title {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: #111827;
-    margin: 0 0 0.75rem 0;
-}
-
-.notes-content {
-    font-size: 0.875rem;
-    color: #374151;
-    line-height: 1.6;
-    white-space: pre-wrap;
-}
-
-.tasks-section {
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-}
-
-.btn-mark-all {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: #10b981;
-    border: none;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: white;
     cursor: pointer;
     transition: all 0.2s;
 
@@ -421,33 +332,124 @@ export default {
     }
 
     &:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+}
+
+.modal-body {
+    padding: 0.75rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #6b7280;
+
+    .spinner {
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #10b981;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 0.75rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    p {
+        margin: 0;
+        font-size: 0.75rem;
+    }
+}
+
+.notes-section {
+    margin-bottom: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    background: #f9fafb;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+}
+
+.section-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.5rem 0;
+}
+
+.notes-content {
+    font-size: 0.75rem;
+    color: #374151;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.tasks-section {
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+}
+
+.btn-mark-all {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: #10b981;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    svg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+
+    &:hover {
         background: #059669;
     }
 }
 
 .empty-tasks {
     text-align: center;
-    padding: 2rem;
+    padding: 1.5rem;
     color: #6b7280;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
 }
 
 .tasks-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .task-item {
-    padding: 0.875rem;
+    padding: 0.625rem 0.75rem;
     border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     transition: all 0.2s;
     box-sizing: border-box;
 
     &:hover {
         border-color: #d1d5db;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
 
     &.reviewed {
@@ -460,45 +462,59 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
+    gap: 0.5rem;
 }
 
 .task-title-row {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     flex: 1;
+    min-width: 0;
 }
 
 .task-checkbox {
     cursor: pointer;
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
 }
 
 .reviewed-checkmark {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1rem;
+    height: 1rem;
     color: #10b981;
+    flex-shrink: 0;
 
     svg {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 }
 
 .task-title {
-    font-size: 0.9375rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: #111827;
     margin: 0;
     flex: 1;
+    line-height: 1.3;
 }
 
 .status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    flex-shrink: 0;
+
     &.status-in-progress {
         background: #dbeafe;
         color: #1e40af;
@@ -518,32 +534,34 @@ export default {
 .task-details {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.8125rem;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
     color: #6b7280;
 }
 
 .detail-item {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.25rem;
 
     svg {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 }
 
 .task-note,
 .task-blocker {
-    padding: 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.8125rem;
-    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
+    margin-bottom: 0.375rem;
+    line-height: 1.4;
 
     strong {
         font-weight: 600;
+        font-size: 0.6875rem;
     }
 }
 
@@ -559,18 +577,18 @@ export default {
 }
 
 .task-reviewed-info {
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     color: #6b7280;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    margin-top: 0.375rem;
+    padding-top: 0.375rem;
     border-top: 1px solid #e5e7eb;
 }
 
 .modal-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    padding: 0.875rem 1rem;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
     border-top: 1px solid #e5e7eb;
     background: #f9fafb;
     flex-shrink: 0;
@@ -580,18 +598,18 @@ export default {
 .btn-secondary {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
 
     svg {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 }
 

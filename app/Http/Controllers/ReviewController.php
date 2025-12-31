@@ -18,61 +18,88 @@ class ReviewController extends Controller
      */
     public function getReviewableMembers()
     {
-        $userId = get_current_user_id();
-        
-        // Admin and Manager only
-        if (!PermissionService::isAdmin($userId) && !PermissionService::isManager($userId)) {
-            return $this->sendError('You do not have permission to review tasks', 403);
-        }
-
-        $isAdmin = PermissionService::isAdmin($userId);
-        $isManager = PermissionService::isManager($userId);
-        
-        if ($isAdmin) {
-            // Admin can review ALL users - get all users who have submitted logs
-            $userIdsWithLogs = Log::distinct()
-                ->pluck('user_id')
-                ->toArray();
+        try {
+            $userId = get_current_user_id();
             
-            if (empty($userIdsWithLogs)) {
-                $members = collect();
-            } else {
+            if (!$userId || $userId === 0) {
+                return $this->sendError(['message' => 'User not authenticated'], 401);
+            }
+            
+            // Admin and Manager only
+            $isAdmin = PermissionService::isAdmin($userId);
+            $isManager = PermissionService::isManager($userId);
+            
+            if (!$isAdmin && !$isManager) {
+                return $this->sendError(['message' => 'You do not have permission to review tasks'], 403);
+            }
+            
+            if ($isAdmin) {
+                // Admin can review ALL users - get all users who have submitted logs
+                $userIdsWithLogs = Log::distinct()
+                    ->pluck('user_id')
+                    ->toArray();
+                
+                if (empty($userIdsWithLogs)) {
+                    return [];
+                }
+                
                 $members = User::whereIn('ID', $userIdsWithLogs)->get();
-            }
-        } else {
-            // Manager can only review assigned members
-            // Get member IDs directly from ManagerMember table, then fetch users
-            $memberIds = ManagerMember::where('manager_id', $userId)
-                ->pluck('member_id')
-                ->toArray();
-            
-            if (empty($memberIds)) {
-                $members = collect();
             } else {
+                // Manager can only review assigned members
+                // Get member IDs directly from ManagerMember table, then fetch users
+                $memberIds = ManagerMember::where('manager_id', $userId)
+                    ->pluck('member_id')
+                    ->toArray();
+                
+                if (empty($memberIds)) {
+                    // Return empty array if manager has no assigned members
+                    return [];
+                }
+                
                 $members = User::whereIn('ID', $memberIds)->get();
+                
+                // If no users found (maybe users were deleted), return empty array
+                if ($members->isEmpty()) {
+                    return [];
+                }
             }
+
+            // Get unread submission counts for each member
+            // Filter out any null members (in case user was deleted but assignment remains)
+            $membersWithCounts = $members->filter(function($member) {
+                return $member !== null && isset($member->ID);
+            })->map(function($member) {
+                try {
+                    // Include NULL values as unreviewed (for existing records before review feature)
+                    $unreadCount = Log::where('user_id', $member->ID)
+                        ->where(function($q) {
+                            $q->where('reviewed', false)
+                              ->orWhereNull('reviewed');
+                        })
+                        ->count();
+                    
+                    return [
+                        'id' => $member->ID,
+                        'name' => $member->display_name ?? $member->user_nicename ?? 'Unknown',
+                        'email' => $member->user_email ?? '',
+                        'initials' => $this->getInitials($member->display_name ?? $member->user_nicename ?? 'U'),
+                        'unread_count' => $unreadCount,
+                    ];
+                } catch (\Exception $e) {
+                    // Skip this member if there's an error processing it
+                    return null;
+                }
+            })->filter(function($member) {
+                return $member !== null;
+            });
+
+            // Return as array for consistent JSON response
+            return $membersWithCounts->values()->toArray();
+        } catch (\Exception $e) {
+            return $this->sendError(['message' => 'Failed to load members: ' . $e->getMessage()], 500);
+        } catch (\Error $e) {
+            return $this->sendError(['message' => 'Failed to load members: ' . $e->getMessage()], 500);
         }
-
-        // Get unread submission counts for each member
-        $membersWithCounts = $members->map(function($member) {
-            // Include NULL values as unreviewed (for existing records before review feature)
-            $unreadCount = Log::where('user_id', $member->ID)
-                ->where(function($q) {
-                    $q->where('reviewed', false)
-                      ->orWhereNull('reviewed');
-                })
-                ->count();
-            
-            return [
-                'id' => $member->ID,
-                'name' => $member->display_name ?? $member->user_nicename,
-                'email' => $member->user_email,
-                'initials' => $this->getInitials($member->display_name ?? $member->user_nicename),
-                'unread_count' => $unreadCount,
-            ];
-        });
-
-        return $membersWithCounts->values();
     }
 
     /**
