@@ -23,29 +23,41 @@ class RolesAndPermissionsSeeder
             [
                 'name' => 'Admin',
                 'slug' => 'admin',
-                'description' => 'Full system access. Can manage everyone.',
+                'description' => 'Full system access with all permissions',
                 'is_system' => true,
             ],
             [
                 'name' => 'Manager',
                 'slug' => 'manager',
-                'description' => 'Can manage assigned members only.',
+                'description' => 'Can manage members and view PM dashboard for assigned projects',
                 'is_system' => true,
             ],
             [
                 'name' => 'Member',
                 'slug' => 'member',
-                'description' => 'Cannot manage anyone. Can only access own projects.',
+                'description' => 'Can access only own projects and create daily logs',
                 'is_system' => true,
             ],
         ];
 
         $createdRoles = [];
         foreach ($roles as $roleData) {
+            // Use firstOrCreate to avoid duplicates, but update description if it exists
             $role = Role::firstOrCreate(
                 ['slug' => $roleData['slug']],
                 $roleData
             );
+            
+            // Update description if role already exists but description is different
+            if ($role->description !== $roleData['description']) {
+                $role->update(['description' => $roleData['description']]);
+            }
+            
+            // Ensure is_system is set correctly
+            if (!$role->is_system) {
+                $role->update(['is_system' => true]);
+            }
+            
             $createdRoles[$roleData['slug']] = $role;
         }
         

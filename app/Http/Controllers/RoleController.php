@@ -19,7 +19,9 @@ class RoleController extends Controller
         }
 
         $roles = Role::where('is_system', true)
+            ->where('slug', '!=', 'member')
             ->withCount('users')
+            ->orderBy('name', 'asc')
             ->get();
         return $roles;
     }

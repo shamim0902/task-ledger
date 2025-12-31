@@ -286,6 +286,11 @@ class AdminMenuHandler
             $theme = $themes[$this->config->get('theme.default')] ?? null;
         }
 
+        $userId = get_current_user_id();
+        $isAdmin = PermissionService::isAdmin($userId);
+        $isManager = PermissionService::isManager($userId);
+        $isMember = PermissionService::isMember($userId) || (!$isAdmin && !$isManager);
+
         wp_localize_script($slug . '_admin_app', 'fluentFrameworkAdmin', [
             'env'           => $this->app->env(),
             'slug'          => $slug,
@@ -307,6 +312,10 @@ class AdminMenuHandler
                 'full_name' => $authUser->display_name ?? null,
                 'is_admin'  => current_user_can('administrator'),
             ],
+            'userRole'      => $isAdmin ? 'admin' : ($isManager ? 'manager' : 'member'),
+            'isAdmin'       => $isAdmin,
+            'isManager'     => $isManager,
+            'isMember'      => $isMember,
         ]);
     }
 

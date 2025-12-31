@@ -27,7 +27,10 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
-    $router->add('/roles', 'modules/roles')
+    // Roles - Admin only
+    $router->addIf('/roles', 'modules/roles', function() {
+        return PermissionService::isAdmin(get_current_user_id());
+    })
         ->name('roles')
         ->icon('UserFilled')
         ->title(__('Roles', 'taskledger'))
