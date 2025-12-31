@@ -8,7 +8,6 @@ use TaskLedger\App\Models\User;
 use TaskLedger\App\Models\ManagerMember;
 use TaskLedger\App\Services\Email\EmailNotificationMailer;
 use TaskLedger\App\Services\PermissionService;
-use FluentBoards\App\Models\Task;
 
 class CronHooks
 {
@@ -20,12 +19,8 @@ class CronHooks
         // Register monthly cron schedule
         add_filter('cron_schedules', [__CLASS__, 'addMonthlySchedule']);
         
-        // Schedule the monthly reminder if not already scheduled
-        if (!wp_next_scheduled('task_ledger_monthly_unreviewed_reminder')) {
-            wp_schedule_event(time(), 'monthly', 'task_ledger_monthly_unreviewed_reminder');
-        }
-        
         // Hook the reminder handler
+        // Note: Scheduling happens in ActivationHandler, not here
         add_action('task_ledger_monthly_unreviewed_reminder', [__CLASS__, 'handleMonthlyReminder']);
     }
 
@@ -149,17 +144,30 @@ class CronHooks
 
             $tasks = [];
             foreach ($log->logItems as $item) {
-                $task = Task::find($item->task_id);
-                if ($task) {
-                    $tasks[] = [
-                        'title' => $task->title,
-                        'hours' => $item->time_spent ?? 0,
-                        'complete_weight' => $item->complete_weight ?? 0,
-                        'status' => $item->activity_type ?? 'in-progress',
-                        'note' => $item->note ?? '',
-                        'blocker_reason' => $item->block_reason ?? '',
-                    ];
+                $taskTitle = 'Task #' . $item->task_id;
+                
+                // Try to get task details from Fluent Boards if available
+                if (class_exists('\FluentBoards\App\Models\Task')) {
+                    $task = \FluentBoards\App\Models\Task::find($item->task_id);
+                    if ($task) {
+                        $taskTitle = $task->title;
+                    } else {
+                        // Task not found in Fluent Boards, use fallback
+                        $taskTitle = $item->note ?: 'Task #' . $item->task_id;
+                    }
+                } else {
+                    // Fluent Boards not installed, use log item data directly
+                    $taskTitle = $item->note ?: 'Custom Task #' . $item->task_id;
                 }
+                
+                $tasks[] = [
+                    'title' => $taskTitle,
+                    'hours' => $item->time_spent ?? 0,
+                    'complete_weight' => $item->complete_weight ?? 0,
+                    'status' => $item->activity_type ?? 'in-progress',
+                    'note' => $item->note ?? '',
+                    'blocker_reason' => $item->block_reason ?? '',
+                ];
             }
 
             $unreviewedLogs[] = [

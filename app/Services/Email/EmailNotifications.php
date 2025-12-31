@@ -19,11 +19,13 @@ class EmailNotifications
         foreach ($settings as $key => &$setting) {
             $setting['name'] = $key;
             $keyConfig = Arr::get($config, $key, []);
-            if (!$keyConfig) {
-                continue;
+            
+            // Merge database config with defaults (database config takes precedence)
+            // If no config exists in database, use defaults as-is
+            if (!empty($keyConfig)) {
+                $setting['settings'] = wp_parse_args($keyConfig, $setting['settings']);
             }
-
-            $setting['settings'] = wp_parse_args($keyConfig, $setting['settings']);
+            // If keyConfig is empty, keep default settings
         }
 
         return $settings;

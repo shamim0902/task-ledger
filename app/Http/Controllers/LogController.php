@@ -29,21 +29,24 @@ class LogController extends Controller
             ->first();
  
         // 2️⃣ Create or update log
-        // Get status from request, default to 'draft' for new logs, preserve existing status for updates
-        $status = $data['status'] ?? ($log ? $log->status : 'draft');
+        // Get status from request - if explicitly provided, use it; otherwise default to existing status or 'draft'
+        // Important: Always respect the status sent from frontend when explicitly provided
+        $status = isset($data['status']) && $data['status'] !== '' ? $data['status'] : ($log ? $log->status : 'draft');
         
         if ($log) {
             // update notes and status
             $log->update([
-                'additional_notes' => $data['notes'],
+                'additional_notes' => $data['notes'] ?? '',
                 'status' => $status
             ]);
+            // Refresh to get the updated status from database
+            $log->refresh();
         } else {
             // Create new log with status from request or 'draft' by default
             $log = Log::create([
                 'user_id' => $user_id,
                 'log_date' => $today,
-                'additional_notes' => $data['notes'],
+                'additional_notes' => $data['notes'] ?? '',
                 'status' => $status
             ]);
         }
@@ -56,12 +59,12 @@ class LogController extends Controller
 
         // 3️⃣ Upsert log items
         foreach ($data['tasks'] as $task) {
-            $status = $task['status'] ?? 'in-progress';
+            $taskStatus = $task['status'] ?? 'in-progress';
             $blockerReason = null;
             $note = $task['note'] ?? null;
 
             // If status is blocked, use blocker_reason field
-            if ($status === 'blocked') {
+            if ($taskStatus === 'blocked') {
                 $blockerReason = $task['blocker_reason'] ?? $task['note'] ?? null;
                 // If no blocker reason provided, use note as fallback
                 if (!$blockerReason && $note) {
@@ -86,7 +89,7 @@ class LogController extends Controller
                     'task_type'=> 'board',
                 ],
                 [
-                    'activity_type'   => $status,
+                    'activity_type'   => $taskStatus,
                     'complete_weight' => $task['complete_weight'] ?? 0,
                     'note'            => $note,
                     'block_reason'    => $blockerReason,
@@ -96,8 +99,13 @@ class LogController extends Controller
             );
         }
 
+        // Refresh log from database to get the actual saved status
+        $log->refresh();
+        $actualStatus = $log->status;
+        
         // Trigger email notification if log status is 'submitted'
-        if ($status === 'submitted') {
+        // Note: Use the log's status, not the task status
+        if ($actualStatus === 'submitted') {
             do_action('task_ledger_log_submitted', $log, $user_id);
         }
 

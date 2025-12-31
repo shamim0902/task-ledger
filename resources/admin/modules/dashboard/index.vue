@@ -710,6 +710,8 @@ export default {
                 status: 'submitted'
             };
             
+            console.log('Task Ledger: Submitting log with status:', logData.status, 'Full data:', logData);
+            
             this.$post('logs', logData).then(res => {
                 // Only show notification if this was an explicit user action (not auto-save)
                 // Check if there are actually tasks or notes to save

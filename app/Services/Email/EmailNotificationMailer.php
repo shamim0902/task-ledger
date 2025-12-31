@@ -27,7 +27,8 @@ class EmailNotificationMailer
         $settings = Arr::get($notification, 'settings', []);
         
         // Check if notification is active
-        if (Arr::get($settings, 'active') !== 'yes') {
+        $isActive = Arr::get($settings, 'active');
+        if ($isActive !== 'yes' && $isActive !== true && $isActive !== 1) {
             return false;
         }
 
@@ -48,10 +49,15 @@ class EmailNotificationMailer
         $isDefaultBody = Arr::get($settings, 'is_default_body', 'yes') === 'yes' || empty(Arr::get($settings, 'email_body'));
         
         if ($isDefaultBody) {
-            $body = self::renderTemplate(Arr::get($notification, 'template_path'), $data);
+            $templatePath = Arr::get($notification, 'template_path');
+            $body = self::renderTemplate($templatePath, $data);
         } else {
             $body = Arr::get($settings, 'email_body', '');
             $body = EmailShortCodeHelper::processShortcodes($body, $data);
+        }
+
+        if (empty($body)) {
+            return false;
         }
 
         // Send email
@@ -59,7 +65,9 @@ class EmailNotificationMailer
             'Content-Type: text/html; charset=UTF-8',
         ];
 
-        return wp_mail($toEmail, $subject, $body, $headers);
+        $result = wp_mail($toEmail, $subject, $body, $headers);
+
+        return $result;
     }
 
     /**
@@ -116,9 +124,27 @@ class EmailNotificationMailer
      */
     private static function getTemplatePath($templatePath)
     {
-        // Get plugin directory path using WordPress function
-        $pluginDir = plugin_dir_path(dirname(dirname(dirname(__DIR__))));
-        $templateFile = $pluginDir . 'app/Views/emails/' . $templatePath . '.php';
+        // Get plugin directory path
+        // __DIR__ is app/Services/Email, so we need to go up 4 levels to get to plugin root
+        // app/Services/Email -> app/Services -> app -> plugin root
+        $pluginDir = dirname(dirname(dirname(dirname(__DIR__))));
+        $templateFile = $pluginDir . '/app/Views/emails/' . $templatePath . '.php';
+        
+        // If that doesn't work, try using WordPress plugin_dir_path
+        if (!file_exists($templateFile) && function_exists('plugin_dir_path')) {
+            // Find plugin.php file by going up from current directory
+            $currentDir = __DIR__;
+            $maxLevels = 5;
+            for ($i = 0; $i <= $maxLevels; $i++) {
+                $testPath = $currentDir . str_repeat('/..', $i) . '/plugin.php';
+                $realPath = realpath($testPath);
+                if ($realPath && file_exists($realPath)) {
+                    $pluginDir = plugin_dir_path($realPath);
+                    $templateFile = $pluginDir . 'app/Views/emails/' . $templatePath . '.php';
+                    break;
+                }
+            }
+        }
         
         return $templateFile;
     }
