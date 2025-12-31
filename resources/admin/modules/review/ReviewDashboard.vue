@@ -466,10 +466,7 @@ export default {
                     log_ids: this.selectedSubmissions,
                 });
 
-                this.$notify({
-                    type: 'success',
-                    text: `${this.selectedSubmissions.length} submission(s) marked as reviewed`,
-                });
+                this.$notify(`${this.selectedSubmissions.length} submission(s) marked as reviewed`);
 
                 this.selectedSubmissions = [];
                 this.loadSubmissions(this.pagination.current_page);

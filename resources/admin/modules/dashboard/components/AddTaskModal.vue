@@ -28,11 +28,11 @@
                     />
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Board *</label>
+                    <label class="form-label">Board / Category</label>
                     <input 
                         type="text" 
                         v-model="localTask.board" 
-                        placeholder="e.g., Backend, Frontend..."
+                        placeholder="e.g., Backend, Frontend, Marketing..."
                         class="form-input" 
                     />
                 </div>
@@ -98,10 +98,10 @@ export default {
     },
     methods: {
         handleSubmit() {
-            if (!this.localTask.title.trim() || !this.localTask.board.trim() || !this.localTask.weight) {
+            if (!this.localTask.title.trim() || !this.localTask.weight) {
                 this.$notify({
                     type: 'warning',
-                    text: 'Please fill in all required fields'
+                    text: 'Please fill in task title and weight'
                 });
                 return;
             }

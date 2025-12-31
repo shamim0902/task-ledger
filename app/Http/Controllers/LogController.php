@@ -9,7 +9,6 @@ use TaskLedger\Framework\Http\Request\Request;
 use TaskLedger\Framework\Http\Response\Response;
 use TaskLedger\Framework\Http\Controller;
 use TaskLedger\App\Models\LogItem;
-use FluentBoards\App\Models\Task;
 use TaskLedger\App\Models\Meta;
 
 class LogController extends Controller
@@ -140,21 +139,35 @@ class LogController extends Controller
         }
 
         $log->logItems->each(function ($item) use ($log) {
-            $task = Task::find($item->task_id);
-            if ($task) {
-                $item->log_id = $log->id;
-                $item->status = $item->activity_type;
-                $item->title = $task->title;
-                $item->hours = $item->time_spent;
-                $item->note = $item->note;
-                $item->weight = Meta::getMetaForTask($task->id, 'weight')->meta_value ?? 1;
-                $item->complete_weight = $item->complete_weight ?? 0;
-                // Include blocker reason if status is blocked
-                if ($item->activity_type === 'blocked') {
-                    $item->blocker_reason = $item->block_reason ?? $item->note ?? '';
+            $item->log_id = $log->id;
+            $item->status = $item->activity_type;
+            $item->hours = $item->time_spent;
+            $item->note = $item->note;
+            $item->complete_weight = $item->complete_weight ?? 0;
+            
+            // Try to get task details from Fluent Boards if available
+            if (class_exists('\FluentBoards\App\Models\Task')) {
+                $task = \FluentBoards\App\Models\Task::find($item->task_id);
+                if ($task) {
+                    $item->title = $task->title;
+                    $item->weight = Meta::getMetaForTask($task->id, 'weight')->meta_value ?? 1;
                 } else {
-                    $item->blocker_reason = '';
+                    // Task not found in Fluent Boards, use fallback
+                    $item->title = $item->note ?: 'Task #' . $item->task_id;
+                    $item->weight = 1;
                 }
+            } else {
+                // Fluent Boards not installed, use fallback data
+                // For custom tasks, title might be stored in note or we need to get it from elsewhere
+                $item->title = $item->note ?: 'Custom Task #' . $item->task_id;
+                $item->weight = 1;
+            }
+            
+            // Include blocker reason if status is blocked
+            if ($item->activity_type === 'blocked') {
+                $item->blocker_reason = $item->block_reason ?? $item->note ?? '';
+            } else {
+                $item->blocker_reason = '';
             }
         });
 
@@ -207,19 +220,30 @@ class LogController extends Controller
 
             // Get task details
             $log->tasks = $log->logItems->map(function ($item) {
-                $task = Task::find($item->task_id);
-                if ($task) {
-                    return [
-                        'id' => $item->id,
-                        'task_id' => $task->id,
-                        'title' => $task->title,
-                        'status' => $item->activity_type,
-                        'hours' => $item->time_spent,
-                        'complete_weight' => $item->complete_weight,
-                        'note' => $item->note,
-                    ];
+                $taskData = [
+                    'id' => $item->id,
+                    'task_id' => $item->task_id,
+                    'status' => $item->activity_type,
+                    'hours' => $item->time_spent,
+                    'complete_weight' => $item->complete_weight,
+                    'note' => $item->note,
+                ];
+                
+                // Try to get task details from Fluent Boards if available
+                if (class_exists('\FluentBoards\App\Models\Task')) {
+                    $task = \FluentBoards\App\Models\Task::find($item->task_id);
+                    if ($task) {
+                        $taskData['title'] = $task->title;
+                    } else {
+                        // Task not found in Fluent Boards, use fallback
+                        $taskData['title'] = $item->note ?: 'Task #' . $item->task_id;
+                    }
+                } else {
+                    // Fluent Boards not installed, use fallback
+                    $taskData['title'] = $item->note ?: 'Custom Task #' . $item->task_id;
                 }
-                return null;
+                
+                return $taskData;
             })->filter()->values();
         });
 

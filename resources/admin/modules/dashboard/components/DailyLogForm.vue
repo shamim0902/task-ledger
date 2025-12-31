@@ -32,8 +32,15 @@
                         </svg>
                     </div>
                     <p class="empty-text">No tasks in your log yet</p>
-                    <p class="empty-hint">Select tasks from board or create custom tasks</p>
-                    <button @click.stop="$emit('open-task-select')" class="btn-pick-tasks">
+                    <p class="empty-hint">
+                        <span v-if="hasFluentBoards">Select tasks from board or create custom tasks</span>
+                        <span v-else>Create custom tasks to get started</span>
+                    </p>
+                    <button 
+                        v-if="hasFluentBoards"
+                        @click.stop="$emit('open-task-select')" 
+                        class="btn-pick-tasks"
+                    >
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -117,6 +124,10 @@ export default {
         notes: {
             type: String,
             default: ''
+        },
+        hasFluentBoards: {
+            type: Boolean,
+            default: false
         }
     },
     emits: ['update:notes', 'toggle-task', 'submit', 'open-task-select'],

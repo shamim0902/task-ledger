@@ -12,6 +12,11 @@ class TaskController extends Controller
 {
     public function get(Request $request)
     {
+        // Check if Fluent Boards is installed
+        if (!class_exists('\FluentBoards\App\Models\Board') || !class_exists('\FluentBoards\App\Models\Task')) {
+            return [];
+        }
+
         $currentUser = (int) wp_get_current_user()->ID; // ensure int
 
         // Get all boards the user has access to
@@ -61,6 +66,11 @@ class TaskController extends Controller
 
     public function createSubtask(Request $request)
     {
+        // Check if Fluent Boards is installed
+        if (!class_exists('\FluentBoards\App\Models\Task')) {
+            return $request->abort(400, 'Fluent Boards plugin is required to create subtasks');
+        }
+
         $currentUser = (int) wp_get_current_user()->ID;
         
         // All users can create subtasks - no permission check needed
@@ -109,7 +119,15 @@ class TaskController extends Controller
     }
 
     public function markSubtaskCompleted(Request $request, $id) {
+        // Check if Fluent Boards is installed
+        if (!class_exists('\FluentBoards\App\Models\Task')) {
+            return $request->abort(400, 'Fluent Boards plugin is required to mark subtasks as completed');
+        }
+
         $subtask = Task::find($id);
+        if (!$subtask) {
+            return $request->abort(404, 'Subtask not found');
+        }
         $subtask->status = 'closed';
         $subtask->save();
         return $subtask;

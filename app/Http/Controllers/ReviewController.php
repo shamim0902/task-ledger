@@ -10,7 +10,6 @@ use TaskLedger\App\Models\UserRoleProject;
 use TaskLedger\App\Models\ManagerMember;
 use TaskLedger\App\Services\PermissionService;
 use TaskLedger\Framework\Http\Request\Request;
-use FluentBoards\App\Models\Task;
 
 class ReviewController extends Controller
 {
@@ -237,13 +236,26 @@ class ReviewController extends Controller
 
         // Get task details for each log item
         $tasks = $log->logItems->map(function($item) {
-            $task = Task::find($item->task_id);
+            $taskTitle = 'Task #' . $item->task_id;
+            
+            // Try to get task details from Fluent Boards if available
+            if (class_exists('\FluentBoards\App\Models\Task')) {
+                $task = \FluentBoards\App\Models\Task::find($item->task_id);
+                if ($task) {
+                    $taskTitle = $task->title;
+                } else {
+                    $taskTitle = $item->note ?: 'Task not found';
+                }
+            } else {
+                // Fluent Boards not installed, use fallback
+                $taskTitle = $item->note ?: 'Custom Task #' . $item->task_id;
+            }
             
             return [
                 'id' => $item->id,
                 'log_id' => $item->log_id,
                 'task_id' => $item->task_id,
-                'task_title' => $task ? $task->title : 'Task not found',
+                'task_title' => $taskTitle,
                 'activity_type' => $item->activity_type,
                 'complete_weight' => $item->complete_weight,
                 'time_spent' => $item->time_spent,

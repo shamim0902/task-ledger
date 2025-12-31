@@ -78,6 +78,25 @@
 
                 <!-- Create Log View -->
             <div v-if="currentView === 'create'" class="create-view">
+                <!-- Fluent Boards Notice -->
+                <div v-if="!hasFluentBoards && showFluentBoardsNotice" class="fluent-boards-notice">
+                    <div class="notice-content">
+                        <div class="notice-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="notice-text">
+                            <strong>Install Fluent Boards for Better Project Management</strong>
+                            <p>Fluent Boards integration allows you to select tasks from your project boards, track progress, and manage your workflow more efficiently.</p>
+                        </div>
+                        <button @click="dismissNotice" class="notice-close" title="Dismiss">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
                 <div class="unified-panel">
                     <!-- Compact Header -->
                     <div class="unified-header">
@@ -92,8 +111,12 @@
                                 </svg>
                                 <span>Add custom task</span>
                             </button>
-                                <!-- Task Selection Button -->
-                        <button @click="showTaskSelectModal = true" class="btn-select-tasks">
+                                <!-- Task Selection Button - Only show if Fluent Boards is available -->
+                        <button 
+                            v-if="hasFluentBoards" 
+                            @click="showTaskSelectModal = true" 
+                            class="btn-select-tasks"
+                        >
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -225,6 +248,7 @@
                 <DailyLogForm
                     :tasks="todayLog.tasks"
                     :notes="todayLog.notes"
+                    :has-fluent-boards="hasFluentBoards"
                     @update:notes="todayLog.notes = $event"
                     @toggle-task="toggleTask"
                     @delete-task="deleteTaskFromLog"
@@ -294,7 +318,8 @@ export default {
             showAddSubtaskInput: false,
             weight: 1,
             logSubmitted: false,
-            historyKey: 0
+            historyKey: 0,
+            hasFluentBoards: false
         };
     },
     computed: {
@@ -304,9 +329,7 @@ export default {
                 day: 'numeric',
                 year: 'numeric'
             });
-        }
-    },
-    computed: {
+        },
         selectedTaskIds() {
             return this.todayLog.tasks.map(t => {
                 // Include subtask_id if it exists, otherwise use task_id or id
@@ -539,8 +562,17 @@ export default {
         getTasks() {
             this.$get('tasks').then(res => {
                 this.tasks = res.all();
+                // If we successfully loaded tasks (even if empty), Fluent Boards is available
+                this.hasFluentBoards = true;
             }).catch(err => {
-                this.$notify('Failed to load tasks', 'error');
+                // If tasks endpoint fails, Fluent Boards might not be installed
+                this.hasFluentBoards = false;
+                this.tasks = [];
+                // Only show error if it's not a 404 or missing dependency
+                // Don't show error for missing Fluent Boards - it's optional
+                if (err.status !== 404 && err.statusCode !== 404 && err.status !== 400) {
+                    this.$notify('Failed to load tasks', 'error');
+                }
             });
         },
         getTodayLogs() {
@@ -597,8 +629,58 @@ export default {
                 this.$notify('Failed to delete today\'s log', 'error');
             });
         },
-        addNewTask(taskData) {
-            // This is a placeholder - implement actual API call when backend is ready
+        async addNewTask(taskData) {
+            // If Fluent Boards is not installed, add task directly to daily log
+            if (!this.hasFluentBoards) {
+                // Check if task already exists in today's log
+                const exists = this.todayLog.tasks.some(t => 
+                    t.title && taskData.title && t.title.toLowerCase() === taskData.title.toLowerCase()
+                );
+                
+                if (exists) {
+                    this.$notify('This task is already in today\'s log', 'warning');
+                    return;
+                }
+
+                // Map status from modal format to log format
+                let status = 'in-progress';
+                if (taskData.status === 'Done') {
+                    status = 'completed';
+                } else if (taskData.status === 'To Do') {
+                    status = 'in-progress';
+                } else if (taskData.status === 'In Progress') {
+                    status = 'in-progress';
+                }
+
+                // Add task directly to today's log
+                const newTask = {
+                    title: taskData.title,
+                    weight: parseInt(taskData.weight) || 1,
+                    complete_weight: 0,
+                    hours: 0,
+                    status: status,
+                    board: taskData.board ? { title: taskData.board } : null
+                };
+
+                this.todayLog.tasks.push(newTask);
+                
+                // Auto-save the log to persist the new task
+                try {
+                    await this.$post('logs', this.todayLog);
+                    this.$notify('Task added to daily log', 'success');
+                } catch (error) {
+                    console.error('Error saving task to log:', error);
+                    this.$notify('Failed to save task to log', 'error');
+                    // Remove the task from the array if save failed
+                    const index = this.todayLog.tasks.findIndex(t => t.title === taskData.title);
+                    if (index > -1) {
+                        this.todayLog.tasks.splice(index, 1);
+                    }
+                }
+                return;
+            }
+
+            // If Fluent Boards is installed, add to tasks list (existing behavior)
             const task = {
                 id: this.tasks.length + 1,
                 title: taskData.title,
@@ -683,11 +765,22 @@ export default {
                 'blocked': 'Blocked'
             };
             return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ');
+        },
+        dismissNotice() {
+            this.showFluentBoardsNotice = false;
+            // Store dismissal in localStorage to persist across sessions
+            localStorage.setItem('task_ledger_fluent_boards_notice_dismissed', 'true');
         }
     },
     mounted() {
         this.getTasks();
         this.getTodayLogs();
+        
+        // Check if notice was previously dismissed
+        const noticeDismissed = localStorage.getItem('task_ledger_fluent_boards_notice_dismissed');
+        if (noticeDismissed === 'true') {
+            this.showFluentBoardsNotice = false;
+        }
         
         // Auto-create log if it doesn't exist (silently, without notification)
         if (!window.taskLedgerAdmin?.hasLogForToday) {
@@ -708,6 +801,97 @@ export default {
     min-height: 100vh;
     background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+// Fluent Boards Notice
+.fluent-boards-notice {
+    margin-bottom: 1rem;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notice-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: relative;
+}
+
+.notice-icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: white;
+    margin-top: 0.125rem;
+    
+    svg {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.notice-text {
+    flex: 1;
+    color: white;
+    
+    strong {
+        display: block;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        margin-bottom: 0.375rem;
+        line-height: 1.4;
+    }
+    
+    p {
+        margin: 0;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        opacity: 0.95;
+    }
+}
+
+.notice-close {
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.375rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    
+    svg {
+        width: 1rem;
+        height: 1rem;
+    }
+    
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+    
+    &:active {
+        transform: scale(0.95);
+    }
 }
 
 // Top Navigation Bar

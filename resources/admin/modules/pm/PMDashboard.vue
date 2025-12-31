@@ -358,10 +358,8 @@ export default {
                 this.blockedTasks = blocked.all ? blocked.all() : blocked;
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
-                this.$notify({
-                    type: 'error',
-                    text: 'Failed to load dashboard data'
-                });
+                this.$notify('Failed to load dashboard data'
+                );
             } finally {
                 this.loading = false;
             }

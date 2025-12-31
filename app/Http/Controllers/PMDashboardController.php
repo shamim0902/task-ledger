@@ -7,8 +7,6 @@ use TaskLedger\App\Models\LogItem;
 use TaskLedger\App\Models\User;
 use TaskLedger\App\Services\PermissionService;
 use TaskLedger\Framework\Http\Request\Request;
-use FluentBoards\App\Models\Task;
-use FluentBoards\App\Models\Board;
 use TaskLedger\App\Models\Meta;
 
 class PMDashboardController extends Controller
@@ -23,6 +21,19 @@ class PMDashboardController extends Controller
         // Admin only can view PM dashboard
         if (!PermissionService::isAdmin($userId)) {
             return $request->abort(403, 'You do not have permission to view the PM Dashboard');
+        }
+        
+        // Check if Fluent Boards is installed
+        if (!class_exists('\FluentBoards\App\Models\Task') || !class_exists('\FluentBoards\App\Models\Board')) {
+            return [
+                'date' => $request->get('date', date('Y-m-d')),
+                'tasks_worked_on' => 0,
+                'total_hours' => 0,
+                'total_story_points' => 0,
+                'task_details' => [],
+                'team_members' => [],
+                'boards' => []
+            ];
         }
 
         $date = $request->get('date', date('Y-m-d'));
@@ -56,7 +67,10 @@ class PMDashboardController extends Controller
             
             foreach ($logs as $log) {
                 $hasMatchingTask = $log->logItems->filter(function($item) use ($boardIds) {
-                    $task = Task::find($item->task_id);
+                    if (!class_exists('\FluentBoards\App\Models\Task')) {
+                        return false;
+                    }
+                    $task = \FluentBoards\App\Models\Task::find($item->task_id);
                     return $task && in_array($task->board_id, $boardIds);
                 })->count() > 0;
                 
@@ -85,7 +99,10 @@ class PMDashboardController extends Controller
             $logItems = $log->logItems;
             if ($boardIds !== 'all' && is_array($boardIds)) {
                 $logItems = $logItems->filter(function($item) use ($boardIds) {
-                    $task = Task::find($item->task_id);
+                    if (!class_exists('\FluentBoards\App\Models\Task')) {
+                        return false;
+                    }
+                    $task = \FluentBoards\App\Models\Task::find($item->task_id);
                     return $task && in_array($task->board_id, $boardIds);
                 });
             }
@@ -99,7 +116,10 @@ class PMDashboardController extends Controller
             // Get task details for this member
             $taskDetails = [];
             foreach ($logItems as $item) {
-                $task = Task::find($item->task_id);
+                if (!class_exists('\FluentBoards\App\Models\Task')) {
+                    continue;
+                }
+                $task = \FluentBoards\App\Models\Task::find($item->task_id);
                 if (!$task) continue;
 
                 $taskDetails[] = [
@@ -222,7 +242,10 @@ class PMDashboardController extends Controller
         if ($boardIds !== 'all' && is_array($boardIds)) {
             $logs = $logs->filter(function($log) use ($boardIds) {
                 return $log->logItems->filter(function($item) use ($boardIds) {
-                    $task = Task::find($item->task_id);
+                    if (!class_exists('\FluentBoards\App\Models\Task')) {
+                        return false;
+                    }
+                    $task = \FluentBoards\App\Models\Task::find($item->task_id);
                     return $task && in_array($task->board_id, $boardIds);
                 })->count() > 0;
             });
@@ -240,7 +263,10 @@ class PMDashboardController extends Controller
             // Filter by board if needed
             if ($boardIds !== 'all' && is_array($boardIds)) {
                 $logItems = $logItems->filter(function($item) use ($boardIds) {
-                    $task = Task::find($item->task_id);
+                    if (!class_exists('\FluentBoards\App\Models\Task')) {
+                        return false;
+                    }
+                    $task = \FluentBoards\App\Models\Task::find($item->task_id);
                     return $task && in_array($task->board_id, $boardIds);
                 });
             }
@@ -298,7 +324,10 @@ class PMDashboardController extends Controller
             $logItemIds = LogItem::whereIn('log_id', $logs->pluck('id'))
                 ->get()
                 ->filter(function($item) use ($boardIds) {
-                    $task = Task::find($item->task_id);
+                    if (!class_exists('\FluentBoards\App\Models\Task')) {
+                        return false;
+                    }
+                    $task = \FluentBoards\App\Models\Task::find($item->task_id);
                     return $task && in_array($task->board_id, $boardIds);
                 })
                 ->pluck('id')
@@ -338,7 +367,10 @@ class PMDashboardController extends Controller
                 $userLogItems = $userLog->logItems;
                 if ($boardIds !== 'all' && is_array($boardIds)) {
                     $userLogItems = $userLogItems->filter(function($item) use ($boardIds) {
-                        $task = Task::find($item->task_id);
+                        if (!class_exists('\FluentBoards\App\Models\Task')) {
+                            return false;
+                        }
+                        $task = \FluentBoards\App\Models\Task::find($item->task_id);
                         return $task && in_array($task->board_id, $boardIds);
                     });
                 }
@@ -364,7 +396,10 @@ class PMDashboardController extends Controller
             // Filter by board if needed
             if ($boardIds !== 'all' && is_array($boardIds)) {
                 $logItems = $logItems->filter(function($item) use ($boardIds) {
-                    $task = Task::find($item->task_id);
+                    if (!class_exists('\FluentBoards\App\Models\Task')) {
+                        return false;
+                    }
+                    $task = \FluentBoards\App\Models\Task::find($item->task_id);
                     return $task && in_array($task->board_id, $boardIds);
                 });
             }
@@ -504,7 +539,10 @@ class PMDashboardController extends Controller
                     continue;
                 }
 
-                $task = Task::find($item->task_id);
+                if (!class_exists('\FluentBoards\App\Models\Task')) {
+                    continue;
+                }
+                $task = \FluentBoards\App\Models\Task::find($item->task_id);
                 if (!$task) continue;
 
                 // Filter by board if specified
@@ -571,7 +609,10 @@ class PMDashboardController extends Controller
         
         foreach ($logs as $log) {
             foreach ($log->logItems->where('activity_type', 'blocked') as $item) {
-                $task = Task::find($item->task_id);
+                if (!class_exists('\FluentBoards\App\Models\Task')) {
+                    continue;
+                }
+                $task = \FluentBoards\App\Models\Task::find($item->task_id);
                 if (!$task) continue;
 
                 // Filter by board if specified
@@ -640,16 +681,21 @@ class PMDashboardController extends Controller
             return [];
         }
 
+        // Check if Fluent Boards is installed
+        if (!class_exists('\FluentBoards\App\Models\Board')) {
+            return [];
+        }
+        
         // Get boards accessible to the current user
         if (PermissionService::isAdmin($userId)) {
             // Admin or user with view_all_boards permission can see all boards
-            $boards = Board::whereNull('archived_at')
+            $boards = \FluentBoards\App\Models\Board::whereNull('archived_at')
                 ->orderBy('title', 'asc')
                 ->get();
         } else {
             // Filter by user's accessible boards
             $userBoards = PermissionService::getUserBoards($userId);
-            $boards = Board::whereIn('id', $userBoards)
+            $boards = \FluentBoards\App\Models\Board::whereIn('id', $userBoards)
                 ->whereNull('archived_at')
                 ->orderBy('title', 'asc')
                 ->get();
