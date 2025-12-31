@@ -44,7 +44,7 @@
             <table class="activity-table">
                 <thead>
                     <tr>
-                        <th style="width: 40px;"></th>
+                        <th style="width: 32px;"></th>
                         <th>Team Member</th>
                         <th>Tasks Worked On</th>
                         <th>Completed</th>
@@ -386,14 +386,14 @@ export default {
 
     thead {
         background: #f9fafb;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
 
         th {
-            padding: 1rem;
+            padding: 0.5rem 0.75rem;
             text-align: left;
             font-weight: 600;
             color: #374151;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -428,7 +428,7 @@ export default {
         }
 
         td {
-            padding: 1rem;
+            padding: 0.5rem 0.75rem;
             vertical-align: middle;
         }
     }
@@ -436,11 +436,11 @@ export default {
 
 .expand-icon {
     text-align: center;
-    width: 40px;
+    width: 32px;
 
     .chevron {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
         color: #6b7280;
         transition: transform 0.2s;
 
@@ -464,27 +464,29 @@ export default {
 }
 
 .task-details-container {
-    padding: 1.5rem;
+    padding: 0.75rem 1rem;
 }
 
 .task-details-title {
-    font-size: 1rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: #1f2937;
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .tasks-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .task-item {
     background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 0.625rem 0.75rem;
     transition: all 0.2s;
 
     &.task-completed {
@@ -507,14 +509,14 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
-    gap: 1rem;
+    margin-bottom: 0.375rem;
+    gap: 0.5rem;
 }
 
 .task-item-left {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     flex: 1;
     min-width: 0;
 }
@@ -522,14 +524,14 @@ export default {
 .task-id {
     font-weight: 700;
     color: #4f46e5;
-    font-size: 0.875rem;
+    font-size: 0.6875rem;
     white-space: nowrap;
 }
 
 .task-title-text {
     font-weight: 600;
     color: #1f2937;
-    font-size: 0.9375rem;
+    font-size: 0.8125rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -540,9 +542,9 @@ export default {
 }
 
 .task-status-badge {
-    padding: 0.375rem 0.75rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 9999px;
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -564,46 +566,47 @@ export default {
 }
 
 .blocker-note {
-    padding: 0.75rem;
+    padding: 0.5rem 0.625rem;
     background: #fee2e2;
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
     color: #991b1b;
-    font-size: 0.875rem;
-    margin-bottom: 0.5rem;
-    border-left: 3px solid #ef4444;
+    font-size: 0.6875rem;
+    margin-bottom: 0.375rem;
+    border-left: 2px solid #ef4444;
 
     strong {
         color: #dc2626;
+        font-size: 0.6875rem;
     }
 }
 
 .task-meta-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
-    margin-top: 0.5rem;
+    margin-top: 0.375rem;
 }
 
 .meta-item {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 0.875rem;
+    font-size: 0.6875rem;
     color: #6b7280;
     font-weight: 500;
 
     .meta-icon {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 
     &.board-tag {
         background: #e0e7ff;
         color: #4338ca;
-        padding: 0.25rem 0.5rem;
+        padding: 0.125rem 0.375rem;
         border-radius: 9999px;
-        font-size: 0.75rem;
+        font-size: 0.625rem;
     }
 }
 
@@ -611,12 +614,12 @@ export default {
     .member-info {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .avatar {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 1.75rem;
+        height: 1.75rem;
         border-radius: 50%;
         background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
         color: white;
@@ -624,7 +627,7 @@ export default {
         align-items: center;
         justify-content: center;
         font-weight: 600;
-        font-size: 0.875rem;
+        font-size: 0.6875rem;
         flex-shrink: 0;
 
         &.no-update {
@@ -639,11 +642,13 @@ export default {
         .member-name {
             font-weight: 600;
             color: #1f2937;
-            margin-bottom: 0.25rem;
+            font-size: 0.8125rem;
+            margin-bottom: 0.125rem;
+            line-height: 1.2;
         }
 
         .no-update-badge {
-            font-size: 0.75rem;
+            font-size: 0.625rem;
             color: #92400e;
             font-weight: 500;
         }
@@ -654,12 +659,13 @@ export default {
     .stat-item {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
         font-weight: 600;
+        font-size: 0.8125rem;
 
         .stat-icon {
-            width: 1.25rem;
-            height: 1.25rem;
+            width: 1rem;
+            height: 1rem;
         }
 
         &.stat-completed {
@@ -673,6 +679,7 @@ export default {
 
     .no-blocked {
         color: #9ca3af;
+        font-size: 0.8125rem;
     }
 }
 
@@ -684,7 +691,7 @@ export default {
         text-overflow: ellipsis;
         white-space: nowrap;
         color: #6b7280;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
     }
 }
 

@@ -90,7 +90,7 @@
                                 cy="60"
                                 r="50"
                                 fill="none"
-                                stroke="#10b981"
+                                stroke="#86efac"
                                 stroke-width="20"
                                 :stroke-dasharray="`${(workDistribution.completed / 100) * 314} 314`"
                                 stroke-dashoffset="0"
@@ -102,7 +102,7 @@
                                 cy="60"
                                 r="50"
                                 fill="none"
-                                stroke="#3b82f6"
+                                stroke="#93c5fd"
                                 stroke-width="20"
                                 :stroke-dasharray="`${(workDistribution['in-progress'] / 100) * 314} 314`"
                                 :stroke-dashoffset="`-${(workDistribution.completed / 100) * 314}`"
@@ -114,7 +114,7 @@
                                 cy="60"
                                 r="50"
                                 fill="none"
-                                stroke="#ef4444"
+                                stroke="#fca5a5"
                                 stroke-width="20"
                                 :stroke-dasharray="`${(workDistribution.blocked / 100) * 314} 314`"
                                 :stroke-dashoffset="`-${((workDistribution.completed + workDistribution['in-progress']) / 100) * 314}`"
@@ -354,17 +354,17 @@ export default {
     .bar-value {
         font-size: 0.75rem;
         font-weight: 600;
-        color: white;
+        color: #1f2937;
         position: absolute;
         top: -1.5rem;
     }
 
     &.bar-touched {
-        background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+        background: linear-gradient(180deg, #93c5fd 0%, #60a5fa 100%);
     }
 
     &.bar-completed {
-        background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+        background: linear-gradient(180deg, #86efac 0%, #4ade80 100%);
     }
 }
 
@@ -388,19 +388,19 @@ export default {
         border-radius: 0.25rem;
 
         &.touched {
-            background: #3b82f6;
+            background: #93c5fd;
         }
 
         &.completed {
-            background: #10b981;
+            background: #86efac;
         }
 
         &.in-progress {
-            background: #3b82f6;
+            background: #93c5fd;
         }
 
         &.blocked {
-            background: #ef4444;
+            background: #fca5a5;
         }
     }
 }
@@ -473,7 +473,7 @@ export default {
 
 .trend-bar {
     width: 100%;
-    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+    background: linear-gradient(180deg, #fca5a5 0%, #f87171 100%);
     border-radius: 0.25rem 0.25rem 0 0;
     min-height: 20px;
     display: flex;
@@ -490,7 +490,7 @@ export default {
     .trend-value {
         font-size: 0.75rem;
         font-weight: 600;
-        color: white;
+        color: #991b1b;
         position: absolute;
         top: -1.5rem;
     }

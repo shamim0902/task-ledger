@@ -610,8 +610,7 @@ export default {
 <style lang="scss" scoped>
 .pm-dashboard {
     min-height: 100vh;
-    background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #f8fafc;
 }
 
 // Top Header
@@ -886,7 +885,7 @@ export default {
 .pm-content {
     max-width: 1800px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 1rem 1rem;
 }
 
 // Stats Dashboard

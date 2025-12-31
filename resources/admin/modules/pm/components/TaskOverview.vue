@@ -155,24 +155,24 @@ export default {
 
 .filter-tabs {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    gap: 0.375rem;
+    margin-bottom: 0.75rem;
     flex-wrap: wrap;
 }
 
 .filter-tab {
-    padding: 0.625rem 1.25rem;
-    border: 2px solid #e5e7eb;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #e5e7eb;
     background: white;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     font-weight: 500;
     color: #374151;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
 
     &:hover {
         border-color: #4f46e5;
@@ -186,7 +186,7 @@ export default {
     }
 
     .filter-count {
-        font-size: 0.75rem;
+        font-size: 0.625rem;
         opacity: 0.8;
     }
 }
@@ -194,27 +194,27 @@ export default {
 .loading-state,
 .empty-state {
     text-align: center;
-    padding: 3rem 1rem;
+    padding: 2rem 1rem;
     color: #6b7280;
 
     .empty-icon {
-        width: 4rem;
-        height: 4rem;
-        margin: 0 auto 1rem;
+        width: 3rem;
+        height: 3rem;
+        margin: 0 auto 0.75rem;
         opacity: 0.4;
         color: #9ca3af;
     }
 
     p {
         margin: 0;
-        font-size: 0.9375rem;
+        font-size: 0.8125rem;
     }
 }
 
 .table-container {
     background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
     overflow: hidden;
 }
 
@@ -224,13 +224,13 @@ export default {
 
     thead {
         background: #f9fafb;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
 
         th {
-            padding: 1rem;
+            padding: 0.5rem 0.75rem;
             text-align: left;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             color: #374151;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -276,8 +276,8 @@ export default {
         }
 
         td {
-            padding: 1rem;
-            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8125rem;
             color: #374151;
             vertical-align: middle;
         }
@@ -290,16 +290,17 @@ export default {
     .task-title {
         font-weight: 600;
         color: #1f2937;
-        line-height: 1.4;
+        line-height: 1.3;
+        font-size: 0.8125rem;
         display: block;
     }
 }
 
 .task-status-badge {
     display: inline-block;
-    padding: 0.375rem 0.75rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 9999px;
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -325,9 +326,9 @@ export default {
     display: inline-block;
     background: #e0e7ff;
     color: #4338ca;
-    padding: 0.375rem 0.75rem;
+    padding: 0.125rem 0.375rem;
     border-radius: 9999px;
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     font-weight: 500;
     white-space: nowrap;
 }
@@ -335,13 +336,13 @@ export default {
 .task-assignee {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
+    gap: 0.375rem;
+    font-size: 0.75rem;
     color: #6b7280;
 
     .assignee-avatar {
-        width: 1.75rem;
-        height: 1.75rem;
+        width: 1.5rem;
+        height: 1.5rem;
         border-radius: 50%;
         background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
         color: white;
@@ -349,7 +350,7 @@ export default {
         align-items: center;
         justify-content: center;
         font-weight: 600;
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         flex-shrink: 0;
     }
 }
@@ -358,31 +359,32 @@ export default {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #6b7280;
     font-weight: 500;
 
     .icon-small {
-        width: 1rem;
-        height: 1rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 }
 
 .task-points {
     font-weight: 500;
     color: #6b7280;
+    font-size: 0.75rem;
 }
 
 .blocker-info {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     color: #991b1b;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
 
     .blocker-icon {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
         flex-shrink: 0;
     }
 }
