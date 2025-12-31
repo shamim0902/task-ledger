@@ -2,6 +2,9 @@
 
 A comprehensive task management and daily logging system for WordPress that helps teams track work, submit daily logs, and manage task reviews efficiently.
 
+<img width="983" height="861" alt="image" src="https://github.com/user-attachments/assets/f7ce85bf-a657-4bca-89e9-d92c6e3cd3f2" />
+
+
 ## Description
 
 Task Ledger is a powerful WordPress plugin designed for teams to manage daily task submissions, track work progress, and facilitate task reviews. It integrates seamlessly with Fluent Boards and provides role-based access control for administrators, managers, and team members.
