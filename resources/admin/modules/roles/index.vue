@@ -1,18 +1,5 @@
 <template>
     <div class="roles-management">
-        <!-- Breadcrumb Navigation -->
-        <div class="roles-header">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
-                    <router-link to="/settings">
-                        Settings
-                    </router-link>
-                </el-breadcrumb-item>
-                <el-breadcrumb-item>
-                    <span>Roles</span>
-                </el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
 
         <!-- Main Content Area -->
         <div class="app-content">
@@ -124,39 +111,6 @@ export default {
     min-height: 100vh;
     background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
-
-// Header with Breadcrumb
-.roles-header {
-    background: white;
-    border-bottom: 1px solid #e5e7eb;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1rem;
-    
-    :deep(.el-breadcrumb) {
-        .el-breadcrumb__item {
-            .el-breadcrumb__inner {
-                color: #6b7280;
-                font-weight: 500;
-                
-                &.is-link {
-                    color: #6366f1;
-                    text-decoration: none;
-                    
-                    &:hover {
-                        color: #4f46e5;
-                    }
-                }
-            }
-            
-            &:last-child {
-                .el-breadcrumb__inner {
-                    color: #111827;
-                    font-weight: 600;
-                }
-            }
-        }
-    }
 }
 
 // Main Content
