@@ -17,56 +17,38 @@ use TaskLedger\App\Hooks\Handlers\ShortcodeHandler;
 
 $app->addAction('admin_menu', 'AdminMenuHandler');
 
-// Ensure manager_members table exists (auto-migrate if missing)
+// Ensure all tables exist (auto-migrate if missing) - fallback for edge cases
 $app->addAction('admin_init', function() use ($app) {
     global $wpdb;
-    $tableName = $wpdb->prefix . 'task_ledger_manager_members';
-    if ($wpdb->get_var("SHOW TABLES LIKE '$tableName'") != $tableName) {
+    
+    // Check if any core tables are missing
+    $coreTables = [
+        'task_ledger_settings',
+        'task_ledger_tasks',
+        'task_ledger_logs',
+        'task_ledger_log_items',
+        'task_ledger_roles',
+        'task_ledger_user_role_projects',
+    ];
+    
+    $missingTables = [];
+    foreach ($coreTables as $table) {
+        $tableName = $wpdb->prefix . $table;
+        if ($wpdb->get_var("SHOW TABLES LIKE '$tableName'") != $tableName) {
+            $missingTables[] = $table;
+        }
+    }
+    
+    // If any tables are missing, run migrations
+    if (!empty($missingTables)) {
         try {
             // Use DBMigrator to run all migrations (it will skip existing tables)
             \TaskLedger\Database\DBMigrator::migrateUp();
         } catch (\Exception $e) {
-            error_log('Task Ledger: Failed to create manager_members table: ' . $e->getMessage());
+            error_log('Task Ledger: Failed to run migrations: ' . $e->getMessage());
         }
     }
 }, 1);
-
-// Ensure review columns exist in logs and log_items tables
-$app->addAction('admin_init', function() use ($app) {
-    global $wpdb;
-    
-    // Check and add columns to task_ledger_logs
-    $logsTable = $wpdb->prefix . 'task_ledger_logs';
-    if ($wpdb->get_var("SHOW TABLES LIKE '$logsTable'") == $logsTable) {
-        $columns = $wpdb->get_col("SHOW COLUMNS FROM $logsTable");
-        
-        if (!in_array('reviewed', $columns)) {
-            $wpdb->query("ALTER TABLE $logsTable ADD COLUMN `reviewed` BOOLEAN DEFAULT FALSE AFTER `status`");
-        }
-        if (!in_array('reviewed_at', $columns)) {
-            $wpdb->query("ALTER TABLE $logsTable ADD COLUMN `reviewed_at` TIMESTAMP NULL AFTER `reviewed`");
-        }
-        if (!in_array('reviewed_by', $columns)) {
-            $wpdb->query("ALTER TABLE $logsTable ADD COLUMN `reviewed_by` BIGINT UNSIGNED NULL AFTER `reviewed_at`");
-        }
-    }
-    
-    // Check and add columns to task_ledger_log_items
-    $logItemsTable = $wpdb->prefix . 'task_ledger_log_items';
-    if ($wpdb->get_var("SHOW TABLES LIKE '$logItemsTable'") == $logItemsTable) {
-        $columns = $wpdb->get_col("SHOW COLUMNS FROM $logItemsTable");
-        
-        if (!in_array('reviewed', $columns)) {
-            $wpdb->query("ALTER TABLE $logItemsTable ADD COLUMN `reviewed` BOOLEAN DEFAULT FALSE AFTER `block_reason`");
-        }
-        if (!in_array('reviewed_at', $columns)) {
-            $wpdb->query("ALTER TABLE $logItemsTable ADD COLUMN `reviewed_at` TIMESTAMP NULL AFTER `reviewed`");
-        }
-        if (!in_array('reviewed_by', $columns)) {
-            $wpdb->query("ALTER TABLE $logItemsTable ADD COLUMN `reviewed_by` BIGINT UNSIGNED NULL AFTER `reviewed_at`");
-        }
-    }
-}, 2);
 
 $app->addCustomAction('exception', 'ExceptionHandler');
 

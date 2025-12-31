@@ -20,18 +20,29 @@ use TaskLedger\Database\Migrations\ManagerMembersMigrator;
 class DBMigrator
 {
     private static $migrations = [
+        // Core settings
         'TaskLedger\\Database\\Migrations\\SettingsMigrator',
-        'TaskLedger\\Database\\Migrations\\LogsMigrator',
-        'TaskLedger\\Database\\Migrations\\LogItemsMigrator',
+        
+        // Task management
         'TaskLedger\\Database\\Migrations\\TasksMigrator',
         'TaskLedger\\Database\\Migrations\\TaskActivityMigrator',
         'TaskLedger\\Database\\Migrations\\TaskMetaMigrator',
+        
+        // Logging
+        'TaskLedger\\Database\\Migrations\\LogsMigrator',
+        'TaskLedger\\Database\\Migrations\\LogItemsMigrator',
+        
+        // Meta storage
         'TaskLedger\\Database\\Migrations\\MetaMigrator',
-                'TaskLedger\\Database\\Migrations\\RolesMigrator',
-                'TaskLedger\\Database\\Migrations\\PermissionsMigrator',
-                'TaskLedger\\Database\\Migrations\\RolePermissionsMigrator',
-                'TaskLedger\\Database\\Migrations\\UserRoleProjectsMigrator',
-                'TaskLedger\\Database\\Migrations\\ManagerMembersMigrator',
+        
+        // Roles and permissions
+        'TaskLedger\\Database\\Migrations\\RolesMigrator',
+        'TaskLedger\\Database\\Migrations\\PermissionsMigrator',
+        'TaskLedger\\Database\\Migrations\\RolePermissionsMigrator',
+        'TaskLedger\\Database\\Migrations\\UserRoleProjectsMigrator',
+        
+        // Manager members
+        'TaskLedger\\Database\\Migrations\\ManagerMembersMigrator',
     ];
 
     public static function migrateUp($network_wide = false)

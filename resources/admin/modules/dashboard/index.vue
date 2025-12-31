@@ -350,10 +350,7 @@ export default {
             });
 
             if (newSubtasks.length === 0) {
-                this.$notify({
-                    type: 'warning',
-                    text: 'All subtasks from this task are already in today\'s log'
-                });
+                this.$notify('All subtasks from this task are already in today\'s log', 'warning');
                 return;
             }
 
@@ -374,9 +371,6 @@ export default {
                     parent_task_id: subtask.parent_task_id || subtask.parent_task?.id // Keep for reference
                 });
             });
-
-            // Close the modal
-            this.showTaskSelectModal = false;
             
             // Auto-save the log to persist all selected subtasks
             try {
@@ -387,6 +381,7 @@ export default {
                 console.error('Error saving subtasks to log:', error);
                 this.$notify('Failed to save subtasks to log');
             }
+            // Don't close modal - allow user to select more tasks
         },
         async handleTaskSelect(task) {
             // Handle subtask selection
@@ -398,10 +393,7 @@ export default {
                 );
                 
                 if (exists) {
-                    this.$notify({
-                        type: 'warning',
-                        text: 'This subtask is already in today\'s log'
-                    });
+                    this.$notify('This subtask is already in today\'s log', 'warning');
                     return;
                 }
 
@@ -420,9 +412,6 @@ export default {
                     parent_task: task.parent_task,
                     parent_task_id: task.parent_task_id || task.parent_task?.id // Keep for reference
                 });
-
-                // Close the modal
-                this.showTaskSelectModal = false;
                 
                 // Auto-save the log to persist the selected subtask
                 try {
@@ -432,6 +421,7 @@ export default {
                     console.error('Error saving subtask to log:', error);
                     this.$notify('Failed to save subtask to log');
                 }
+                // Don't close modal - allow user to select more tasks
                 return;
             }
 
@@ -443,10 +433,7 @@ export default {
             );
             
             if (exists) {
-                this.$notify({
-                    type: 'warning',
-                    text: 'This task is already in today\'s log'
-                });
+                this.$notify('This task is already in today\'s log', 'warning');
                 return;
             }
 
@@ -461,23 +448,18 @@ export default {
                 status: 'in-progress',
                 board: task.board
             });
-
-            // Close the modal
-            this.showTaskSelectModal = false;
             
             // Auto-save the log to persist the selected task (silently, without changing submitted state)
             try {
                 await this.$post('logs', this.todayLog);
                 // Don't set logSubmitted = true here - just save the data
                 // Don't call getTodayLogs() as it might change the submitted state
-                this.$notify(
-                    'Task added to log'
-                );
+                this.$notify('Task added to log');
             } catch (error) {
                 console.error('Error saving task to log:', error);
-                this.$notify('Failed to save task to log'
-                );
+                this.$notify('Failed to save task to log');
             }
+            // Don't close modal - allow user to select more tasks
         },
         clearSelectedTask() {
             this.selectedTask = null;
@@ -497,39 +479,24 @@ export default {
                 }
                 this.selectedTask.subtasks.push(res);
                 this.showAddSubtaskInput = false;
-                this.$notify({
-                    type: 'success',
-                    text: 'Subtask added successfully'
-                });
+                this.$notify('Subtask added successfully', 'success');
             }).catch(err => {
-                this.$notify({
-                    type: 'error',
-                    text: 'Failed to add subtask'
-                });
+                this.$notify('Failed to add subtask', 'error');
             });
         },
         markSubtaskCompleted(subtask) {
             this.$patch(`subtasks/completed/${subtask.id}`).then(res => {
                 subtask.status = 'closed';
-                this.$notify({
-                    type: 'success',
-                    text: 'Subtask marked as completed'
-                });
+                this.$notify('Subtask marked as completed', 'success');
             }).catch(err => {
-                this.$notify({
-                    type: 'error',
-                    text: 'Failed to update subtask'
-                });
+                this.$notify('Failed to update subtask', 'error');
             });
         },
         addSubtaskToTodayLog(subtask) {
             // Check if subtask already exists in today's log
             const exists = this.todayLog.tasks.some(t => t.id === subtask.id);
             if (exists) {
-                this.$notify({
-                    type: 'warning',
-                    text: 'This subtask is already in today\'s log'
-                });
+                this.$notify('This subtask is already in today\'s log', 'warning');
                 return;
             }
 
@@ -573,10 +540,7 @@ export default {
             this.$get('tasks').then(res => {
                 this.tasks = res.all();
             }).catch(err => {
-                this.$notify({
-                    type: 'error',
-                    text: 'Failed to load tasks'
-                });
+                this.$notify('Failed to load tasks', 'error');
             });
         },
         getTodayLogs() {
@@ -618,10 +582,7 @@ export default {
             }
 
             this.$delete('logs/today').then(res => {
-                this.$notify({
-                    type: 'success',
-                    text: 'Today\'s log deleted successfully'
-                });
+                this.$notify('Today\'s log deleted successfully', 'success');
                 
                 // Reset the log state
                 this.todayLog = {
@@ -633,10 +594,7 @@ export default {
                 // Refresh today's log to ensure UI is updated
                 this.getTodayLogs();
             }).catch(err => {
-                this.$notify({
-                    type: 'error',
-                    text: 'Failed to delete today\'s log'
-                });
+                this.$notify('Failed to delete today\'s log', 'error');
             });
         },
         addNewTask(taskData) {
@@ -651,10 +609,7 @@ export default {
             };
 
             this.tasks.push(task);
-            this.$notify({
-                type: 'success',
-                text: 'Task added successfully!'
-            });
+            this.$notify('Task added successfully!', 'success');
         },
         handleCreateLog() {
             // Validate blocked tasks have blocker reasons
@@ -663,10 +618,7 @@ export default {
             );
 
             if (blockedTasksWithoutReason.length > 0) {
-                this.$notify({
-                    type: 'warning',
-                    text: `Please provide a reason for ${blockedTasksWithoutReason.length} blocked task(s) before submitting`
-                });
+                this.$notify(`Please provide a reason for ${blockedTasksWithoutReason.length} blocked task(s) before submitting`, 'warning');
                 return;
             }
 
@@ -680,10 +632,7 @@ export default {
                 // Only show notification if this was an explicit user action (not auto-save)
                 // Check if there are actually tasks or notes to save
                 if (this.todayLog.tasks.length > 0 || (this.todayLog.notes && this.todayLog.notes.trim())) {
-                    this.$notify({
-                        type: 'success',
-                        text: 'Log saved successfully'
-                    });
+                    this.$notify('Log saved successfully', 'success');
                 }
                 // Set submitted state
                 this.logSubmitted = true;
@@ -692,10 +641,7 @@ export default {
                 // Force refresh history component by updating key
                 this.historyKey += 1;
             }).catch(err => {
-                this.$notify({
-                    type: 'error',
-                    text: 'Log save failed'
-                });
+                this.$notify('Log save failed', 'error');
             });
         },
         deleteTaskFromLog(task) {
@@ -715,27 +661,18 @@ export default {
             // The backend uses the log item ID to delete, which is unique
             if (task.id) {
                 this.$delete(`logs/items/${task.id}`).then(res => {
-                    this.$notify({
-                        type: 'success',
-                        text: 'Task removed from log'
-                    });
+                    this.$notify('Task removed from log', 'success');
                     // Refresh to get updated data
                     this.getTodayLogs();
                 }).catch(err => {
-                    this.$notify({
-                        type: 'error',
-                        text: 'Failed to remove task from log'
-                    });
+                    this.$notify('Failed to remove task from log', 'error');
                     // Revert local change on error
                     this.getTodayLogs();
                 });
             } else {
                 // For tasks without ID, just save the updated log
                 this.handleCreateLog();
-                this.$notify({
-                    type: 'success',
-                    text: 'Task removed from log'
-                });
+                this.$notify('Task removed from log', 'success');
             }
         },
         formatStatus(status) {
