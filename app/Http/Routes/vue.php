@@ -50,6 +50,45 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
+    // Settings - Admin only (parent menu with children)
+    $router->addIf('/settings', 'modules/settings/Settings', function() {
+        return PermissionService::isAdmin(get_current_user_id());
+    })
+        ->name('settings')
+        ->icon('Setting')
+        ->title(__('Settings', 'taskledger'))
+        ->props([
+            'user'     => wp_get_current_user(),
+            'isAdmin'  => current_user_can('manage_options'),
+        ])
+        ->middleware('auth')
+        ->children(function($router) {
+            // Email Notifications - Admin only
+            $router->addIf('email-notifications', 'modules/email-notifications/EmailNotificationSettings', function() {
+                return PermissionService::isAdmin(get_current_user_id());
+            })
+                ->name('settings.email-notifications')
+                ->icon('Message')
+                ->title(__('Email Notifications', 'taskledger'))
+                ->props([
+                    'user'     => wp_get_current_user(),
+                    'isAdmin'  => current_user_can('manage_options'),
+                ])
+                ->middleware('auth')
+                ->children(function($router) {
+                    $router->add(
+                        ':name',
+                        'modules/email-notifications/EditEmailNotification',
+                        'settings.email-notifications.edit'
+                    )
+                    ->props([
+                        'user'     => wp_get_current_user(),
+                        'isAdmin'  => current_user_can('manage_options'),
+                    ])
+                    ->middleware('auth');
+                });
+        });
+
     $router->add('posts-all', 'modules/posts')
         ->name('posts.all')
         ->icon('Memo')

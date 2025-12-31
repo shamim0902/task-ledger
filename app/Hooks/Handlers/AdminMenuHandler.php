@@ -114,6 +114,18 @@ class AdminMenuHandler
                 [$this, 'render'] // Use same render method
             );
         }
+
+        // Settings submenu (Admin only)
+        if (PermissionService::isAdmin(get_current_user_id())) {
+            add_submenu_page(
+                $this->slug,
+                __('Settings', 'taskledger'),
+                __('Settings', 'taskledger'),
+                'manage_options',
+                $this->slug, // Use same slug to prevent page reload
+                [$this, 'render'] // Use same render method
+            );
+        }
         
         // Filter submenu URLs to add hash fragments
         add_filter('submenu_file', [$this, 'filterSubmenuUrls'], 10, 2);

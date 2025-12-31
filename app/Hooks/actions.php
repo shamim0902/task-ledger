@@ -95,6 +95,12 @@ $app->addAction('init', function() use ($app) {
     new ShortcodeHandler($app);
 });
 
+// Register email notification hooks
+$app->addAction('init', function() {
+    \TaskLedger\App\Hooks\EmailHooks::register();
+    \TaskLedger\App\Hooks\CronHooks::register();
+});
+
 /**
  * Enable this line if you want to use custom post types
  */

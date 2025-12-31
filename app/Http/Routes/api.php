@@ -71,3 +71,10 @@ $router->get('/review/submissions/{id}', 'ReviewController@getSubmissionDetails'
 $router->post('/review/logs/{id}/review', 'ReviewController@markLogReviewed');
 $router->post('/review/log-items/{id}/review', 'ReviewController@markLogItemReviewed');
 $router->post('/review/bulk-review', 'ReviewController@bulkMarkReviewed');
+
+// Email Notification routes
+$router->get('/email-notifications', 'EmailNotificationController@index');
+$router->get('/email-notifications/{name}', 'EmailNotificationController@find');
+$router->put('/email-notifications/{name}', 'EmailNotificationController@update');
+$router->post('/email-notifications/{name}/enable', 'EmailNotificationController@enableNotification');
+$router->get('/email-notifications/shortcodes', 'EmailNotificationController@getShortCodes');

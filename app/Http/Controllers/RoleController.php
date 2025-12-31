@@ -13,6 +13,11 @@ class RoleController extends Controller
      */
     public function index()
     {
+        // Only WordPress admins can view roles
+        if (!current_user_can('manage_options')) {
+            return $this->sendError(['message' => 'You do not have permission to view roles'], 403);
+        }
+
         $roles = Role::where('is_system', true)
             ->withCount('users')
             ->get();
@@ -24,6 +29,11 @@ class RoleController extends Controller
      */
     public function show($id)
     {
+        // Only WordPress admins can view roles
+        if (!current_user_can('manage_options')) {
+            return $this->sendError(['message' => 'You do not have permission to view roles'], 403);
+        }
+
         $role = Role::withCount('users')->findOrFail($id);
         return $role;
     }

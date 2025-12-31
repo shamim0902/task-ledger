@@ -90,13 +90,18 @@ export default {
                 const response = await this.$get(`user-roles/role/${this.role.id}`);
                 if (response.users) {
                     // Transform the response to match our structure
-                    this.currentUserAssignments = response.users.map(user => ({
-                        user_id: user.user.ID,
-                        role_id: this.role.id,
+                    this.currentUserAssignments = response.users.map(userData => ({
+                        id: userData.id,
+                        user_id: userData.user_id || userData.user.ID,
+                        role_id: userData.role_id || this.role.id,
                     }));
                 }
             } catch (error) {
                 console.error('Error loading assignments:', error);
+                this.$notify({
+                    type: 'error',
+                    text: 'Failed to load current assignments'
+                });
             } finally {
                 this.loading = false;
             }
@@ -130,24 +135,99 @@ export default {
                 return;
             }
 
+            this.loading = true;
             try {
-                await this.$post('user-roles/remove', {
-                    user_id: assignment.user_id,
-                    role_id: assignment.role_id,
+                // Ensure we have valid user_id and role_id
+                const userId = parseInt(assignment.user_id);
+                const roleId = parseInt(assignment.role_id || this.role.id);
+                
+                if (!userId || !roleId) {
+                    throw new Error('Invalid assignment data: missing user_id or role_id');
+                }
+                
+                console.log('Removing role assignment:', { userId, roleId, assignment });
+                
+                const response = await this.$post('user-roles/remove', {
+                    user_id: userId,
+                    role_id: roleId,
                 });
 
+                console.log('Remove response:', response);
+
+                const userName = this.getUserName(assignment.user_id);
+                const roleName = this.role.name || 'role';
                 this.$notify({
                     type: 'success',
-                    text: 'Role assignment removed successfully',
+                    text: `${roleName} removed successfully from ${userName}`,
                 });
 
-                this.loadCurrentAssignments();
+                // Reload assignments to reflect the change
+                await this.loadCurrentAssignments();
             } catch (error) {
                 console.error('Error removing role assignment:', error);
+                
+                // Extract error message from various response formats
+                let errorMessage = 'Failed to remove role assignment. Please try again.';
+                
+                try {
+                    // Check if error has responseJSON (ResponseProxyItr format)
+                    if (error.responseJSON) {
+                        const responseData = error.responseJSON;
+                        if (responseData.message) {
+                            errorMessage = responseData.message;
+                        } else if (responseData.error) {
+                            errorMessage = responseData.error;
+                        } else if (typeof responseData === 'string') {
+                            errorMessage = responseData;
+                        }
+                    }
+                    // Check if error has response property (Axios-style)
+                    else if (error.response) {
+                        const responseData = error.response.data || error.response;
+                        if (responseData && responseData.message) {
+                            errorMessage = responseData.message;
+                        } else if (responseData && responseData.error) {
+                            errorMessage = responseData.error;
+                        } else if (typeof responseData === 'string') {
+                            errorMessage = responseData;
+                        }
+                    }
+                    // Check if error has data property directly
+                    else if (error.data) {
+                        if (error.data.message) {
+                            errorMessage = error.data.message;
+                        } else if (error.data.error) {
+                            errorMessage = error.data.error;
+                        } else if (typeof error.data === 'string') {
+                            errorMessage = error.data;
+                        } else if (Array.isArray(error.data) && error.data.length > 0) {
+                            errorMessage = typeof error.data[0] === 'string' ? error.data[0] : error.data[0].message || errorMessage;
+                        }
+                    }
+                    // Check if error has message property
+                    else if (error.message) {
+                        errorMessage = error.message;
+                    }
+                    // Try to get message from all() method if available
+                    else if (typeof error.all === 'function') {
+                        const allData = error.all();
+                        if (allData.message) {
+                            errorMessage = allData.message;
+                        } else if (allData.error) {
+                            errorMessage = allData.error;
+                        }
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing error message:', parseError);
+                    // Fall back to default message
+                }
+                
                 this.$notify({
                     type: 'error',
-                    text: 'Failed to remove role assignment',
+                    text: errorMessage,
                 });
+            } finally {
+                this.loading = false;
             }
         },
         getUserName(userId) {

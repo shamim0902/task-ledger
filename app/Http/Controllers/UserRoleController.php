@@ -16,6 +16,11 @@ class UserRoleController extends Controller
      */
     public function getUserRoles($userId)
     {
+        // Only WordPress admins can view user roles
+        if (!current_user_can('manage_options')) {
+            return $this->sendError(['message' => 'You do not have permission to view user roles'], 403);
+        }
+
         $user = User::findOrFail($userId);
         
         $userRoleProjects = UserRoleProject::where('user_id', $userId)
@@ -41,6 +46,11 @@ class UserRoleController extends Controller
      */
     public function assignRole(Request $request)
     {
+        // Only WordPress admins can assign roles
+        if (!current_user_can('manage_options')) {
+            return $this->sendError(['message' => 'You do not have permission to assign roles'], 403);
+        }
+
         $request->validate([
             'user_id' => 'required|exists:users,ID',
             'role_id' => 'required|exists:task_ledger_roles,id',
@@ -74,6 +84,11 @@ class UserRoleController extends Controller
      */
     public function removeRole(Request $request)
     {
+        // Only WordPress admins can remove roles
+        if (!current_user_can('manage_options')) {
+            return $this->sendError(['message' => 'You do not have permission to remove roles'], 403);
+        }
+
         $request->validate([
             'user_id' => 'required|exists:users,ID',
             'role_id' => 'required|exists:task_ledger_roles,id',
@@ -82,25 +97,45 @@ class UserRoleController extends Controller
         $userId = $request->get('user_id');
         $roleId = $request->get('role_id');
 
-        // Check if user is trying to remove their own admin role (prevent)
+        // Get user and role info for better error messages
+        $user = User::find($userId);
         $role = Role::find($roleId);
-        if ($role && $role->slug === 'admin' && $userId == get_current_user_id()) {
-            return [
-                'error' => 'You cannot remove your own admin role',
-            ];
+        
+        if (!$user) {
+            return $this->sendError(['message' => 'User not found'], 404);
+        }
+        
+        if (!$role) {
+            return $this->sendError(['message' => 'Role not found'], 404);
+        }
+
+        // Check if user is trying to remove their own admin role (prevent)
+        if ($role->slug === 'admin' && $userId == get_current_user_id()) {
+            return $this->sendError(['message' => 'You cannot remove your own admin role. Please ask another admin to remove it.'], 400);
+        }
+
+        // Check if assignment exists before trying to delete
+        $assignment = UserRoleProject::where('user_id', $userId)
+            ->where('role_id', $roleId)
+            ->first();
+
+        if (!$assignment) {
+            $userName = $user->display_name ?? $user->user_nicename ?? 'User';
+            return $this->sendError(['message' => "{$userName} does not have the {$role->name} role assigned"], 404);
         }
 
         $deleted = PermissionService::removeRole($userId, $roleId);
 
-        if ($deleted) {
+        // delete() returns number of rows deleted, so check if > 0
+        if ($deleted > 0) {
+            $userName = $user->display_name ?? $user->user_nicename ?? 'User';
             return [
-                'message' => 'Role removed successfully',
+                'message' => "{$role->name} role removed successfully from {$userName}",
+                'success' => true,
             ];
         }
 
-        return [
-            'error' => 'Role assignment not found',
-        ];
+        return $this->sendError(['message' => 'Failed to remove role assignment. Please try again.'], 500);
     }
 
     /**
@@ -108,12 +143,20 @@ class UserRoleController extends Controller
      */
     public function getUsersByRole($roleId)
     {
+        // Only WordPress admins can view users by role
+        if (!current_user_can('manage_options')) {
+            return $this->sendError(['message' => 'You do not have permission to view users by role'], 403);
+        }
+
         $assignments = UserRoleProject::where('role_id', $roleId)
             ->with(['user', 'role'])
             ->get();
 
         $users = $assignments->map(function($assignment) {
             return [
+                'id' => $assignment->id,
+                'user_id' => $assignment->user_id,
+                'role_id' => $assignment->role_id,
                 'user' => $assignment->user,
             ];
         });
@@ -223,6 +266,11 @@ class UserRoleController extends Controller
      */
     public function getAllUsersWithRoles()
     {
+        // Only WordPress admins can view all users with roles
+        if (!current_user_can('manage_options')) {
+            return $this->sendError(['message' => 'You do not have permission to view users'], 403);
+        }
+
         $users = User::all();
         $result = [];
 

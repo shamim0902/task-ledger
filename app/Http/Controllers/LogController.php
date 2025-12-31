@@ -97,6 +97,11 @@ class LogController extends Controller
             );
         }
 
+        // Trigger email notification if log status is 'submitted'
+        if ($status === 'submitted') {
+            do_action('task_ledger_log_submitted', $log, $user_id);
+        }
+
         return [
             'message' => 'Log saved successfully',
             'data' => $log

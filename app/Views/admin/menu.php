@@ -108,6 +108,8 @@
                 route = '/roles';
             } else if (linkText.includes('submissions') || linkText.includes('submissions')) {
                 route = '/review';
+            } else if (linkText.includes('settings') || linkText.includes('setting')) {
+                route = '/settings';
             } else if (linkText.includes('developers') || linkText.includes('dashboard')) {
                 route = '/';
             }
@@ -146,6 +148,10 @@
                         route = '/pm';
                     } else if (linkText.includes('roles') || linkText.includes('role')) {
                         route = '/roles';
+                    } else if (linkText.includes('submissions') || linkText.includes('submissions')) {
+                        route = '/review';
+                    } else if (linkText.includes('settings') || linkText.includes('setting')) {
+                        route = '/settings';
                     }
                 }
                 
