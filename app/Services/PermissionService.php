@@ -116,6 +116,10 @@ class PermissionService
      */
     public static function isAdmin($userId)
     {
+        if(current_user_can('manage_options')) {
+            return true;
+        }
+        
         $adminRole = Role::where('slug', 'admin')->first();
         if (!$adminRole) {
             return false;
