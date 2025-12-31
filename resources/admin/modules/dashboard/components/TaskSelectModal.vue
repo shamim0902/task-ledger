@@ -60,29 +60,74 @@
                     <div
                         v-for="task in filteredTasks"
                         :key="task.id"
-                        @click.stop.prevent="selectTask(task, $event)"
-                        role="button"
-                        tabindex="0"
-                        @keyup.enter.stop.prevent="selectTask(task, $event)"
-                        :class="['task-card', { 'is-selected': isTaskInLog(task) }]"
+                        :class="['task-card', { 'is-selected': isTaskInLog(task), 'has-subtasks': task.subtasks && task.subtasks.length > 0 }]"
                     >
-                        <div class="task-card-header">
-                            <h4 class="task-card-title">{{ task.title }}</h4>
-                            <svg v-if="isTaskInLog(task)" class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7" />
-                            </svg>
+                        <div 
+                            class="task-card-main"
+                            @click.stop.prevent="selectTask(task, $event)"
+                            role="button"
+                            tabindex="0"
+                            @keyup.enter.stop.prevent="selectTask(task, $event)"
+                        >
+                            <div class="task-card-header">
+                                <h4 class="task-card-title">{{ task.title }}</h4>
+                                <svg v-if="isTaskInLog(task)" class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div class="task-card-meta">
+                                <span class="task-board">{{ task.board?.title }}</span>
+                                <span class="task-weight">{{ task.weight }} pts</span>
+                            </div>
+                            <div v-if="task.subtasks && task.subtasks.length > 0" class="task-subtasks-toggle">
+                                <button 
+                                    type="button"
+                                    @click.stop.prevent="toggleSubtasks(task.id)"
+                                    class="subtask-toggle-btn"
+                                >
+                                    <svg 
+                                        class="subtask-icon" 
+                                        :class="{ 'expanded': expandedTasks[task.id] }"
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                    <span>{{ task.subtasks.length }} subtask{{ task.subtasks.length !== 1 ? 's' : '' }}</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="task-card-meta">
-                            <span class="task-board">{{ task.board?.title }}</span>
-                            <span class="task-weight">{{ task.weight }} pts</span>
-                        </div>
-                        <div v-if="task.subtasks && task.subtasks.length > 0" class="task-subtasks">
-                            <svg class="subtask-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            <span>{{ task.subtasks.length }} subtask{{ task.subtasks.length !== 1 ? 's' : '' }}</span>
+                        
+                        <!-- Subtasks List -->
+                        <div v-if="task.subtasks && task.subtasks.length > 0 && expandedTasks[task.id]" class="subtasks-list">
+                            <div
+                                v-for="subtask in task.subtasks"
+                                :key="subtask.id"
+                                @click.stop.prevent="selectSubtask(task, subtask, $event)"
+                                role="button"
+                                tabindex="0"
+                                @keyup.enter.stop.prevent="selectSubtask(task, subtask, $event)"
+                                :class="['subtask-card', { 'is-selected': isSubtaskInLog(subtask) }]"
+                            >
+                                <div class="subtask-card-header">
+                                    <div class="subtask-indent">
+                                        <svg class="subtask-connector" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                    <h5 class="subtask-card-title">{{ subtask.title }}</h5>
+                                    <svg v-if="isSubtaskInLog(subtask)" class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <div class="subtask-card-meta">
+                                    <span v-if="subtask.weight" class="task-weight">{{ subtask.weight }} pts</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -128,7 +173,8 @@ export default {
             searchQuery: '',
             selectedBoardId: '',
             boards: [],
-            loadingBoards: false
+            loadingBoards: false,
+            expandedTasks: {} // Track which tasks have expanded subtasks
         };
     },
     computed: {
@@ -143,18 +189,33 @@ export default {
                 );
             }
 
-            // Filter by search query
+            // Filter by search query (including subtasks)
             if (this.searchQuery.trim()) {
                 const query = this.searchQuery.toLowerCase();
-                filtered = filtered.filter(task =>
-                    task?.title?.toLowerCase()?.includes(query)
-                );
+                filtered = filtered.filter(task => {
+                    // Check if task title matches
+                    if (task?.title?.toLowerCase()?.includes(query)) {
+                        return true;
+                    }
+                    // Check if any subtask title matches
+                    if (task?.subtasks && task.subtasks.length > 0) {
+                        const hasMatchingSubtask = task.subtasks.some(subtask => 
+                            subtask?.title?.toLowerCase()?.includes(query)
+                        );
+                        // Auto-expand task if subtask matches
+                        if (hasMatchingSubtask && !this.expandedTasks[task.id]) {
+                            this.$set(this.expandedTasks, task.id, true);
+                        }
+                        return hasMatchingSubtask;
+                    }
+                    return false;
+                });
             }
 
             return filtered;
         }
     },
-    emits: ['close', 'select'],
+    emits: ['close', 'select', 'select-all-subtasks'],
     methods: {
         async loadBoards() {
             this.loadingBoards = true;
@@ -181,13 +242,55 @@ export default {
                 event.stopPropagation();
                 event.stopImmediatePropagation();
             }
+            
+            // If task has subtasks, add all subtasks instead of the main task
+            if (task.subtasks && task.subtasks.length > 0) {
+                // Emit all subtasks as a batch
+                const subtasksWithParent = task.subtasks.map(subtask => ({
+                    ...subtask,
+                    parent_task_id: task.id,
+                    parent_task: task,
+                    is_subtask: true
+                }));
+                this.$nextTick(() => {
+                    this.$emit('select-all-subtasks', {
+                        task: task,
+                        subtasks: subtasksWithParent
+                    });
+                });
+            } else {
+                // No subtasks, add the main task
+                this.$nextTick(() => {
+                    this.$emit('select', task);
+                });
+            }
+        },
+        selectSubtask(parentTask, subtask, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+            }
+            // Create a subtask object with parent task info
+            const subtaskWithParent = {
+                ...subtask,
+                parent_task_id: parentTask.id,
+                parent_task: parentTask,
+                is_subtask: true
+            };
             // Use nextTick to ensure event is fully processed
             this.$nextTick(() => {
-                this.$emit('select', task);
+                this.$emit('select', subtaskWithParent);
             });
+        },
+        toggleSubtasks(taskId) {
+            this.$set(this.expandedTasks, taskId, !this.expandedTasks[taskId]);
         },
         isTaskInLog(task) {
             return this.selectedTaskIds.includes(task.id);
+        },
+        isSubtaskInLog(subtask) {
+            return this.selectedTaskIds.includes(subtask.id);
         }
     },
     watch: {
@@ -199,6 +302,7 @@ export default {
                 // Reset when modal closes
                 this.searchQuery = '';
                 this.selectedBoardId = '';
+                this.expandedTasks = {};
             }
         }
     },
@@ -396,20 +500,32 @@ export default {
     background: white;
     border: 2px solid #e5e7eb;
     border-radius: 0.5rem;
-    padding: 1rem;
-    cursor: pointer;
     transition: all 0.2s;
     position: relative;
+    overflow: hidden;
+
+    &.has-subtasks {
+        padding-bottom: 0;
+    }
 
     &:hover {
         border-color: #6366f1;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
     }
 
     &.is-selected {
         border-color: #6366f1;
         background: #eef2ff;
+    }
+}
+
+.task-card-main {
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        transform: translateY(-2px);
     }
 }
 
@@ -465,20 +581,107 @@ export default {
     border: 1px solid #fde68a;
 }
 
-.task-subtasks {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    color: #6b7280;
-    font-size: 0.75rem;
+.task-subtasks-toggle {
     margin-top: 0.5rem;
     padding-top: 0.5rem;
     border-top: 1px solid #f3f4f6;
+}
+
+.subtask-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0.25rem 0;
+    transition: color 0.2s;
+    width: 100%;
+
+    &:hover {
+        color: #6366f1;
+    }
 
     .subtask-icon {
         width: 0.875rem;
         height: 0.875rem;
+        transition: transform 0.2s;
+        
+        &.expanded {
+            transform: rotate(180deg);
+        }
     }
+}
+
+.subtasks-list {
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    padding: 0.5rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.subtask-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 1rem;
+    position: relative;
+
+    &:hover {
+        border-color: #6366f1;
+        box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        transform: translateX(2px);
+    }
+
+    &.is-selected {
+        border-color: #6366f1;
+        background: #eef2ff;
+    }
+}
+
+.subtask-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.subtask-indent {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-left: -1rem;
+    margin-right: 0.5rem;
+}
+
+.subtask-connector {
+    width: 0.75rem;
+    height: 0.75rem;
+    color: #9ca3af;
+}
+
+.subtask-card-title {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #111827;
+    margin: 0;
+    line-height: 1.4;
+    flex: 1;
+}
+
+.subtask-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
 }
 
 .loading-state {

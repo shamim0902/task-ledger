@@ -257,6 +257,7 @@
             :selected-task-ids="selectedTaskIds"
             @close="showTaskSelectModal = false"
             @select="handleTaskSelect"
+            @select-all-subtasks="handleSelectAllSubtasks"
         />
     </div>
 </template>
@@ -307,7 +308,10 @@ export default {
     },
     computed: {
         selectedTaskIds() {
-            return this.todayLog.tasks.map(t => t.task_id || t.id).filter(Boolean);
+            return this.todayLog.tasks.map(t => {
+                // Include subtask_id if it exists, otherwise use task_id or id
+                return t.subtask_id || t.task_id || t.id;
+            }).filter(Boolean);
         },
         totalHoursToday() {
             return this.todayLog.tasks.reduce((sum, task) => sum + (parseFloat(task.hours) || 0), 0);
@@ -335,7 +339,103 @@ export default {
         }
     },
     methods: {
+        async handleSelectAllSubtasks({ task, subtasks }) {
+            // Filter out subtasks that already exist in today's log
+            const newSubtasks = subtasks.filter(subtask => {
+                const exists = this.todayLog.tasks.some(t => 
+                    (t.subtask_id && subtask.id && t.subtask_id === subtask.id) ||
+                    (t.id && subtask.id && t.id === subtask.id)
+                );
+                return !exists;
+            });
+
+            if (newSubtasks.length === 0) {
+                this.$notify({
+                    type: 'warning',
+                    text: 'All subtasks from this task are already in today\'s log'
+                });
+                return;
+            }
+
+            // Add all new subtasks to today's log
+            // Use subtask's own ID as task_id (since subtasks are also tasks in fluent-boards)
+            newSubtasks.forEach(subtask => {
+                this.todayLog.tasks.push({
+                    task_id: subtask.id, // Use subtask's ID, not parent's ID
+                    subtask_id: subtask.id, // Keep for frontend reference
+                    id: subtask.id, // This will be the log item ID after save
+                    title: subtask.title,
+                    weight: subtask.weight || 0,
+                    complete_weight: 0,
+                    hours: 0,
+                    status: 'in-progress',
+                    board: subtask.parent_task?.board || subtask.board,
+                    parent_task: subtask.parent_task,
+                    parent_task_id: subtask.parent_task_id || subtask.parent_task?.id // Keep for reference
+                });
+            });
+
+            // Close the modal
+            this.showTaskSelectModal = false;
+            
+            // Auto-save the log to persist all selected subtasks
+            try {
+                await this.$post('logs', this.todayLog);
+                const count = newSubtasks.length;
+                this.$notify(`${count} subtask${count !== 1 ? 's' : ''} added to log`);
+            } catch (error) {
+                console.error('Error saving subtasks to log:', error);
+                this.$notify('Failed to save subtasks to log');
+            }
+        },
         async handleTaskSelect(task) {
+            // Handle subtask selection
+            if (task.is_subtask && task.parent_task) {
+                // Check if subtask already exists in today's log
+                const exists = this.todayLog.tasks.some(t => 
+                    (t.subtask_id && task.id && t.subtask_id === task.id) ||
+                    (t.id && task.id && t.id === task.id)
+                );
+                
+                if (exists) {
+                    this.$notify({
+                        type: 'warning',
+                        text: 'This subtask is already in today\'s log'
+                    });
+                    return;
+                }
+
+                // Add subtask to today's log
+                // Use subtask's own ID as task_id (since subtasks are also tasks in fluent-boards)
+                this.todayLog.tasks.push({
+                    task_id: task.id, // Use subtask's ID, not parent's ID
+                    subtask_id: task.id, // Keep for frontend reference
+                    id: task.id, // This will be the log item ID after save
+                    title: task.title,
+                    weight: task.weight || 0,
+                    complete_weight: 0,
+                    hours: 0,
+                    status: 'in-progress',
+                    board: task.parent_task?.board || task.board,
+                    parent_task: task.parent_task,
+                    parent_task_id: task.parent_task_id || task.parent_task?.id // Keep for reference
+                });
+
+                // Close the modal
+                this.showTaskSelectModal = false;
+                
+                // Auto-save the log to persist the selected subtask
+                try {
+                    await this.$post('logs', this.todayLog);
+                    this.$notify('Subtask added to log');
+                } catch (error) {
+                    console.error('Error saving subtask to log:', error);
+                    this.$notify('Failed to save subtask to log');
+                }
+                return;
+            }
+
+            // Handle regular task selection
             // Check if task already exists in today's log
             const exists = this.todayLog.tasks.some(t => 
                 (t.task_id && task.id && t.task_id === task.id) ||
@@ -600,30 +700,32 @@ export default {
         },
         deleteTaskFromLog(task) {
             // Remove from local array first for immediate UI update
-            const index = this.todayLog.tasks.findIndex(t => 
-                (t.id && task.id && t.id === task.id) || 
-                (t.task_id && task.task_id && t.task_id === task.task_id) ||
-                (t.title === task.title && t.weight === task.weight)
-            );
+            // Match ONLY by log item ID (which is unique) - this is the ID from the database
+            const index = this.todayLog.tasks.findIndex(t => {
+                // Match by log item ID (the database ID, not task_id)
+                // This is the most reliable way since each log item has a unique ID
+                return t.id && task.id && t.id === task.id;
+            });
             
-                if (index > -1) {
-                    this.todayLog.tasks.splice(index, 1);
+            if (index > -1) {
+                this.todayLog.tasks.splice(index, 1);
             }
 
             // If task has a log item ID, delete from server
+            // The backend uses the log item ID to delete, which is unique
             if (task.id) {
-            this.$delete(`logs/items/${task.id}`).then(res => {
-                this.$notify({
-                    type: 'success',
-                    text: 'Task removed from log'
-                });
-                // Refresh to get updated data
-                this.getTodayLogs();
-            }).catch(err => {
-                this.$notify({
-                    type: 'error',
-                    text: 'Failed to remove task from log'
-                });
+                this.$delete(`logs/items/${task.id}`).then(res => {
+                    this.$notify({
+                        type: 'success',
+                        text: 'Task removed from log'
+                    });
+                    // Refresh to get updated data
+                    this.getTodayLogs();
+                }).catch(err => {
+                    this.$notify({
+                        type: 'error',
+                        text: 'Failed to remove task from log'
+                    });
                     // Revert local change on error
                     this.getTodayLogs();
                 });

@@ -50,7 +50,7 @@ class LogController extends Controller
         }
 
         if (!$log) {
-            return Response::json([
+            return (new Response())->sendError([
                 'message' => 'Log save failed',
             ], 500);
         }
@@ -70,10 +70,20 @@ class LogController extends Controller
                 }
             }
 
+            // Determine the task_id to use
+            // For subtasks, use the subtask's own ID (not parent's ID)
+            // This ensures each subtask gets its own unique log item
+            $taskId = $task['task_id'] ?? $task['id'];
+            
+            // If this is a subtask (has subtask_id), use the subtask's ID as task_id
+            if (isset($task['subtask_id']) && $task['subtask_id']) {
+                $taskId = $task['subtask_id'];
+            }
+
             $isUpdate = LogItem::updateOrCreate(
                 [
                     'log_id'   => $log->id,
-                    'task_id'  => $task['task_id'] ?? $task['id'],
+                    'task_id'  => $taskId,
                     'task_type'=> 'board',
                 ],
                 [
@@ -82,7 +92,7 @@ class LogController extends Controller
                     'note'            => $note,
                     'block_reason'    => $blockerReason,
                     'time_spent'      => $task['hours'] ?? 0,
-                    'task_id'         => $task['task_id'] ?? $task['id'],
+                    'task_id'         => $taskId,
                 ]
             );
         }
@@ -227,7 +237,7 @@ class LogController extends Controller
 
         $logItem = LogItem::find($id);
         if (!$logItem) {
-            return Response::json([
+            return (new Response())->sendError([
                 'message' => 'Log item not found',
             ], 404);
         }
@@ -235,7 +245,7 @@ class LogController extends Controller
         // Verify the log belongs to the current user
         $log = Log::find($logItem->log_id);
         if (!$log || $log->user_id != $user_id) {
-            return Response::json([
+            return (new Response())->sendError([
                 'message' => 'Unauthorized',
             ], 403);
         }
@@ -262,7 +272,7 @@ class LogController extends Controller
             ->first();
 
         if (!$log) {
-            return Response::json([
+            return (new Response())->sendError([
                 'message' => 'No log found for today',
             ], 404);
         }

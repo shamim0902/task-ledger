@@ -331,7 +331,8 @@ export default {
 
 .input-group {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
     gap: 0.125rem;
 }
 
