@@ -105,7 +105,7 @@
             if (linkText.includes('admin report') || linkText.includes('pm')) {
                 route = '/pm';
             } else if (linkText.includes('roles') || linkText.includes('role')) {
-                route = '/roles';
+                route = '/settings/roles';
             } else if (linkText.includes('submissions') || linkText.includes('submissions')) {
                 route = '/review';
             } else if (linkText.includes('settings') || linkText.includes('setting')) {
@@ -147,7 +147,7 @@
                     if (linkText.includes('admin report') || linkText.includes('pm')) {
                         route = '/pm';
                     } else if (linkText.includes('roles') || linkText.includes('role')) {
-                        route = '/roles';
+                        route = '/settings/roles';
                     } else if (linkText.includes('submissions') || linkText.includes('submissions')) {
                         route = '/review';
                     } else if (linkText.includes('settings') || linkText.includes('setting')) {

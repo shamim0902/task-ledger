@@ -93,16 +93,6 @@ class AdminMenuHandler
             );
         }
 
-        // Roles submenu
-        add_submenu_page(
-            $this->slug,
-            __('Roles', 'taskledger'),
-            __('Roles', 'taskledger'),
-            'manage_options',
-            $this->slug, // Use same slug to prevent page reload
-            [$this, 'render'] // Use same render method
-        );
-
         // Submissions submenu (Admin and Manager only)
         if (PermissionService::isAdmin(get_current_user_id()) || PermissionService::isManager(get_current_user_id())) {
             add_submenu_page(

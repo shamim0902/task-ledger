@@ -1036,7 +1036,7 @@ export default {
 .date-picker-wrapper {
     position: relative;
     flex: 1;
-    max-width: 240px;
+    max-width: 280px;
 
     .date-input {
         position: absolute;

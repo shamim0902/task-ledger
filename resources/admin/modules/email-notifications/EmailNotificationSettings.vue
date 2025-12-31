@@ -3,7 +3,8 @@
 
         <!-- Main Content Area -->
         <div class="app-content">
-            <div class="notifications-content">
+            <!-- Show notifications list when on base route -->
+            <div v-if="$route.path === '/settings/email-notifications'" class="notifications-content">
                 <div v-if="loading" class="loading-state">
                     <div class="loading-spinner"></div>
                     <p>Loading notifications...</p>
@@ -73,6 +74,8 @@
                     </el-table>
                 </div>
             </div>
+            <!-- Render child routes (edit page) -->
+            <router-view v-else />
         </div>
     </div>
 </template>

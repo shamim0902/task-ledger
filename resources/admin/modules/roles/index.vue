@@ -1,20 +1,18 @@
 <template>
     <div class="roles-management">
-        <!-- Top Navigation Bar -->
-        <nav class="app-navbar">
-            <div class="navbar-brand">
-                <div class="brand-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                </div>
-                <div class="brand-text">
-                    <h1 class="brand-title">Task Ledger</h1>
-                    <p class="brand-subtitle">People Management</p>
-                </div>
-            </div>
-        </nav>
+        <!-- Breadcrumb Navigation -->
+        <div class="roles-header">
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item>
+                    <router-link to="/settings">
+                        Settings
+                    </router-link>
+                </el-breadcrumb-item>
+                <el-breadcrumb-item>
+                    <span>Roles</span>
+                </el-breadcrumb-item>
+            </el-breadcrumb>
+        </div>
 
         <!-- Main Content Area -->
         <div class="app-content">
@@ -128,54 +126,35 @@ export default {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-// Top Navigation Bar
-.app-navbar {
+// Header with Breadcrumb
+.roles-header {
     background: white;
     border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 1.5rem;
     margin-bottom: 1rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.navbar-brand {
-    max-width: 1800px;
-    margin: 0 auto;
-    padding: 0.625rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    .brand-icon {
-        width: 2rem;
-        height: 2rem;
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        border-radius: 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        box-shadow: 0 2px 4px -1px rgba(99, 102, 241, 0.3);
-        flex-shrink: 0;
-
-        svg {
-            width: 1.125rem;
-            height: 1.125rem;
-        }
-    }
-
-    .brand-text {
-        .brand-title {
-            font-size: 0.9375rem;
-            font-weight: 700;
-            color: #111827;
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        .brand-subtitle {
-            font-size: 0.6875rem;
-            color: #6b7280;
-            margin: 0;
-            font-weight: 500;
+    
+    :deep(.el-breadcrumb) {
+        .el-breadcrumb__item {
+            .el-breadcrumb__inner {
+                color: #6b7280;
+                font-weight: 500;
+                
+                &.is-link {
+                    color: #6366f1;
+                    text-decoration: none;
+                    
+                    &:hover {
+                        color: #4f46e5;
+                    }
+                }
+            }
+            
+            &:last-child {
+                .el-breadcrumb__inner {
+                    color: #111827;
+                    font-weight: 600;
+                }
+            }
         }
     }
 }

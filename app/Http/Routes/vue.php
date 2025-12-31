@@ -27,19 +27,6 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
-    // Roles - Admin only
-    $router->addIf('/roles', 'modules/roles', function() {
-        return PermissionService::isAdmin(get_current_user_id());
-    })
-        ->name('roles')
-        ->icon('UserFilled')
-        ->title(__('Roles', 'taskledger'))
-        ->props([
-            'user'     => wp_get_current_user(),
-            'isAdmin'  => current_user_can('manage_options'),
-        ])
-        ->middleware('auth');
-
     // Submissions - Admin and Manager only
     $router->addIf('/review', 'modules/review/ReviewDashboard', function() {
         return PermissionService::isAdmin(get_current_user_id()) || PermissionService::isManager(get_current_user_id());
@@ -66,6 +53,19 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth')
         ->children(function($router) {
+            // Roles - Admin only
+            $router->addIf('roles', 'modules/roles', function() {
+                return PermissionService::isAdmin(get_current_user_id());
+            })
+                ->name('settings.roles')
+                ->icon('UserFilled')
+                ->title(__('Roles', 'taskledger'))
+                ->props([
+                    'user'     => wp_get_current_user(),
+                    'isAdmin'  => current_user_can('manage_options'),
+                ])
+                ->middleware('auth');
+            
             // Email Notifications - Admin only
             $router->addIf('email-notifications', 'modules/email-notifications/EmailNotificationSettings', function() {
                 return PermissionService::isAdmin(get_current_user_id());
@@ -91,6 +91,17 @@ $router->menu('primary', function($router) {
                     ->middleware('auth');
                 });
         });
+
+    // Direct route for email notification editing (for direct access)
+    $router->addIf('/email-notifications/:name', 'modules/email-notifications/EditEmailNotification', function() {
+        return PermissionService::isAdmin(get_current_user_id());
+    })
+        ->name('email-notifications.edit')
+        ->props([
+            'user'     => wp_get_current_user(),
+            'isAdmin'  => current_user_can('manage_options'),
+        ])
+        ->middleware('auth');
 
     $router->add('posts-all', 'modules/posts')
         ->name('posts.all')
