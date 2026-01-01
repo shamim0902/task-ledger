@@ -320,6 +320,8 @@ export default {
             showSendModal: false,
             sending: false,
             editableReportData: null,
+            submittedReports: [],
+            loadingSubmittedReports: false,
         };
     },
     computed: {
@@ -339,35 +341,104 @@ export default {
             return this.reportHistory[this.activeTab] || [];
         },
     },
-    mounted() {
-        this.loadMembers();
-        this.loadSubmittedReports();
-        
-        // Handle query parameters from navigation
-        if (this.$route.query.employee_id) {
-            this.selectedUserId = parseInt(this.$route.query.employee_id);
-            if (this.$route.query.timeframe) {
-                this.selectedTimeframe = this.$route.query.timeframe;
+    async mounted() {
+        try {
+            await this.loadMembers();
+            this.loadSubmittedReports();
+            // Only handle route query if route is available
+            if (this.$route) {
+                await this.handleRouteQuery();
             }
-            if (this.$route.query.start_date) {
-                this.startDate = this.$route.query.start_date;
-            }
-            if (this.$route.query.end_date) {
-                this.endDate = this.$route.query.end_date;
-            }
-            if (this.selectedTimeframe !== 'custom' && this.$route.query.start_date) {
-                this.selectedDate = this.$route.query.start_date;
-            }
-            
-            // Wait for members to load, then generate report
-            this.$nextTick(() => {
-                if (this.members.length > 0) {
-                    this.generateReport();
+        } catch (error) {
+            console.error('Error in mounted:', error);
+            // Don't show error notification on initial load to avoid blocking the page
+            // this.$notify('Failed to initialize reports page', 'error');
+        }
+    },
+    watch: {
+        '$route.query': {
+            handler() {
+                if (this.$route && this.$route.query) {
+                    this.handleRouteQuery().catch(error => {
+                        console.error('Error in route query handler:', error);
+                    });
                 }
-            });
+            },
+            immediate: false
         }
     },
     methods: {
+        async handleRouteQuery() {
+            try {
+                // Check if route is available
+                if (!this.$route || !this.$route.query) {
+                    return;
+                }
+                
+                // Handle query parameters from navigation
+                if (this.$route.query.employee_id) {
+                    const employeeId = this.$route.query.employee_id;
+                    this.selectedUserId = typeof employeeId === 'string' ? parseInt(employeeId) : employeeId;
+                    
+                    if (this.$route.query.timeframe) {
+                        this.selectedTimeframe = this.$route.query.timeframe;
+                    }
+                    if (this.$route.query.start_date) {
+                        this.startDate = this.$route.query.start_date;
+                    }
+                    if (this.$route.query.end_date) {
+                        this.endDate = this.$route.query.end_date;
+                    }
+                    
+                    // Set selectedDate based on timeframe
+                    if (this.selectedTimeframe === 'custom') {
+                        // For custom, we use startDate and endDate
+                        if (!this.startDate) {
+                            this.startDate = new Date().toISOString().split('T')[0];
+                        }
+                        if (!this.endDate) {
+                            this.endDate = new Date().toISOString().split('T')[0];
+                        }
+                    } else {
+                        // For predefined timeframes, use start_date as the reference date
+                        if (this.$route.query.start_date) {
+                            this.selectedDate = this.$route.query.start_date;
+                        } else if (this.startDate) {
+                            this.selectedDate = this.startDate;
+                        }
+                    }
+                    
+                    // Wait for members to load, then generate report
+                    if (this.members.length > 0) {
+                        // Verify the selected user exists in members
+                        const userExists = this.members.some(m => m.id === this.selectedUserId);
+                        if (userExists) {
+                            await this.loadReportHistory();
+                            // Small delay to ensure all data is set
+                            this.$nextTick(() => {
+                                if (this.canGenerate) {
+                                    this.generateReport();
+                                } else {
+                                    console.warn('Cannot generate report - missing required data:', {
+                                        selectedUserId: this.selectedUserId,
+                                        selectedTimeframe: this.selectedTimeframe,
+                                        selectedDate: this.selectedDate,
+                                        startDate: this.startDate,
+                                        endDate: this.endDate
+                                    });
+                                }
+                            });
+                        } else {
+                            console.warn('Selected user not found in members list');
+                            this.$notify('Selected employee not found', 'error');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error in handleRouteQuery:', error);
+                // Don't show error notification here as it might be called multiple times
+            }
+        },
         async loadMembers() {
             this.loadingMembers = true;
             try {
