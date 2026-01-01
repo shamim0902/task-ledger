@@ -170,8 +170,8 @@ class ProjectsController extends Controller
         // Return empty assignments since roles are no longer tied to boards
         $assignments = [];
 
-        // Get all available roles
-        $roles = \TaskLedger\App\Models\Role::all();
+        // Get all available roles (default system roles)
+        $roles = \TaskLedger\App\Models\Role::getAllDefaultRoles();
 
         // Get all WordPress users
         $wpUsers = get_users(['fields' => ['ID', 'user_login', 'user_email', 'display_name', 'user_nicename']]);

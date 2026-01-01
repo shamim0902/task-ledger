@@ -18,12 +18,18 @@ class RoleController extends Controller
             return $this->sendError(['message' => 'You do not have permission to view roles'], 403);
         }
 
-        $roles = Role::where('is_system', true)
-            ->where('slug', '!=', 'member')
-            ->withCount('users')
-            ->orderBy('name', 'asc')
-            ->get();
-        return $roles;
+        // Get default roles (excluding member for this endpoint)
+        $allRoles = Role::getAllDefaultRoles();
+        $roles = array_filter($allRoles, function($role) {
+            return $role->slug !== 'member';
+        });
+        
+        // Sort by name
+        usort($roles, function($a, $b) {
+            return strcmp($a->name, $b->name);
+        });
+        
+        return array_values($roles);
     }
 
     /**
@@ -36,7 +42,11 @@ class RoleController extends Controller
             return $this->sendError(['message' => 'You do not have permission to view roles'], 403);
         }
 
-        $role = Role::withCount('users')->findOrFail($id);
+        $role = Role::getDefaultRoleById($id);
+        if (!$role) {
+            return $this->sendError(['message' => 'Role not found'], 404);
+        }
+        
         return $role;
     }
 }

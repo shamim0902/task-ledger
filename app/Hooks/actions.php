@@ -59,8 +59,8 @@ if (defined('WP_CLI') && WP_CLI) {
 
 // Auto-assign Member role to new users
 $app->addAction('user_register', function($userId) {
-    // Get Member role
-    $memberRole = \TaskLedger\App\Models\Role::where('slug', 'member')->first();
+    // Get Member role from default roles
+    $memberRole = \TaskLedger\App\Models\Role::getDefaultRoleBySlug('member');
     
     if ($memberRole) {
         // Check if user already has a role assigned

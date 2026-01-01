@@ -24,11 +24,54 @@ class UserRoleProject extends Model
     }
 
     /**
-     * Get the role
+     * Get the role (from default roles)
+     * Override to always return default role, even when eager loaded
      */
     public function role()
     {
-        return $this->belongsTo(Role::class, 'role_id');
+        $relation = $this->belongsTo(Role::class, 'role_id');
+        
+        // Override the getResults method to return default role
+        $originalGetResults = $relation->getResults();
+        if ($originalGetResults) {
+            // If relationship was loaded, replace with default role
+            $defaultRole = Role::getDefaultRoleById($originalGetResults->id ?? $this->role_id);
+            if ($defaultRole) {
+                return $defaultRole;
+            }
+        }
+        
+        return $relation;
+    }
+    
+    /**
+     * Get role attribute (accessor - returns default role instead of DB role)
+     */
+    public function getRoleAttribute()
+    {
+        // Always return default role, regardless of what's loaded
+        $roleId = $this->getAttribute('role_id') ?? $this->attributes['role_id'] ?? null;
+        if ($roleId) {
+            return Role::getDefaultRoleById($roleId);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Override getRelationValue to use default roles
+     */
+    public function getRelationValue($key)
+    {
+        if ($key === 'role') {
+            $roleId = $this->getAttribute('role_id') ?? $this->attributes['role_id'] ?? null;
+            if ($roleId) {
+                return Role::getDefaultRoleById($roleId);
+            }
+            return null;
+        }
+        
+        return parent::getRelationValue($key);
     }
 
     /**

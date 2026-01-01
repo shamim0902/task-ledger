@@ -88,7 +88,7 @@ class CronHooks
      */
     private static function getAllManagers()
     {
-        $managerRole = \TaskLedger\App\Models\Role::where('slug', 'manager')->first();
+        $managerRole = \TaskLedger\App\Models\Role::getDefaultRoleBySlug('manager');
         if (!$managerRole) {
             return [];
         }

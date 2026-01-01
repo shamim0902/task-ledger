@@ -1,3 +1,8 @@
 @use "globals";
 @use "./vendor";
 @use "elements/responsive";
+
+.fconnector_app {
+    max-width: 100% !important;
+    width: 100% !important;
+}
