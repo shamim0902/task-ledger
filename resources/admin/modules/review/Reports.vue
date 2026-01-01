@@ -342,6 +342,30 @@ export default {
     mounted() {
         this.loadMembers();
         this.loadSubmittedReports();
+        
+        // Handle query parameters from navigation
+        if (this.$route.query.employee_id) {
+            this.selectedUserId = parseInt(this.$route.query.employee_id);
+            if (this.$route.query.timeframe) {
+                this.selectedTimeframe = this.$route.query.timeframe;
+            }
+            if (this.$route.query.start_date) {
+                this.startDate = this.$route.query.start_date;
+            }
+            if (this.$route.query.end_date) {
+                this.endDate = this.$route.query.end_date;
+            }
+            if (this.selectedTimeframe !== 'custom' && this.$route.query.start_date) {
+                this.selectedDate = this.$route.query.start_date;
+            }
+            
+            // Wait for members to load, then generate report
+            this.$nextTick(() => {
+                if (this.members.length > 0) {
+                    this.generateReport();
+                }
+            });
+        }
     },
     methods: {
         async loadMembers() {

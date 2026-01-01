@@ -306,11 +306,17 @@ class ReportController extends Controller
         }
 
         try {
-            $submittedReports = SubmittedReport::where('submitted_by', $currentUserId)
-                ->orderBy('created_at', 'desc')
+            // Admin can see all reports, Manager only sees their own
+            $query = SubmittedReport::query();
+            if (!$isAdmin) {
+                $query->where('submitted_by', $currentUserId);
+            }
+            
+            $submittedReports = $query->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($report) {
                     $employee = User::find($report->employee_id);
+                    $submittedBy = User::find($report->submitted_by);
                     
                     // Handle created_at - it might be a string or DateTime
                     $createdAt = $report->created_at;
@@ -326,6 +332,8 @@ class ReportController extends Controller
                         'id' => $report->id,
                         'employee_id' => $report->employee_id,
                         'employee_name' => $employee ? $employee->display_name : 'Unknown',
+                        'submitted_by_id' => $report->submitted_by,
+                        'submitted_by_name' => $submittedBy ? $submittedBy->display_name : 'Unknown',
                         'timeframe' => $report->timeframe,
                         'start_date' => $report->start_date,
                         'end_date' => $report->end_date,

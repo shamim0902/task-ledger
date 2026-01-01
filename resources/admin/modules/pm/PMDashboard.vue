@@ -78,6 +78,17 @@
                         </div>
                     </div>
                     <div class="action-group">
+                        <button 
+                            v-if="isAdmin" 
+                            class="action-btn" 
+                            @click="showSubmittedReportsModal = true" 
+                            title="View All Submitted Reports"
+                        >
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>Submitted Reports</span>
+                        </button>
                         <button class="action-btn" @click="exportCSV" :disabled="loading" title="Export CSV">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -94,6 +105,65 @@
                             </svg>
                             <span>Reminders</span>
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submitted Reports Modal -->
+        <div v-if="showSubmittedReportsModal" class="modal-overlay" @click.self="showSubmittedReportsModal = false">
+            <div class="modal-container submitted-reports-modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">All Submitted Reports</h3>
+                    <button class="modal-close" @click="showSubmittedReportsModal = false">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="loadingSubmittedReports" class="loading-state">
+                        <p>Loading submitted reports...</p>
+                    </div>
+                    <div v-else-if="allSubmittedReports.length === 0" class="empty-state">
+                        <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p>No submitted reports found</p>
+                    </div>
+                    <div v-else class="submitted-reports-list">
+                        <div
+                            v-for="report in allSubmittedReports"
+                            :key="report.id"
+                            class="report-item"
+                        >
+                            <div class="report-item-content">
+                                <div class="report-item-header">
+                                    <div class="report-employee">{{ report.employee_name }}</div>
+                                    <div class="report-timeframe">{{ capitalizeTimeframe(report.timeframe) }}</div>
+                                </div>
+                                <div class="report-item-meta">
+                                    <span class="report-period">
+                                        {{ formatDate(report.start_date) }} to {{ formatDate(report.end_date) }}
+                                    </span>
+                                    <span class="report-submitted-by" v-if="report.submitted_by_name">
+                                        Submitted by: {{ report.submitted_by_name }}
+                                    </span>
+                                    <span class="report-date">{{ formatDateTime(report.created_at) }}</span>
+                                </div>
+                                <div v-if="report.summary" class="report-summary-preview">
+                                    <span class="summary-item">{{ report.summary.total_submissions || 0 }} submissions</span>
+                                    <span class="summary-item">{{ report.summary.total_tasks || 0 }} tasks</span>
+                                    <span class="summary-item">{{ report.summary.total_hours || 0 }} hours</span>
+                                </div>
+                            </div>
+                            <button
+                                @click="viewReportDetails(report)"
+                                class="view-report-btn"
+                            >
+                                View Details
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -317,7 +387,10 @@ export default {
             blockedTasks: [],
             taskFilter: {
                 status: 'all'
-            }
+            },
+            showSubmittedReportsModal: false,
+            allSubmittedReports: [],
+            loadingSubmittedReports: false
         };
     },
     computed: {
@@ -329,6 +402,10 @@ export default {
                 month: 'long',
                 day: 'numeric'
             });
+        },
+        isAdmin() {
+            const config = window.fluentFrameworkAdmin || {};
+            return config.isAdmin || false;
         }
     },
     methods: {
@@ -385,6 +462,80 @@ export default {
         handleTaskFilterChange(filter) {
             this.taskFilter = { ...this.taskFilter, ...filter };
             this.loadData();
+        },
+        async loadSubmittedReports() {
+            this.loadingSubmittedReports = true;
+            try {
+                const response = await this.$get('reports/submitted');
+                let reportsData = response;
+                if (response && typeof response.all === 'function') {
+                    reportsData = response.all();
+                } else if (response && Array.isArray(response)) {
+                    reportsData = response;
+                } else if (response && response.data && Array.isArray(response.data)) {
+                    reportsData = response.data;
+                }
+                this.allSubmittedReports = Array.isArray(reportsData) ? reportsData : [];
+            } catch (error) {
+                console.error('Error loading submitted reports:', error);
+                this.$notify('Failed to load submitted reports', 'error');
+                this.allSubmittedReports = [];
+            } finally {
+                this.loadingSubmittedReports = false;
+            }
+        },
+        viewReportDetails(report) {
+            // Navigate to review reports page with the report data
+            this.showSubmittedReportsModal = false;
+            
+            // Build query string
+            const queryParams = new URLSearchParams({
+                employee_id: report.employee_id,
+                timeframe: report.timeframe,
+                start_date: report.start_date,
+                end_date: report.end_date
+            });
+            
+            const targetPath = `/review/reports?${queryParams.toString()}`;
+            const targetHash = `#/review/reports?${queryParams.toString()}`;
+            
+            // Try router first
+            if (this.$router) {
+                this.$router.push({
+                    path: '/review/reports',
+                    query: {
+                        employee_id: report.employee_id,
+                        timeframe: report.timeframe,
+                        start_date: report.start_date,
+                        end_date: report.end_date
+                    }
+                }).catch((err) => {
+                    // Fallback to hash navigation if router fails
+                    if (err.name !== 'NavigationDuplicated') {
+                        console.error('Navigation error:', err);
+                        window.location.hash = targetHash;
+                    }
+                });
+            } else if (window.fluentFrameworkAdmin?.router) {
+                window.fluentFrameworkAdmin.router.push(targetPath).catch(() => {
+                    window.location.hash = targetHash;
+                });
+            } else {
+                // Fallback to hash navigation
+                window.location.hash = targetHash;
+            }
+        },
+        capitalizeTimeframe(timeframe) {
+            if (!timeframe) return '';
+            return timeframe.charAt(0).toUpperCase() + timeframe.slice(1);
+        },
+        formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString();
+        },
+        formatDateTime(dateTimeString) {
+            if (!dateTimeString) return 'N/A';
+            return new Date(dateTimeString).toLocaleString();
         },
         handleDateChange(event) {
             let date;
@@ -602,6 +753,11 @@ export default {
         },
         selectedBoards() {
             this.loadData();
+        },
+        showSubmittedReportsModal(newVal) {
+            if (newVal && this.isAdmin) {
+                this.loadSubmittedReports();
+            }
         }
     }
 };
@@ -1241,6 +1397,222 @@ export default {
 
     .section-content {
         padding: 0.75rem;
+    }
+}
+
+// Submitted Reports Modal Styles
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+}
+
+.submitted-reports-modal {
+    background: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 900px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+
+    svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    &:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+}
+
+.modal-body {
+    padding: 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.loading-state,
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+
+    p {
+        margin: 0.5rem 0 0 0;
+        font-size: 0.875rem;
+    }
+}
+
+.empty-icon {
+    width: 3rem;
+    height: 3rem;
+    color: #d1d5db;
+    margin: 0 auto;
+}
+
+.submitted-reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.report-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+
+    &:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+}
+
+.report-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.report-item-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.375rem;
+}
+
+.report-employee {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.report-timeframe {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    background: #e0e7ff;
+    color: #4338ca;
+    border-radius: 0.25rem;
+    font-weight: 500;
+}
+
+.report-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.375rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.report-period {
+    font-weight: 500;
+}
+
+.report-submitted-by {
+    color: #9ca3af;
+}
+
+.report-date {
+    color: #9ca3af;
+}
+
+.report-summary-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.375rem;
+}
+
+.summary-item {
+    font-size: 0.75rem;
+    color: #6b7280;
+    padding: 0.125rem 0.5rem;
+    background: #ffffff;
+    border-radius: 0.25rem;
+    border: 1px solid #e5e7eb;
+}
+
+.view-report-btn {
+    padding: 0.5rem 1rem;
+    background: #6366f1;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    margin-left: 1rem;
+
+    &:hover {
+        background: #4f46e5;
+    }
+}
+
+@media (max-width: 768px) {
+    .submitted-reports-modal {
+        max-width: 100%;
+        margin: 0;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .report-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .view-report-btn {
+        width: 100%;
+        margin-left: 0;
     }
 }
 </style>
