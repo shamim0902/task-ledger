@@ -1,8 +1,22 @@
 # Task Ledger
 
 A comprehensive task management and daily logging system for WordPress that helps teams track work, submit daily logs, and manage task reviews efficiently.
+## Developer Task tracker with FluentBoard integration:
+Implement anywhere using shortcode 🤩
 
 <img width="983" height="861" alt="image" src="https://github.com/user-attachments/assets/f7ce85bf-a657-4bca-89e9-d92c6e3cd3f2" />
+
+## Auto mail trigger:
+<img width="1247" height="797" alt="image" src="https://github.com/user-attachments/assets/336cf385-8bc8-48e8-9fc8-1e46013d3237" />
+
+## Manager dashboard with advanced report generator
+<img width="1352" height="829" alt="image" src="https://github.com/user-attachments/assets/f4a81c2f-4f36-4c40-b564-aa5375961ff7" />
+
+## Admin access to review and track everyones activity
+<img width="1384" height="833" alt="image" src="https://github.com/user-attachments/assets/46e1d1f0-e5e7-44c7-a3a6-747654c4aaa0" />
+
+## Easy role managements
+<img width="1380" height="836" alt="image" src="https://github.com/user-attachments/assets/2cf39b36-8076-4a75-a329-17ab33b2f751" />
 
 
 ## Description
