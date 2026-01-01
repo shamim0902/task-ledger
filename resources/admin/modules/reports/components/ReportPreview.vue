@@ -6,14 +6,13 @@
                 <div class="preview-actions">
                     <button
                         @click="$emit('send-to-admin')"
-                        :disabled="sending"
                         class="action-btn"
                     >
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <span>{{ sending ? 'Sending...' : 'Send to Admin' }}</span>
+                        <span>Send to Admin</span>
                     </button>
                     <button
                         @click="$emit('download')"
@@ -150,10 +149,6 @@ export default {
             default: null,
         },
         generating: {
-            type: Boolean,
-            default: false,
-        },
-        sending: {
             type: Boolean,
             default: false,
         },

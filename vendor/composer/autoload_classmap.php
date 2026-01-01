@@ -17,6 +17,7 @@ return array(
     'TaskLedger\\Database\\Migrations\\RolePermissionsMigrator' => $baseDir . '/database/Migrations/RolePermissionsMigrator.php',
     'TaskLedger\\Database\\Migrations\\RolesMigrator' => $baseDir . '/database/Migrations/RolesMigrator.php',
     'TaskLedger\\Database\\Migrations\\SettingsMigrator' => $baseDir . '/database/Migrations/SettingsMigrator.php',
+    'TaskLedger\\Database\\Migrations\\SubmittedReportsMigrator' => $baseDir . '/database/Migrations/SubmittedReportsMigrator.php',
     'TaskLedger\\Database\\Migrations\\TaskActivityMigrator' => $baseDir . '/database/Migrations/TaskActivityMigrator.php',
     'TaskLedger\\Database\\Migrations\\TaskMetaMigrator' => $baseDir . '/database/Migrations/TaskMetaMigrator.php',
     'TaskLedger\\Database\\Migrations\\TasksMigrator' => $baseDir . '/database/Migrations/TasksMigrator.php',

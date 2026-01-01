@@ -16,6 +16,7 @@ use TaskLedger\Database\Migrations\PermissionsMigrator;
 use TaskLedger\Database\Migrations\RolePermissionsMigrator;
 use TaskLedger\Database\Migrations\UserRoleProjectsMigrator;
 use TaskLedger\Database\Migrations\ManagerMembersMigrator;
+use TaskLedger\Database\Migrations\SubmittedReportsMigrator;
 
 class DBMigrator
 {
@@ -43,6 +44,9 @@ class DBMigrator
         
         // Manager members
         'TaskLedger\\Database\\Migrations\\ManagerMembersMigrator',
+        
+        // Submitted reports
+        'TaskLedger\\Database\\Migrations\\SubmittedReportsMigrator',
     ];
 
     public static function migrateUp($network_wide = false)

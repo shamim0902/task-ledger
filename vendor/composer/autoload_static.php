@@ -42,6 +42,7 @@ class ComposerStaticInit70b841140d300d7320400dfecf48a267
         'TaskLedger\\Database\\Migrations\\RolePermissionsMigrator' => __DIR__ . '/../..' . '/database/Migrations/RolePermissionsMigrator.php',
         'TaskLedger\\Database\\Migrations\\RolesMigrator' => __DIR__ . '/../..' . '/database/Migrations/RolesMigrator.php',
         'TaskLedger\\Database\\Migrations\\SettingsMigrator' => __DIR__ . '/../..' . '/database/Migrations/SettingsMigrator.php',
+        'TaskLedger\\Database\\Migrations\\SubmittedReportsMigrator' => __DIR__ . '/../..' . '/database/Migrations/SubmittedReportsMigrator.php',
         'TaskLedger\\Database\\Migrations\\TaskActivityMigrator' => __DIR__ . '/../..' . '/database/Migrations/TaskActivityMigrator.php',
         'TaskLedger\\Database\\Migrations\\TaskMetaMigrator' => __DIR__ . '/../..' . '/database/Migrations/TaskMetaMigrator.php',
         'TaskLedger\\Database\\Migrations\\TasksMigrator' => __DIR__ . '/../..' . '/database/Migrations/TasksMigrator.php',

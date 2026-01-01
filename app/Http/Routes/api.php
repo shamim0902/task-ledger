@@ -81,6 +81,7 @@ $router->get('/email-notifications/shortcodes', 'EmailNotificationController@get
 
 // Report routes
 $router->get('/reports/history/{userId}', 'ReportController@getReportHistory');
+$router->get('/reports/submitted', 'ReportController@getSubmittedReports');
 $router->post('/reports/generate', 'ReportController@generateReport');
 $router->post('/reports/send', 'ReportController@sendReportToAdmin');
 $router->get('/reports/download', 'ReportController@downloadReport');

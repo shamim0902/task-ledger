@@ -29,6 +29,7 @@ $app->addAction('admin_init', function() use ($app) {
         'task_ledger_log_items',
         'task_ledger_roles',
         'task_ledger_user_role_projects',
+        'task_ledger_submitted_reports',
     ];
     
     $missingTables = [];

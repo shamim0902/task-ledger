@@ -3,6 +3,7 @@
 namespace TaskLedger\App\Http\Controllers;
 
 use TaskLedger\App\Models\User;
+use TaskLedger\App\Models\SubmittedReport;
 use TaskLedger\App\Services\PermissionService;
 use TaskLedger\App\Services\Report\ReportService;
 use TaskLedger\Framework\Http\Request\Request;
@@ -169,6 +170,9 @@ class ReportController extends Controller
         $userId = $request->get('user_id');
         $timeframe = $request->get('timeframe', 'weekly');
         $selectedDate = $request->get('date', date('Y-m-d'));
+        $reportData = $request->get('report_data');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
         
         if (!$userId) {
             return $this->sendError(['message' => 'User ID is required'], 400);
@@ -182,18 +186,24 @@ class ReportController extends Controller
         }
 
         // Calculate date range
-        $dateRange = $this->calculateDateRange($timeframe, $selectedDate);
+        if ($timeframe === 'custom' && $startDate && $endDate) {
+            $dateRange = ['start' => $startDate, 'end' => $endDate];
+        } else {
+            $dateRange = $this->calculateDateRange($timeframe, $selectedDate);
+        }
 
-        // Generate report
-        $reportData = ReportService::generate(
-            $userId,
-            $timeframe,
-            $dateRange['start'],
-            $dateRange['end']
-        );
-
+        // Use provided report data or generate new one
         if (!$reportData) {
-            return $this->sendError(['message' => 'Failed to generate report'], 404);
+            $reportData = ReportService::generate(
+                $userId,
+                $timeframe,
+                $dateRange['start'],
+                $dateRange['end']
+            );
+
+            if (!$reportData) {
+                return $this->sendError(['message' => 'Failed to generate report'], 404);
+            }
         }
 
         // Format as HTML email
@@ -247,6 +257,21 @@ class ReportController extends Controller
         }
 
         if ($emailSent) {
+            // Save submitted report to database
+            try {
+                SubmittedReport::create([
+                    'submitted_by' => $currentUserId,
+                    'employee_id' => $userId,
+                    'timeframe' => $timeframe,
+                    'start_date' => $dateRange['start'],
+                    'end_date' => $dateRange['end'],
+                    'report_data' => json_encode($reportData),
+                ]);
+            } catch (\Exception $e) {
+                // Log error but don't fail the request
+                error_log('Task Ledger: Failed to save submitted report: ' . $e->getMessage());
+            }
+
             return [
                 'success' => true,
                 'message' => 'Report sent to admin(s) successfully',
@@ -255,6 +280,64 @@ class ReportController extends Controller
             ];
         } else {
             return $this->sendError(['message' => 'Failed to send report email'], 500);
+        }
+    }
+
+    /**
+     * Get submitted reports for the current user
+     *
+     * @param Request $request
+     * @return array|\WP_REST_Response
+     */
+    public function getSubmittedReports(Request $request)
+    {
+        $currentUserId = get_current_user_id();
+        
+        if (!$currentUserId) {
+            return $this->sendError(['message' => 'User not authenticated'], 401);
+        }
+
+        // Only Manager and Admin can view submitted reports
+        $isAdmin = PermissionService::isAdmin($currentUserId);
+        $isManager = PermissionService::isManager($currentUserId);
+        
+        if (!$isAdmin && !$isManager) {
+            return $this->sendError(['message' => 'You do not have permission to view submitted reports'], 403);
+        }
+
+        try {
+            $submittedReports = SubmittedReport::where('submitted_by', $currentUserId)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($report) {
+                    $employee = User::find($report->employee_id);
+                    
+                    // Handle created_at - it might be a string or DateTime
+                    $createdAt = $report->created_at;
+                    if ($createdAt instanceof \DateTime || $createdAt instanceof \DateTimeInterface) {
+                        $createdAt = $createdAt->format('Y-m-d H:i:s');
+                    } elseif (is_string($createdAt)) {
+                        // Already a string, use as is
+                    } else {
+                        $createdAt = null;
+                    }
+                    
+                    return [
+                        'id' => $report->id,
+                        'employee_id' => $report->employee_id,
+                        'employee_name' => $employee ? $employee->display_name : 'Unknown',
+                        'timeframe' => $report->timeframe,
+                        'start_date' => $report->start_date,
+                        'end_date' => $report->end_date,
+                        'created_at' => $createdAt,
+                        'summary' => json_decode($report->report_data, true)['summary'] ?? null,
+                    ];
+                });
+
+            return $submittedReports->values()->toArray();
+        } catch (\Exception $e) {
+            error_log('Task Ledger: Error fetching submitted reports: ' . $e->getMessage());
+            return [];
         }
     }
 
