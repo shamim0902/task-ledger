@@ -40,6 +40,46 @@ $router->menu('primary', function($router) {
         ])
         ->middleware('auth');
 
+    // Reports - Admin and Manager only (sibling route, not child)
+    $router->addIf('/review/reports', 'modules/review/Reports', function() {
+        return PermissionService::isAdmin(get_current_user_id()) || PermissionService::isManager(get_current_user_id());
+    })
+        ->name('review.reports')
+        ->icon('Document')
+        ->title(__('Generate Report', 'taskledger'))
+        ->props([
+            'user'     => wp_get_current_user(),
+            'isAdmin'  => current_user_can('manage_options'),
+        ])
+        ->middleware('auth');
+
+    // Reports - Admin and Manager only
+    $router->addIf('/reports', 'modules/reports', function() {
+        return PermissionService::isAdmin(get_current_user_id()) || PermissionService::isManager(get_current_user_id());
+    })
+        ->name('reports')
+        ->icon('Document')
+        ->title(__('Reports', 'taskledger'))
+        ->props([
+            'user'     => wp_get_current_user(),
+            'isAdmin'  => current_user_can('manage_options'),
+        ])
+        ->middleware('auth')
+        ->children(function($router) {
+            // Admin Reports - Admin only
+            $router->addIf('admin', 'modules/reports/AdminReports', function() {
+                return PermissionService::isAdmin(get_current_user_id());
+            })
+                ->name('reports.admin')
+                ->icon('Document')
+                ->title(__('Admin Reports', 'taskledger'))
+                ->props([
+                    'user'     => wp_get_current_user(),
+                    'isAdmin'  => current_user_can('manage_options'),
+                ])
+                ->middleware('auth');
+        });
+
     // Settings - Admin only (parent menu with children)
     $router->addIf('/settings', 'modules/settings/Settings', function() {
         return PermissionService::isAdmin(get_current_user_id());

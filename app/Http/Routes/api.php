@@ -78,3 +78,9 @@ $router->get('/email-notifications/{name}', 'EmailNotificationController@find');
 $router->put('/email-notifications/{name}', 'EmailNotificationController@update');
 $router->post('/email-notifications/{name}/enable', 'EmailNotificationController@enableNotification');
 $router->get('/email-notifications/shortcodes', 'EmailNotificationController@getShortCodes');
+
+// Report routes
+$router->get('/reports/history/{userId}', 'ReportController@getReportHistory');
+$router->post('/reports/generate', 'ReportController@generateReport');
+$router->post('/reports/send', 'ReportController@sendReportToAdmin');
+$router->get('/reports/download', 'ReportController@downloadReport');

@@ -17,6 +17,18 @@
                 </div>
                 <div class="header-actions">
                     <div class="action-group">
+                        <a 
+                            href="#/review/reports"
+                            class="action-btn"
+                            title="Generate Report"
+                            @click.prevent="navigateToReports"
+                        >
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>Generate Report</span>
+                        </a>
                         <button 
                             v-if="selectedSubmissions.length > 0" 
                             class="action-btn primary" 
@@ -499,6 +511,23 @@ export default {
         handlePageChange(page) {
             this.loadSubmissions(page);
         },
+        navigateToReports(e) {
+            e.preventDefault();
+            const targetHash = '#/review/reports';
+            
+            // Try router first
+            if (window.fluentFrameworkAdmin?.router) {
+                window.fluentFrameworkAdmin.router.push('/review/reports').catch(() => {
+                    window.location.hash = targetHash;
+                });
+            } else if (this.$router) {
+                this.$router.push('/review/reports').catch(() => {
+                    window.location.hash = targetHash;
+                });
+            } else {
+                window.location.hash = targetHash;
+            }
+        },
     },
 };
 </script>
@@ -707,46 +736,59 @@ export default {
     gap: 0.5rem;
 }
 
-.action-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: white;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s;
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
 
-    svg {
-        width: 1rem;
-        height: 1rem;
-    }
-
-    &:hover:not(:disabled) {
-        background: #f9fafb;
-        border-color: #9ca3af;
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    &.primary {
-        background: #10b981;
-        border-color: #10b981;
-        color: white;
+        svg {
+            width: 1rem;
+            height: 1rem;
+        }
 
         &:hover:not(:disabled) {
-            background: #059669;
-            border-color: #059669;
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        &.primary {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+
+            &:hover:not(:disabled) {
+                background: #059669;
+                border-color: #059669;
+            }
+        }
+
+        &.router-link-active,
+        &.router-link-exact-active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+
+            &:hover {
+                background: #5568d3;
+                border-color: #5568d3;
+            }
         }
     }
-}
 
 .review-content {
     padding: 0 1rem 1rem;
