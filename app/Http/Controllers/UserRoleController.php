@@ -53,11 +53,17 @@ class UserRoleController extends Controller
 
         $request->validate([
             'user_id' => 'required|exists:users,ID',
-            'role_id' => 'required|exists:task_ledger_roles,id',
+            'role_id' => 'required',
         ]);
 
         $userId = $request->get('user_id');
         $roleId = $request->get('role_id');
+
+        // Validate role_id against default roles
+        $role = Role::getDefaultRoleById($roleId);
+        if (!$role) {
+            return $this->sendError(['message' => 'Invalid role ID. Role not found.'], 404);
+        }
 
         // Check if assignment already exists
         $existing = UserRoleProject::where('user_id', $userId)
@@ -91,7 +97,7 @@ class UserRoleController extends Controller
 
         $request->validate([
             'user_id' => 'required|exists:users,ID',
-            'role_id' => 'required|exists:task_ledger_roles,id',
+            'role_id' => 'required',
         ]);
 
         $userId = $request->get('user_id');
@@ -99,7 +105,7 @@ class UserRoleController extends Controller
 
         // Get user and role info for better error messages
         $user = User::find($userId);
-        $role = Role::find($roleId);
+        $role = Role::getDefaultRoleById($roleId);
         
         if (!$user) {
             return $this->sendError(['message' => 'User not found'], 404);
@@ -163,7 +169,7 @@ class UserRoleController extends Controller
 
         return [
             'users' => $users,
-            'role' => Role::find($roleId),
+            'role' => Role::getDefaultRoleById($roleId),
         ];
     }
 

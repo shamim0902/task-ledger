@@ -120,7 +120,7 @@ class PermissionService
             return true;
         }
         
-        $adminRole = Role::where('slug', 'admin')->first();
+        $adminRole = Role::getDefaultRoleBySlug('admin');
         if (!$adminRole) {
             return false;
         }
@@ -138,7 +138,7 @@ class PermissionService
      */
     public static function isManager($userId)
     {
-        $managerRole = Role::where('slug', 'manager')->first();
+        $managerRole = Role::getDefaultRoleBySlug('manager');
         if (!$managerRole) {
             return false;
         }
@@ -156,7 +156,7 @@ class PermissionService
      */
     public static function isMember($userId)
     {
-        $memberRole = Role::where('slug', 'member')->first();
+        $memberRole = Role::getDefaultRoleBySlug('member');
         if (!$memberRole) {
             return false;
         }
